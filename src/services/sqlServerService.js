@@ -26,7 +26,7 @@ async function getPool() {
 async function getCuentasPorPagar({ soloVencidas = false, nit = null } = {}) {
   const db = await getPool();
 
-  let where = "(f.ValNeto - f.ValAbo) > 0";
+  let where = "(f.ValNeto - f.ValAbo) > 0 AND f.estado = ''";
   if (soloVencidas) where += " AND f.fecven < GETDATE()";
   if (nit)          where += ` AND f.Codter = '${nit.replace(/'/g, "''")}'`;
 
@@ -76,7 +76,7 @@ async function getResumenCxP() {
       SUM(CASE WHEN f.fecven < GETDATE() THEN (f.ValNeto - f.ValAbo) ELSE 0 END) AS total_vencido
     FROM CxP_Facturas f
     LEFT JOIN Cnt_Terceros t ON f.Codter = t.Codter
-    WHERE (f.ValNeto - f.ValAbo) > 0
+    WHERE (f.ValNeto - f.ValAbo) > 0 AND f.estado = ''
     GROUP BY f.Codter, t.nombre_com, t.nombre_1, t.celular_1
     ORDER BY total_pendiente DESC
   `);
@@ -103,7 +103,7 @@ async function buscarFacturasProveedor(nombreONit) {
       DATEDIFF(DAY, GETDATE(), f.fecven) AS dias_para_vencer
     FROM CxP_Facturas f
     LEFT JOIN Cnt_Terceros t ON f.Codter = t.Codter
-    WHERE (f.ValNeto - f.ValAbo) > 0
+    WHERE (f.ValNeto - f.ValAbo) > 0 AND f.estado = ''
       AND (
         t.nombre_com LIKE '%${term}%'
         OR t.nombre_1 LIKE '%${term}%'
