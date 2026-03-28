@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAKABOT — Cuentas por Pagar</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf4ff;color:#2d1b69}
+
+    header{background:linear-gradient(135deg,#2d1b69,#6d28d9);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(109,40,217,.4)}
+    .logo{font-size:26px;font-weight:900;letter-spacing:-1px;color:#f9a8d4}
+    .subtitle{font-size:12px;opacity:.65;margin-top:2px}
+    .badge-online{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #10b981;background:rgba(16,185,129,.15);color:#10b981}
+
+    nav{background:#fff;border-bottom:2px solid #eee;display:flex;padding:0 28px;gap:2px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow-x:auto}
+    nav button{padding:13px 18px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:500;color:#666;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
+    nav button:hover{color:#9333ea}
+    nav button.active{color:#9333ea;border-bottom-color:#9333ea;font-weight:700}
+
+    main{max-width:1150px;margin:0 auto;padding:24px 16px}
+    .tab{display:none}.tab.active{display:block}
+
+    .card{background:#fff;border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:0 1px 5px rgba(0,0,0,.06);border:1px solid #eee}
+    .card h2{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+    .stat-card{background:#fff;border-radius:12px;padding:18px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.06);border:1px solid #eee}
+    .stat-card .num{font-size:28px;font-weight:800;color:#9333ea;line-height:1}
+    .stat-card .lbl{font-size:11px;color:#888;margin-top:5px;font-weight:500}
+
+    .upload-zone{border:2px dashed #d0d0d0;border-radius:10px;padding:26px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}
+    .upload-zone:hover,.upload-zone.drag{border-color:#9333ea;background:#fdf4ff}
+    .upload-zone .icon{font-size:32px;margin-bottom:6px}
+    .upload-zone p{color:#666;font-size:13px}
+    .upload-zone small{color:#aaa;font-size:11px}
+    .upload-zone input[type=file]{display:none}
+
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:#9333ea;color:#fff}.btn-primary:hover{background:#7c3aed;transform:translateY(-1px)}
+    .btn-secondary{background:#f0f0f0;color:#333}.btn-secondary:hover{background:#e0e0e0}
+    .btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
+    .btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
+    .btn-info{background:#3b82f6;color:#fff}.btn-info:hover{background:#2563eb}
+    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none;transition:border-color .2s;font-family:inherit}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#9333ea}
+
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{background:#f8f8f8;padding:9px 12px;text-align:left;font-weight:600;color:#555;border-bottom:2px solid #eee;white-space:nowrap;position:sticky;top:0;z-index:10}
+    #tablaVenc thead th{position:sticky;top:0;z-index:20;background:#f3e8ff;box-shadow:0 2px 0 #d8b4fe;user-select:none;overflow:visible}
+    #tablaVenc thead th .col-resizer{position:absolute;right:0;top:0;width:5px;height:100%;cursor:col-resize;background:transparent;z-index:21}
+    #tablaVenc thead th .col-resizer:hover,#tablaVenc thead th .col-resizer.resizing{background:rgba(147,51,234,.4)}
+    td{padding:9px 12px;border-bottom:1px solid #f0f0f0;color:#333}
+    tr:hover td{background:#fafafa}
+    .table-wrap{overflow-x:auto;overflow-y:auto;max-height:480px;border-radius:8px}
+    .table-wrap table{border-collapse:separate;border-spacing:0}
+
+    /* ===== VENCIMIENTOS LAYOUT FIJO ===== */
+    #tab-vencimientos{display:none;flex-direction:column;overflow:hidden;min-height:0}
+    #tab-vencimientos.active{display:flex}
+    #tab-vencimientos > .card{
+      display:flex;flex-direction:column;flex:1;min-height:0;
+      padding:0;overflow:hidden;margin-bottom:0;
+    }
+    #venc-header{flex-shrink:0;padding:8px 22px 0;background:#fff}
+    #vResumenBar{
+      flex-shrink:0;
+      background:#fff;
+      padding:7px 22px 8px;
+      border-bottom:2px solid #e2e8f0;
+      box-shadow:0 2px 6px rgba(0,0,0,.06);
+    }
+    #venc-body{
+      flex:1;min-height:0;   /* min-height:0 es clave para que flex respete la altura */
+      overflow:auto;          /* UN solo contenedor — scrollbars quedan dentro del área visible */
+      padding:0 22px 12px;
+    }
+    /* ===== COLUMNAS CONGELADAS (sticky izquierda) ===== */
+    #tablaVenc{min-width:1500px}
+    #tablaVenc .sc1{position:sticky;left:0;z-index:11;width:40px;min-width:40px;max-width:40px}
+    #tablaVenc .sc2{position:sticky;left:40px;z-index:11;width:120px;min-width:120px;max-width:120px}
+    #tablaVenc .sc3{position:sticky;left:160px;z-index:11;width:36px;min-width:36px;max-width:36px}
+    #tablaVenc .sc4{position:sticky;left:196px;z-index:11;width:90px;min-width:90px}
+    #tablaVenc .sc5{position:sticky;left:286px;z-index:11;min-width:160px;border-right:2px solid #d1d5db}
+    /* Header corner: sticky top + left  */
+    #tablaVenc thead th.sc1,#tablaVenc thead th.sc2,#tablaVenc thead th.sc3,
+    #tablaVenc thead th.sc4,#tablaVenc thead th.sc5{z-index:31;background:#f3e8ff}
+    /* Body cell backgrounds deben cubrir el contenido al deslizar */
+    #tablaVenc tbody td.sc1,#tablaVenc tbody td.sc2,#tablaVenc tbody td.sc3,
+    #tablaVenc tbody td.sc4,#tablaVenc tbody td.sc5{background:#fff}
+    #tablaVenc tbody tr.row-incluida td.sc1,#tablaVenc tbody tr.row-incluida td.sc2,
+    #tablaVenc tbody tr.row-incluida td.sc3,#tablaVenc tbody tr.row-incluida td.sc4,
+    #tablaVenc tbody tr.row-incluida td.sc5{background:#f0fdf4}
+    #tablaVenc tbody tr.row-excluida td.sc1,#tablaVenc tbody tr.row-excluida td.sc2,
+    #tablaVenc tbody tr.row-excluida td.sc3,#tablaVenc tbody tr.row-excluida td.sc4,
+    #tablaVenc tbody tr.row-excluida td.sc5{background:#f8fafc}
+    #tablaVenc tbody tr:hover td.sc1,#tablaVenc tbody tr:hover td.sc2,
+    #tablaVenc tbody tr:hover td.sc3,#tablaVenc tbody tr:hover td.sc4,
+    #tablaVenc tbody tr:hover td.sc5{background:#fafafa!important}
+
+    /* ===== HEADER COMPACTO VENCIMIENTOS ===== */
+    #venc-header{padding:8px 22px 0}
+    #venc-header h2{font-size:13px!important;margin-bottom:6px!important}
+    /* Semáforo */
+    #venc-header .resumen-venc{gap:4px;margin-bottom:6px}
+    #venc-header .rv-chip{padding:3px 8px;font-size:11px}
+    /* Filtros */
+    #venc-header > div:nth-child(3){padding:7px 10px!important;margin-bottom:7px!important}
+    #venc-header label{font-size:10px!important;margin-bottom:2px!important}
+    #venc-header input[type=date],#venc-header select,#venc-header input[type=text]{padding:4px 7px!important;font-size:12px!important}
+    #venc-header .btn{padding:5px 10px!important;font-size:11px!important}
+    /* Bulk bar */
+    #bulkBar{padding:5px 10px!important;font-size:11px}
+    /* Totales rápidos */
+    #vTotales{margin-bottom:5px!important;gap:8px!important}
+    /* Cards resumen */
+    #vResumenBar{padding:7px 22px 8px}
+    .venc-res-card{padding:7px 12px!important}
+    .vrc-label{font-size:10px!important}
+    .vrc-value{font-size:16px!important}
+    .vrc-fondos-row{font-size:10px!important;gap:4px}
+    .venc-resumen-bar{gap:8px!important}
+
+    .result-box{margin-top:14px;padding:14px;border-radius:8px;font-size:12px;display:none}
+    .result-box.show{display:block}
+    .result-box.success{background:#ecfdf5;border:1px solid #10b981;color:#065f46}
+    .result-box.error{background:#fef2f2;border:1px solid #ef4444;color:#991b1b}
+    .result-box.info{background:#eff6ff;border:1px solid #3b82f6;color:#1e40af}
+    .result-box pre{white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:11px}
+
+    /* SELECCIÓN DE PROVEEDORES */
+    .prov-selector{display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:10px}
+    .prov-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:2px solid #eee;cursor:pointer;transition:all .2s;user-select:none}
+    .prov-row:hover{border-color:#c084fc;background:#faf0ff}
+    .prov-row.selected{border-color:#9333ea;background:#f3e8ff}
+    .prov-row input[type=checkbox]{width:18px;height:18px;accent-color:#9333ea;cursor:pointer;flex-shrink:0}
+    .prov-row .prov-info{flex:1}
+    .prov-row .prov-name{font-weight:700;font-size:13px}
+    .prov-row .prov-meta{font-size:11px;color:#888;margin-top:2px}
+    .prov-row .prov-total{font-size:14px;font-weight:800;color:#9333ea;text-align:right}
+    .prov-row .prov-phone{font-size:11px;color:#10b981;margin-top:2px;text-align:right}
+
+    .sel-controls{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+    .sel-controls span{font-size:12px;color:#666;margin-left:auto}
+
+    /* MENSAJES WhatsApp */
+    .msg-bubble{background:#dcf8c6;border-radius:12px 12px 12px 2px;padding:12px 14px;font-size:12px;line-height:1.7;white-space:pre-wrap;border:1px solid #b5e6a2;margin-top:10px}
+    .msg-response{background:#fff;border:1px solid #e5e7eb;border-radius:12px 12px 2px 12px;padding:12px 14px;font-size:12px;line-height:1.7;white-space:pre-wrap;margin-top:10px}
+    .msg-card{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-bottom:12px;background:#fafafa}
+    .msg-card .mc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+    .msg-card .mc-name{font-weight:700;font-size:13px}
+    .msg-card .mc-nit{font-size:11px;color:#888}
+    .mc-total{font-size:13px;font-weight:700;color:#10b981}
+
+    /* CHAT BOT */
+    .chat-area{background:#e5ddd5;border-radius:10px;padding:14px;height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+    .chat-msg{max-width:70%;padding:10px 14px;border-radius:10px;font-size:12px;line-height:1.6;white-space:pre-wrap}
+    .chat-msg.bot{background:#fff;align-self:flex-start;border-radius:0 10px 10px 10px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    .chat-msg.prov{background:#dcf8c6;align-self:flex-end;border-radius:10px 0 10px 10px}
+    .chat-label{font-size:10px;color:#888;margin-bottom:2px}
+    .chat-input-row{display:flex;gap:8px;margin-top:10px}
+    .chat-input-row input{flex:1;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none}
+    .chat-input-row input:focus{border-color:#9333ea}
+
+    /* IMAGEN ANALISIS */
+    .img-preview{max-width:300px;max-height:250px;border-radius:8px;border:1px solid #ddd;margin-top:10px;display:none}
+    .analisis-result{background:#f0fdf4;border:1px solid #10b981;border-radius:8px;padding:14px;margin-top:12px;font-size:12px;display:none}
+    .analisis-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e5e7eb}
+    .analisis-row:last-child{border-bottom:none;font-weight:700;color:#9333ea}
+
+    /* FILTROS */
+    .filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:14px;background:#f9f9f9;border-radius:10px;border:1px solid #eee;margin-bottom:16px}
+    .filters .form-group{margin-bottom:0;min-width:160px}
+
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+    .badge-pendiente{background:#fef3c7;color:#92400e}
+    .badge-procesado{background:#d1fae5;color:#065f46}
+    .badge-proveedor{background:#dbeafe;color:#1e40af}
+    .badge-imagen{background:#ede9fe;color:#5b21b6}
+    .badge-calculado{background:#f3f4f6;color:#374151}
+
+    .empty{text-align:center;padding:36px;color:#aaa;font-size:13px}
+    .empty .icon{font-size:36px;margin-bottom:8px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    @media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .divider{border:none;border-top:1px solid #eee;margin:16px 0}
+    .tag{display:inline-block;padding:2px 7px;background:#f3f4f6;border-radius:4px;font-size:11px;color:#555}
+    .ahorro{color:#10b981;font-weight:700}
+    .discrepancia{color:#f59e0b;font-weight:700}
+
+    /* VENCIMIENTOS */
+    .semaforo{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .sem-vencida{background:#ef4444}
+    .sem-hoy{background:#f59e0b}
+    .sem-pronto{background:#f97316}
+    .sem-normal{background:#10b981}
+    .sem-lejana{background:#3b82f6}
+    .venc-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+    .venc-toolbar .form-group{margin:0;min-width:140px}
+    .chk-pagar{width:18px;height:18px;accent-color:#9333ea;cursor:pointer}
+    .row-incluida { background: #f0fdf4; }
+    .row-incluida td { border-left: 0; }
+    .row-excluida { background: #f8fafc; }
+    .row-excluida td { opacity: .5; }
+    .row-excluida td:last-child { opacity: 1; }
+    .btn-pagar-on  { background:#16a34a;color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s; }
+    .btn-pagar-on:hover  { background:#15803d; }
+    .btn-pagar-off { background:#e2e8f0;color:#475569;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s; }
+    .btn-pagar-off:hover { background:#16a34a;color:#fff; }
+    .venc-resumen-bar { display:flex;gap:16px;flex-wrap:wrap;align-items:stretch;margin-bottom:14px; }
+    .venc-res-card { flex:1;min-width:180px;border-radius:12px;padding:14px 20px;display:flex;flex-direction:column;gap:4px; }
+    .venc-res-card .vrc-label { font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;opacity:.7; }
+    .venc-res-card .vrc-value { font-size:22px;font-weight:800;letter-spacing:-.5px; }
+    .vrc-total  { background:#f1f5f9;color:#334155; }
+    .vrc-pagar  { background:#dcfce7;color:#15803d; }
+    .vrc-excluido { background:#fee2e2;color:#dc2626; }
+    .vrc-fondos  { background:#eff6ff;color:#1d4ed8;border:2px solid #bfdbfe;flex:2;min-width:260px; }
+    .vrc-fondos .vrc-label { color:#1e40af; }
+    .vrc-fondos-row { display:flex;justify-content:space-between;font-size:12px;padding:2px 0;border-bottom:1px dashed #bfdbfe; }
+    .vrc-fondos-row:last-child { border:none; }
+    .vrc-fondos-row.saldo-ok  { color:#15803d;font-weight:800;font-size:14px; }
+    .vrc-fondos-row.saldo-mal { color:#dc2626;font-weight:800;font-size:14px; }
+    .dias-chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+    .dias-vencida{background:#fee2e2;color:#b91c1c}
+    .dias-hoy{background:#fef3c7;color:#92400e}
+    .dias-pronto{background:#ffedd5;color:#c2410c}
+    .dias-normal{background:#dcfce7;color:#166534}
+    .dias-lejana{background:#dbeafe;color:#1d4ed8}
+    .notas-inp{border:none;background:transparent;font-size:11px;color:#666;width:100%;outline:none;font-family:inherit}
+    .notas-inp:focus{background:#faf0ff;border-radius:4px;padding:2px 4px}
+    .resumen-venc{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .rv-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .15s}
+    .rv-chip:hover{opacity:.85}
+    .rv-all{background:#f3f4f6;color:#374151;border-color:#d1d5db}
+    .rv-vencida{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+    .rv-hoy{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+    .rv-pronto{background:#ffedd5;color:#c2410c;border-color:#fb923c}
+    .rv-normal{background:#dcfce7;color:#166534;border-color:#86efac}
+    .rv-chip.activo{border-width:2px;box-shadow:0 0 0 2px rgba(0,0,0,.1)}
+    .bulk-bar{display:flex;gap:8px;align-items:center;padding:10px 14px;background:#fff3cd;border-radius:8px;border:1px solid #ffc107;margin-bottom:12px;display:none}
+    .bulk-bar.show{display:flex}
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🤖 MAKABOT</div>
+    <div class="subtitle">MAKA QCUTE SAS — Automatización Cuentas por Pagar</div>
+  </div>
+  <div class="badge-online" id="statusBadge">● Conectando...</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+  <button onclick="showTab('proveedores',this)">🏢 Proveedores</button>
+  <button onclick="showTab('facturas',this)">📄 Facturas</button>
+  <button onclick="showTab('vencimientos',this)">🗓️ Vencimientos</button>
+  <button onclick="showTab('mensajes',this)">💬 Mensajes & Bot</button>
+  <button onclick="showTab('imagenes',this)">🖼️ Imágenes IA</button>
+  <button onclick="showTab('fondos',this)">💰 Fondos & Plan</button>
+  <button onclick="showTab('pagos',this)">💳 Pagos</button>
+</nav>
+
+<main>
+
+<!-- ========== DASHBOARD ========== -->
+<div class="tab active" id="tab-dashboard">
+  <div class="stats">
+    <div class="stat-card"><div class="num" id="s-prov">—</div><div class="lbl">Proveedores</div></div>
+    <div class="stat-card"><div class="num" id="s-fact">—</div><div class="lbl">Facturas Pendientes</div></div>
+    <div class="stat-card"><div class="num" id="s-total">—</div><div class="lbl">Total a Pagar</div></div>
+    <div class="stat-card"><div class="num" id="s-msg">—</div><div class="lbl">Mensajes Enviados</div></div>
+  </div>
+  <!-- Flujo de caja semanal -->
+  <div class="card" style="margin-bottom:16px">
+    <h2>📆 Flujo de Caja — Próximas 4 Semanas</h2>
+    <div id="dashFlujoCaja"><div class="empty"><div class="icon">📅</div>Cargando...</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>🏆 Deuda por Proveedor <small style="font-size:12px;font-weight:400;color:#9ca3af">(mayor a menor)</small></h2>
+      <div id="dashDeuda"><div class="empty"><div class="icon">📄</div>Sin datos aún</div></div>
+    </div>
+    <div class="card">
+      <h2>🚀 Flujo de trabajo</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#9333ea;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">1</span><span>Sube Excel de <strong>Proveedores</strong> con datos bancarios</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#9333ea;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">2</span><span>Sube Excel de <strong>Facturas</strong> y filtra por <strong>fecha de vencimiento</strong></span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#9333ea;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">3</span><span><strong>Selecciona</strong> los proveedores a pagar y genera mensajes WhatsApp con IA</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#ec4899;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">4</span><span>El <strong>Bot responde</strong> y compara valores — acepta el del proveedor si es menor</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#a855f7;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">5</span><span>Sube <strong>imágenes</strong> del proveedor con liquidación — IA extrae los valores</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#10b981;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">6</span><span>Descarga el archivo de <strong>Pagos</strong> en Excel</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PROVEEDORES ========== -->
+<div class="tab" id="tab-proveedores">
+  <div class="card">
+    <h2>📤 Subir Excel de Proveedores</h2>
+    <div class="upload-zone" id="zprov" onclick="document.getElementById('fprov').click()">
+      <div class="icon">🏢</div>
+      <p><strong>Clic o arrastra</strong> el archivo Excel</p>
+      <small>Columnas: PROVEEDOR, NIT, TELÉFONO, CIUDAD, DIRECCIÓN, DESCUENTO CACHARRO, DESCUENTO JOYERIA</small>
+      <input type="file" id="fprov" accept=".xlsx,.xls" onchange="uploadExcel('proveedores','fprov','rProv')"/>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="document.getElementById('fprov').click()">📤 Subir</button>
+      <a href="/ejemplo_proveedores.xlsx" download><button class="btn btn-secondary" type="button">⬇ Ejemplo</button></a>
+    </div>
+    <div class="result-box" id="rProv"></div>
+  </div>
+  <div class="card">
+    <h2>🏢 Proveedores registrados</h2>
+    <button class="btn btn-secondary" onclick="loadProveedores()" style="margin-bottom:12px">🔄 Actualizar</button>
+    <div class="table-wrap" id="tProv"><div class="empty"><div class="icon">🏢</div>Sin proveedores</div></div>
+  </div>
+</div>
+
+<!-- ========== FACTURAS ========== -->
+<div class="tab" id="tab-facturas">
+  <div class="card">
+    <h2>📤 Subir Excel de Facturas</h2>
+    <div class="upload-zone" id="zfact" onclick="document.getElementById('ffact').click()">
+      <div class="icon">📄</div>
+      <p><strong>Clic o arrastra</strong> el archivo Excel</p>
+      <small>Columnas: numero_factura, proveedor_nit, valor_factura, descuento_pronto_pago, flete, fecha_vencimiento</small>
+      <input type="file" id="ffact" accept=".xlsx,.xls" onchange="uploadExcel('facturas','ffact','rFact')"/>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="document.getElementById('ffact').click()">📤 Subir</button>
+      <a href="/ejemplo_facturas.xlsx" download><button class="btn btn-secondary" type="button">⬇ Ejemplo</button></a>
+    </div>
+    <div class="result-box" id="rFact"></div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="card">
+    <h2>🔍 Filtrar Facturas por Fecha de Vencimiento</h2>
+    <div class="filters">
+      <div class="form-group">
+        <label>Vencimiento desde</label>
+        <input type="date" id="filtroDesde"/>
+      </div>
+      <div class="form-group">
+        <label>Vencimiento hasta</label>
+        <input type="date" id="filtroHasta"/>
+      </div>
+      <button class="btn btn-primary" onclick="loadFacturas()">🔍 Filtrar</button>
+      <button class="btn btn-secondary" onclick="clearFiltros()">✕ Limpiar</button>
+      <span id="factCount" class="tag" style="align-self:center"></span>
+    </div>
+    <div class="table-wrap" id="tFact"><div class="empty"><div class="icon">📄</div>Sube facturas o aplica un filtro</div></div>
+  </div>
+</div>
+
+<!-- ========== VENCIMIENTOS ========== -->
+<div class="tab" id="tab-vencimientos">
+
+  <div class="card">
+    <div id="venc-header">
+    <h2>🗓️ Gestión de Vencimientos</h2>
+
+    <!-- Semáforo resumen -->
+    <div class="resumen-venc" id="resumenVenc">
+      <div class="rv-chip rv-all activo" onclick="filtrarSemaforo('todos',this)">📋 Todas <span id="cnt-todos">0</span></div>
+      <div class="rv-chip rv-vencida" onclick="filtrarSemaforo('vencida',this)">🔴 Vencidas <span id="cnt-vencida">0</span></div>
+      <div class="rv-chip rv-hoy" onclick="filtrarSemaforo('hoy',this)">🟡 Vence hoy <span id="cnt-hoy">0</span></div>
+      <div class="rv-chip rv-pronto" onclick="filtrarSemaforo('pronto',this)">🟠 1–7 días <span id="cnt-pronto">0</span></div>
+      <div class="rv-chip rv-normal" onclick="filtrarSemaforo('normal',this)">🟢 8–30 días <span id="cnt-normal">0</span></div>
+      <div class="rv-chip rv-lejana" onclick="filtrarSemaforo('lejana',this)">🔵 +30 días <span id="cnt-lejana">0</span></div>
+    </div>
+
+    <!-- Toolbar filtros -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div class="form-group" style="margin:0;flex:1;min-width:160px">
+          <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">📅 Vencimiento desde</label>
+          <input type="date" id="vFiltDesde" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:2px solid #9333ea;border-radius:8px;font-size:14px"/>
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:160px">
+          <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">📅 Vencimiento hasta</label>
+          <input type="date" id="vFiltHasta" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:2px solid #9333ea;border-radius:8px;font-size:14px"/>
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:160px">
+          <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">🏢 Proveedor</label>
+          <select id="vFiltProv" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
+            <option value="">— Todos —</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:130px">
+          <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">Estado</label>
+          <select id="vFiltEstado" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
+            <option value="">Todos</option>
+            <option value="pendiente" selected>Pendiente</option>
+            <option value="procesado">Procesado</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:140px">
+          <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">🔍 Buscar</label>
+          <input type="text" id="vBuscar" placeholder="Nº factura..." oninput="filtrarTablaVenc()" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px"/>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:2px">
+          <button class="btn btn-secondary" onclick="limpiarFiltrosVenc()" style="white-space:nowrap">✕ Limpiar</button>
+          <button class="btn btn-secondary" onclick="loadVencimientos()" style="white-space:nowrap">🔄</button>
+          <button class="btn btn-success" onclick="exportarSeleccionadas()" style="white-space:nowrap">💾 Exportar</button>
+          <button class="btn btn-secondary" onclick="recalcularDescuentoProveedor()" style="white-space:nowrap;background:#f59e0b;color:#fff;border-color:#f59e0b" title="Recalcula el descuento de las facturas pendientes del proveedor seleccionado con el % actual registrado">🔁 Recalcular Dto.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra acción masiva -->
+    <div class="bulk-bar" id="bulkBar">
+      <span id="bulkCount" style="font-size:13px;font-weight:600">0 seleccionadas</span>
+      <button class="btn btn-success" style="padding:6px 12px;font-size:12px" onclick="bulkIncluir(true)">✅ Marcar para pago</button>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="bulkIncluir(false)">❌ Excluir de pago</button>
+    </div>
+
+    <!-- Totales rápidos -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px" id="vTotales"></div>
+    </div><!-- /venc-header -->
+
+    <!-- Resumen totales vencimientos — STICKY -->
+    <div id="vResumenBar" class="venc-resumen-bar">
+      <div class="venc-res-card vrc-total">
+        <span class="vrc-label">📋 Facturas filtradas</span>
+        <span class="vrc-value" id="vrc-cnt">—</span>
+      </div>
+      <div class="venc-res-card vrc-pagar">
+        <span class="vrc-label">✅ Total a pagar</span>
+        <span class="vrc-value" id="vrc-pagar">—</span>
+        <span style="font-size:11px;opacity:.8" id="vrc-pagar-cnt"></span>
+      </div>
+      <div class="venc-res-card vrc-excluido">
+        <span class="vrc-label">❌ Sin seleccionar</span>
+        <span class="vrc-value" id="vrc-excl">—</span>
+        <span style="font-size:11px;opacity:.8" id="vrc-excl-cnt"></span>
+      </div>
+      <div class="venc-res-card vrc-fondos">
+        <span class="vrc-label">💰 Fondos disponibles</span>
+        <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px">
+          <div class="vrc-fondos-row"><span>Recursos totales</span><span id="vf-recursos">—</span></div>
+          <div class="vrc-fondos-row"><span>Gastos semana</span><span id="vf-gastos">—</span></div>
+          <div class="vrc-fondos-row"><span>Disponible</span><span id="vf-disponible">—</span></div>
+          <div class="vrc-fondos-row"><span>Seleccionado a pagar</span><span id="vf-apagar">—</span></div>
+          <div class="vrc-fondos-row" id="vf-saldo-row"><span>Saldo final</span><span id="vf-saldo">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla scrollable -->
+    <div id="venc-body">
+      <table id="tablaVenc">
+        <thead>
+          <tr>
+            <th class="sc1"><input type="checkbox" id="chkAll" onchange="selAllVenc(this.checked)" title="Seleccionar todas"/></th>
+            <th class="sc2">💰 Pagar</th>
+            <th class="sc3">💡</th>
+            <th class="sc4" onclick="sortVenc('numero_factura')" style="cursor:pointer">Factura ↕</th>
+            <th class="sc5" onclick="sortVenc('proveedor_nombre')" style="cursor:pointer">Proveedor ↕</th>
+            <th>NIT</th>
+            <th onclick="sortVenc('fecha_factura')" style="cursor:pointer">F. Factura ↕</th>
+            <th onclick="sortVenc('fecha_vencimiento')" style="cursor:pointer">F. Vencimiento ↕</th>
+            <th onclick="sortVenc('dias_para_vencer')" style="cursor:pointer">Días para vencer ↕</th>
+            <th onclick="sortVenc('dias_sistema')" style="cursor:pointer">Días en sistema ↕</th>
+            <th onclick="sortVenc('valor_factura')" style="cursor:pointer">Valor Factura ↕</th>
+            <th>Descuento</th>
+            <th>Flete</th>
+            <th onclick="sortVenc('valor_final')" style="cursor:pointer">Total Final ↕</th>
+            <th>Origen</th>
+            <th>Banco</th>
+            <th>Cuenta</th>
+            <th>Titular</th>
+            <th>ID Titular</th>
+            <th>Estado</th>
+            <th>Notas</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyVenc">
+          <tr><td colspan="19" class="empty"><div class="icon">🗓️</div>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div><!-- /venc-body -->
+
+  </div>
+</div>
+
+<!-- ========== MENSAJES & BOT ========== -->
+<div class="tab" id="tab-mensajes">
+  <div class="card">
+    <h2>📅 Configurar Pago</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Fecha de pago a informar</label>
+        <input type="date" id="fechaPagoMsg"/>
+      </div>
+      <div class="form-group">
+        <label>Modo de envío</label>
+        <select id="modoMsg">
+          <option value="false">Generar y enviar</option>
+          <option value="true">Solo previsualizar</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELECTOR DE PROVEEDORES -->
+  <div class="card">
+    <h2>🏢 Seleccionar Proveedores a Pagar</h2>
+
+    <!-- Filtro por vencimiento para el selector -->
+    <div class="filters" style="margin-bottom:12px">
+      <div class="form-group">
+        <label>Facturas con vencimiento hasta</label>
+        <input type="date" id="filtroMsgHasta"/>
+      </div>
+      <button class="btn btn-secondary" onclick="loadSelectorProveedores()">🔄 Cargar</button>
+    </div>
+
+    <div class="sel-controls">
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="selAll(true)">✓ Todos</button>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="selAll(false)">✗ Ninguno</button>
+      <span id="selCount">0 seleccionados</span>
+    </div>
+    <div class="prov-selector" id="provSelector">
+      <div class="empty"><div class="icon">🏢</div>Carga los proveedores con el filtro de arriba</div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-warning" id="btnGenMsg" onclick="generarMensajes()">✨ Generar Mensajes con IA</button>
+    </div>
+    <p style="font-size:11px;color:#888;margin-top:6px">⚠️ Requiere CLAUDE_API_KEY en .env</p>
+    <div class="result-box" id="rMensajes"></div>
+  </div>
+
+  <!-- PREVIEW MENSAJES -->
+  <div class="card" id="msgPreviewCard" style="display:none">
+    <h2>💬 Mensajes Generados</h2>
+    <div id="msgPreview"></div>
+  </div>
+
+  <!-- BOT: RESPONDER A PROVEEDOR -->
+  <div class="card">
+    <h2>🤖 Bot — Responder a Proveedor</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:14px">Escribe la respuesta que envió el proveedor. El bot la analiza, compara valores y responde automáticamente. Si el proveedor informa un valor <strong>menor</strong>, se aplica ese valor.</p>
+    <div class="form-group">
+      <label>Seleccionar proveedor</label>
+      <select id="chatProv"><option value="">— Selecciona un proveedor —</option></select>
+    </div>
+    <div class="chat-area" id="chatArea">
+      <div style="text-align:center;color:#aaa;font-size:12px;margin:auto">Selecciona un proveedor y escribe su respuesta</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Escribe la respuesta del proveedor..." onkeypress="if(event.key==='Enter')enviarRespuesta()"/>
+      <button class="btn btn-info" id="btnChat" onclick="enviarRespuesta()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== IMÁGENES IA ========== -->
+<div class="tab" id="tab-imagenes">
+  <div class="card">
+    <h2>🖼️ Analizar Imagen del Proveedor con IA</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:16px">El proveedor envía una foto de su liquidación mostrando descuentos y flete. La IA extrae los valores automáticamente y los puede aplicar a las facturas.</p>
+
+    <div class="form-group" style="max-width:300px">
+      <label>Proveedor (opcional — para aplicar valores)</label>
+      <select id="imgProv"><option value="">— Sin asignar —</option></select>
+    </div>
+
+    <div class="upload-zone" id="zimg" onclick="document.getElementById('fimg').click()">
+      <div class="icon">📸</div>
+      <p><strong>Clic o arrastra</strong> la imagen de la liquidación</p>
+      <small>JPG, PNG, WEBP — máx 5MB</small>
+      <input type="file" id="fimg" accept="image/*" onchange="previsualizarImagen(this)"/>
+    </div>
+    <img id="imgPreview" class="img-preview"/>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="btnAnalizarImg" onclick="analizarImagen(false)" disabled>🤖 Analizar con IA</button>
+      <button class="btn btn-success" id="btnAplicarImg" onclick="analizarImagen(true)" disabled>✅ Analizar y Aplicar</button>
+    </div>
+    <p style="font-size:11px;color:#888;margin-top:6px">"Aplicar" actualiza automáticamente las facturas del proveedor con los valores de la imagen</p>
+    <div class="result-box" id="rImg"></div>
+  </div>
+
+  <div class="card" id="analisisCard" style="display:none">
+    <h2>📊 Resultado del Análisis</h2>
+    <div id="analisisContent"></div>
+  </div>
+</div>
+
+<!-- ========== FONDOS ========== -->
+<div class="tab" id="tab-fondos">
+
+  <!-- RECURSOS DISPONIBLES -->
+  <div class="card">
+    <h2>💰 Recursos Disponibles</h2>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="background:#f1f5f9">
+          <th style="padding:10px;text-align:left">Cuenta</th>
+          <th style="padding:10px;text-align:right;width:220px">Saldo Disponible</th>
+        </tr>
+      </thead>
+      <tbody id="tblCuentas"></tbody>
+      <tfoot>
+        <tr style="background:#0f172a;color:#fff;font-weight:700">
+          <td style="padding:12px">TOTAL RECURSOS</td>
+          <td style="padding:12px;text-align:right;font-size:18px" id="totalRecursos">$0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- GASTOS ESTIMADOS SEMANA -->
+  <div class="card" style="margin-top:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2 style="margin:0">📋 Gastos Estimados de la Semana</h2>
+      <button class="btn btn-secondary" onclick="addGasto()">+ Agregar</button>
+    </div>
+    <table style="width:100%;border-collapse:collapse" id="tblGastos">
+      <thead>
+        <tr style="background:#f1f5f9">
+          <th style="padding:10px;text-align:left">Categoría</th>
+          <th style="padding:10px;text-align:left">Descripción</th>
+          <th style="padding:10px;text-align:right;width:180px">Valor</th>
+          <th style="padding:10px;width:50px"></th>
+        </tr>
+      </thead>
+      <tbody id="bodyGastos"></tbody>
+      <tfoot>
+        <tr style="background:#fef3c7;font-weight:700">
+          <td style="padding:12px" colspan="2">TOTAL GASTOS SEMANA</td>
+          <td style="padding:12px;text-align:right;font-size:16px" id="totalGastos">$0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- RESUMEN PLAN DE PAGOS -->
+  <div class="card" style="margin-top:16px" id="cardResumenFondos">
+    <h2>📊 Resumen Plan de Pagos</h2>
+    <div style="display:grid;gap:12px;max-width:560px">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">
+        <span style="font-size:15px;color:#64748b">💰 Total Recursos Disponibles</span>
+        <span style="font-size:18px;font-weight:700;color:#0f172a" id="rTotalRecursos">$0</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#fff7ed;border-radius:10px;border:1px solid #fed7aa">
+        <span style="font-size:15px;color:#64748b">📋 − Gastos Estimados Semana</span>
+        <span style="font-size:18px;font-weight:700;color:#ea580c" id="rTotalGastos">$0</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#f0fdf4;border-radius:10px;border:2px solid #86efac">
+        <span style="font-size:15px;font-weight:600;color:#166534">= Disponible para Pagos</span>
+        <span style="font-size:20px;font-weight:800;color:#166534" id="rSaldoNeto">$0</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#fef2f2;border-radius:10px;border:1px solid #fecaca">
+        <span style="font-size:15px;color:#64748b">🧾 − Pago a Proveedores (marcados)</span>
+        <span style="font-size:18px;font-weight:700;color:#dc2626" id="rTotalAPagar">$0</span>
+      </div>
+
+      <div id="rSaldoFinalBox" style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-radius:12px;border:2px solid #ccc">
+        <span style="font-size:16px;font-weight:700" id="rSaldoFinalLabel">= Saldo Final</span>
+        <span style="font-size:22px;font-weight:900" id="rSaldoFinal">$0</span>
+      </div>
+
+      <div id="alertaFondos" style="display:none;padding:14px 18px;border-radius:10px;border:2px solid #dc2626;background:#fef2f2;color:#dc2626;font-weight:700;font-size:15px;text-align:center">
+        ⚠️ FONDOS INSUFICIENTES — No se puede generar el plan de pagos
+      </div>
+
+      <div id="okFondos" style="display:none;padding:14px 18px;border-radius:10px;border:2px solid #16a34a;background:#f0fdf4;color:#166534;font-weight:700;font-size:15px;text-align:center">
+        ✅ Fondos suficientes para realizar los pagos
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <button class="btn btn-success" id="btnGenerarPlan" onclick="irAPagos()" style="font-size:15px;padding:12px 28px">
+        💳 Generar Plan de Pagos
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGOS ========== -->
+<div class="tab" id="tab-pagos">
+  <div class="card">
+    <h2>💳 Generar Archivo de Pagos Excel</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:14px">Genera el Excel consolidado con todos los proveedores y facturas pendientes. Los valores ya ajustados (por proveedor o imagen IA) se reflejan automáticamente.</p>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Fecha de pago</label>
+        <input type="date" id="fechaPagoXls"/>
+      </div>
+    </div>
+    <button class="btn btn-success" id="btnPagos" onclick="generarPagos()">💾 Generar Excel de Pagos</button>
+    <div class="result-box" id="rPagos"></div>
+  </div>
+  <div class="card">
+    <h2>📋 Historial de pagos generados</h2>
+    <button class="btn btn-secondary" onclick="loadPagosHist()" style="margin-bottom:12px">🔄 Actualizar</button>
+    <div class="table-wrap" id="tPagos"><div class="empty"><div class="icon">💳</div>Sin pagos generados</div></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ==================== GLOBALS ====================
+let proveedoresData = [];
+
+// ==================== TABS ====================
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'proveedores') loadProveedores();
+  if (name === 'facturas') loadFacturas();
+  if (name === 'mensajes') { loadSelectorProveedores(); loadChatProvSelect(); }
+  if (name === 'imagenes') loadImgProvSelect();
+  if (name === 'pagos') loadPagosHist();
+  if (name === 'vencimientos') { adjustVencHeight(); initVencProvSelect(); loadVencimientos(); }
+  if (name === 'fondos') loadFondos();
+}
+
+// ==================== STATUS ====================
+async function checkStatus() {
+  try {
+    await fetch('/proveedores');
+    document.getElementById('statusBadge').textContent = '● En línea';
+  } catch(e) {
+    document.getElementById('statusBadge').textContent = '● Sin conexión';
+    document.getElementById('statusBadge').style.color = '#ef4444';
+    document.getElementById('statusBadge').style.borderColor = '#ef4444';
+    document.getElementById('statusBadge').style.background = 'rgba(239,68,68,.1)';
+  }
+  loadDashboard();
+}
+
+// ==================== DASHBOARD ====================
+async function loadDashboard() {
+  try {
+    const [pR, fR, mR, agR, vR] = await Promise.all([
+      fetch('/proveedores').then(r=>r.json()),
+      fetch('/facturas').then(r=>r.json()),
+      fetch('/mensajes/historial').then(r=>r.json()),
+      fetch('/facturas/agrupadas?estado=pendiente').then(r=>r.json()),
+      fetch('/facturas/vencimientos?estado=pendiente').then(r=>r.json()),
+    ]);
+    document.getElementById('s-prov').textContent = pR.total || 0;
+    document.getElementById('s-fact').textContent = fR.total || 0;
+    document.getElementById('s-msg').textContent = mR.total || 0;
+    const total = (fR.facturas||[]).reduce((s,f)=>s+(f.valor_final||0),0);
+    document.getElementById('s-total').textContent = cop(total);
+
+    renderFlujoCaja(vR.facturas || []);
+    renderDeudaProveedores(agR.agrupadas || []);
+  } catch(e) { console.error(e); }
+}
+
+function semanaLunes(fecha) {
+  const d = new Date(fecha);
+  d.setHours(0,0,0,0);
+  const dia = d.getDay();
+  d.setDate(d.getDate() - (dia === 0 ? 6 : dia - 1));
+  return d;
+}
+
+function renderFlujoCaja(facturas) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const lunesHoy = semanaLunes(hoy);
+
+  const semanas = Array.from({length:4}, (_,i) => {
+    const ini = new Date(lunesHoy); ini.setDate(ini.getDate() + i*7);
+    const fin = new Date(ini); fin.setDate(fin.getDate() + 6);
+    return { ini, fin, total:0, descuento:0, cnt:0 };
+  });
+  const vencidas = { total:0, descuento:0, cnt:0 };
+
+  for (const f of facturas) {
+    if (!f.fecha_vencimiento) continue;
+    const fv = new Date(f.fecha_vencimiento + 'T00:00:00');
+    if (fv < semanas[0].ini) {
+      vencidas.total += f.valor_final||0; vencidas.descuento += f.descuento_pronto_pago||0; vencidas.cnt++;
+    } else {
+      for (const s of semanas) {
+        if (fv >= s.ini && fv <= s.fin) { s.total += f.valor_final||0; s.descuento += f.descuento_pronto_pago||0; s.cnt++; break; }
+      }
+    }
+  }
+
+  const fmt = d => d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
+  const colores = ['#9333ea','#2563eb','#059669','#d97706'];
+  const etiquetas = ['Esta semana','Próxima semana','Semana 3','Semana 4'];
+
+  let h = '<div style="display:flex;flex-direction:column;gap:10px">';
+
+  if (vencidas.cnt > 0) {
+    h += `<div style="display:flex;align-items:center;gap:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px">
+      <span style="font-size:20px">🔴</span>
+      <div style="flex:1">
+        <div style="font-weight:700;color:#dc2626;font-size:13px">VENCIDAS — ${vencidas.cnt} factura(s)</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px">Pago urgente requerido</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;color:#dc2626;font-size:15px">${cop(vencidas.total)}</div>
+        <div style="font-size:11px;color:#10b981">Dto: ${cop(vencidas.descuento)}</div>
+      </div>
+    </div>`;
+  }
+
+  semanas.forEach((s,i) => {
+    const bg = s.cnt === 0 ? '#f9fafb' : '#faf5ff';
+    const border = s.cnt === 0 ? '#e5e7eb' : colores[i]+'44';
+    const textColor = s.cnt === 0 ? '#9ca3af' : colores[i];
+    h += `<div style="display:flex;align-items:center;gap:12px;background:${bg};border:1px solid ${border};border-radius:10px;padding:12px 16px">
+      <div style="width:10px;height:40px;background:${textColor};border-radius:5px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-weight:700;color:${textColor};font-size:13px">${etiquetas[i]}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px">${fmt(s.ini)} – ${fmt(s.fin)} · ${s.cnt} factura(s)</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;color:${s.cnt>0?'#111827':'#d1d5db'};font-size:15px">${s.cnt>0?cop(s.total):'—'}</div>
+        ${s.descuento>0?`<div style="font-size:11px;color:#10b981">Dto: ${cop(s.descuento)}</div>`:''}
+      </div>
+    </div>`;
+  });
+
+  const totalGen = semanas.reduce((a,s)=>a+s.total,0) + vencidas.total;
+  const dtoGen = semanas.reduce((a,s)=>a+s.descuento,0) + vencidas.descuento;
+  h += `<div style="display:flex;justify-content:flex-end;gap:24px;padding:8px 16px 0;border-top:1px solid #e5e7eb;margin-top:4px">
+    <span style="font-size:13px;color:#6b7280">Total deuda: <strong style="color:#111827">${cop(totalGen)}</strong></span>
+    <span style="font-size:13px;color:#6b7280">Total descuentos: <strong style="color:#10b981">${cop(dtoGen)}</strong></span>
+  </div>`;
+  h += '</div>';
+  document.getElementById('dashFlujoCaja').innerHTML = h;
+}
+
+function renderDeudaProveedores(agrupadas) {
+  const sorted = [...agrupadas].sort((a,b)=>(b.total_valor_final||0)-(a.total_valor_final||0));
+  if (!sorted.length) { document.getElementById('dashDeuda').innerHTML='<div class="empty"><div class="icon">📄</div>Sin facturas</div>'; return; }
+  const totalDeuda = sorted.reduce((s,r)=>s+(r.total_valor_final||0),0);
+  let h = '<div style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto">';
+  sorted.forEach((r,i) => {
+    const pct = totalDeuda > 0 ? ((r.total_valor_final/totalDeuda)*100).toFixed(0) : 0;
+    h += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#f9fafb;border-radius:8px">
+      <span style="font-size:11px;font-weight:700;color:#9ca3af;width:18px;text-align:right;flex-shrink:0">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:12px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.proveedor_nombre||r.proveedor_nit}</div>
+        <div style="height:4px;background:#e5e7eb;border-radius:2px;margin-top:4px"><div style="height:4px;background:#9333ea;border-radius:2px;width:${pct}%"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-weight:700;color:#9333ea;font-size:13px">${cop(r.total_valor_final)}</div>
+        <div style="font-size:10px;color:#9ca3af">${r.cantidad_facturas} fact. · ${pct}%</div>
+      </div>
+    </div>`;
+  });
+  h += '</div>';
+  document.getElementById('dashDeuda').innerHTML = h;
+}
+
+// ==================== UPLOAD EXCEL ====================
+function uploadExcel(tipo, inputId, resultId) {
+  const file = document.getElementById(inputId).files[0];
+  if (!file) return;
+  showResult(resultId, 'info', `⏳ Procesando ${file.name}...`);
+  const fd = new FormData();
+  fd.append('archivo', file);
+  fetch(`/${tipo}/upload`, {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if (d.error) { showResult(resultId,'error','❌ '+d.error); return; }
+      let msg = `✅ ${d.mensaje}`;
+      if (d.errores?.length) msg += `\n⚠️ ${d.errores.length} errores:\n` + d.errores.slice(0,3).join('\n');
+      if (d.diagnostico?.advertencias?.length) {
+        msg += `\n\n🔍 Columnas detectadas: ${d.diagnostico.columnas_excel.join(', ')}`;
+        msg += `\n⚠️ Columnas no encontradas:\n` + d.diagnostico.advertencias.join('\n');
+      }
+      showResult(resultId,'success',msg);
+      loadDashboard();
+      if (tipo==='proveedores') loadProveedores();
+      if (tipo==='facturas') loadFacturas();
+    })
+    .catch(e=>showResult(resultId,'error','❌ '+e.message));
+}
+
+// Drag & drop
+['zprov','zfact','zimg'].forEach(id=>{
+  const z = document.getElementById(id);
+  if (!z) return;
+  z.addEventListener('dragover', e=>{e.preventDefault();z.classList.add('drag')});
+  z.addEventListener('dragleave', ()=>z.classList.remove('drag'));
+  z.addEventListener('drop', e=>{
+    e.preventDefault(); z.classList.remove('drag');
+    const inp = z.querySelector('input[type=file]');
+    if (e.dataTransfer.files[0]) {
+      const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+      inp.files = dt.files; inp.dispatchEvent(new Event('change'));
+    }
+  });
+});
+
+// ==================== PROVEEDORES ====================
+async function loadProveedores() {
+  const r = await fetch('/proveedores').then(r=>r.json());
+  proveedoresData = r.proveedores || [];
+  if (!proveedoresData.length) { document.getElementById('tProv').innerHTML='<div class="empty"><div class="icon">🏢</div>Sin proveedores</div>'; return; }
+  let h = `<table><thead><tr>
+    <th>Nombre</th><th>NIT</th><th>Teléfono</th><th>Ciudad</th>
+    <th>Banco</th><th>Cuenta</th><th>Tipo</th><th>Titular</th><th>ID Titular</th>
+    <th>Desc. Cacharro</th><th>Desc. Joyería</th><th>Activo</th><th>Acciones</th>
+  </tr></thead><tbody>`;
+  proveedoresData.forEach(p=>{
+    const tieneJoyeria = p.descuento_joyeria != null;
+    const dCach = p.descuento_cacharro ? (p.descuento_cacharro*100).toFixed(0)+'%' : '0%';
+    const dJoy  = tieneJoyeria ? (p.descuento_joyeria*100).toFixed(0)+'%' : '—';
+    const selector = tieneJoyeria
+      ? `<select onchange="cambiarDescuento('${p.nit}',this.value)" style="padding:3px 6px;border-radius:6px;border:1px solid #ddd;font-size:12px;background:#fff">
+          <option value="cacharro" ${p.descuento_activo==='cacharro'?'selected':''}>Cacharro ${dCach}</option>
+          <option value="joyeria"  ${p.descuento_activo==='joyeria'?'selected':''}>Joyería ${dJoy}</option>
+         </select>`
+      : `<span style="font-size:11px;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:10px">Cacharro</span>`;
+    h+=`<tr id="row-${p.nit}">
+      <td><strong>${p.nombre}</strong></td>
+      <td style="font-size:11px;color:#64748b">${p.nit}</td>
+      <td>${p.telefono?`<a href="https://wa.me/${p.telefono}" target="_blank" style="color:#25d366;text-decoration:none">📱 ${p.telefono}</a>`:'<span style="color:#ccc">—</span>'}</td>
+      <td style="font-size:12px">${p.ciudad||'—'}</td>
+      <td>${p.banco||'<span style="color:#ccc">—</span>'}</td>
+      <td style="font-size:12px">${p.cuenta||'<span style="color:#ccc">—</span>'}</td>
+      <td style="font-size:12px">${p.tipo_cuenta||'—'}</td>
+      <td style="font-size:12px">${p.titular_nombre||'<span style="color:#f59e0b;font-size:10px">⚠️ Falta</span>'}</td>
+      <td style="font-size:12px">${p.titular_id||'<span style="color:#f59e0b;font-size:10px">⚠️ Falta</span>'}</td>
+      <td style="color:#10b981;font-weight:600">${dCach}</td>
+      <td style="color:#6366f1;font-weight:600">${dJoy}</td>
+      <td>${selector}</td>
+      <td><button class="btn btn-secondary" style="padding:3px 8px;font-size:11px" onclick="editarProveedor('${p.nit}')">✏️ Editar</button></td>
+    </tr>`;
+  });
+  h+='</tbody></table>';
+  document.getElementById('tProv').innerHTML = h;
+}
+
+async function cambiarDescuento(nit, valor) {
+  await fetch(`/proveedores/${nit}/descuento`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({descuento_activo: valor})
+  });
+}
+
+function editarProveedor(nit) {
+  const p = proveedoresData.find(x=>x.nit===nit);
+  if (!p) return;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `<div style="background:#fff;border-radius:12px;padding:28px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 16px">✏️ Editar Proveedor</h3>
+    <div style="display:grid;gap:10px">
+      <label style="font-size:12px;font-weight:600">Nombre<input id="ep-nombre" value="${p.nombre||''}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">NIT <span style="color:#aaa;font-weight:400">(no editable)</span><input value="${p.nit}" disabled style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #eee;border-radius:6px;font-size:13px;background:#f9f9f9"/></label>
+      <label style="font-size:12px;font-weight:600">Teléfono<input id="ep-tel" value="${p.telefono||''}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Ciudad<input id="ep-ciudad" value="${p.ciudad||''}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Dirección<input id="ep-dir" value="${p.direccion||''}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 12px;font-size:11px;color:#b45309;margin-bottom:2px">
+        ⚠️ <strong>Datos bancarios requeridos para pago:</strong> banco, cuenta, tipo, nombre y cédula del titular
+      </div>
+      <label style="font-size:12px;font-weight:600">Banco<input id="ep-banco" value="${p.banco||''}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Número de cuenta<input id="ep-cuenta" value="${p.cuenta||''}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Tipo cuenta
+        <select id="ep-tipo" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+          <option value="">— Seleccionar —</option>
+          <option value="Ahorros" ${p.tipo_cuenta==='Ahorros'?'selected':''}>Ahorros</option>
+          <option value="Corriente" ${p.tipo_cuenta==='Corriente'?'selected':''}>Corriente</option>
+        </select>
+      </label>
+      <label style="font-size:12px;font-weight:600;color:#b45309">Nombre titular de la cuenta ⚠️<input id="ep-titular-nombre" value="${p.titular_nombre||''}" placeholder="Nombre completo del titular" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ffe082;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600;color:#b45309">Cédula / ID del titular ⚠️<input id="ep-titular-id" value="${p.titular_id||''}" placeholder="Número de identificación del titular" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ffe082;border-radius:6px;font-size:13px"/></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label style="font-size:12px;font-weight:600">Descuento Cacharro %<input id="ep-dcach" type="number" min="0" max="100" step="0.1" value="${p.descuento_cacharro!=null?(p.descuento_cacharro*100).toFixed(1):0}" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+        <label style="font-size:12px;font-weight:600">Descuento Joyería %<input id="ep-djoy" type="number" min="0" max="100" step="0.1" value="${p.descuento_joyeria!=null?(p.descuento_joyeria*100).toFixed(1):''}" placeholder="Opcional" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarProveedor('${p.nit}',this.closest('div[style*=fixed]'))">💾 Guardar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function guardarProveedor(nit, modal) {
+  const dCach = parseFloat(document.getElementById('ep-dcach').value||0)/100;
+  const dJoyVal = document.getElementById('ep-djoy').value.trim();
+  const dJoy = dJoyVal !== '' ? parseFloat(dJoyVal)/100 : null;
+  const body = {
+    nombre: document.getElementById('ep-nombre').value.trim(),
+    telefono: document.getElementById('ep-tel').value.trim()||null,
+    ciudad: document.getElementById('ep-ciudad').value.trim()||null,
+    direccion: document.getElementById('ep-dir').value.trim()||null,
+    banco: document.getElementById('ep-banco').value.trim(),
+    cuenta: document.getElementById('ep-cuenta').value.trim(),
+    tipo_cuenta: document.getElementById('ep-tipo').value,
+    titular_nombre: document.getElementById('ep-titular-nombre').value.trim()||null,
+    titular_id: document.getElementById('ep-titular-id').value.trim()||null,
+    descuento_cacharro: dCach,
+    descuento_joyeria: dJoy,
+    descuento_activo: dJoy != null ? 'cacharro' : 'cacharro',
+  };
+  const r = await fetch(`/proveedores/${nit}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+  }).then(r=>r.json());
+  if (r.error) { alert('Error: '+r.error); return; }
+  modal.remove();
+  loadProveedores();
+}
+
+// ==================== FACTURAS ====================
+async function loadFacturas() {
+  const desde = document.getElementById('filtroDesde').value;
+  const hasta = document.getElementById('filtroHasta').value;
+  let url = '/facturas?estado=pendiente';
+  if (desde) url += `&vencimiento_desde=${desde}`;
+  if (hasta) url += `&vencimiento_hasta=${hasta}`;
+  const r = await fetch(url).then(r=>r.json());
+  const facts = r.facturas || [];
+  document.getElementById('factCount').textContent = `${facts.length} facturas`;
+  if (!facts.length) { document.getElementById('tFact').innerHTML='<div class="empty"><div class="icon">📄</div>Sin facturas en ese rango</div>'; return; }
+  let h = '<table><thead><tr><th>Factura</th><th>Proveedor</th><th>Valor</th><th>Descuento</th><th>Flete</th><th>Total Final</th><th>Vencimiento</th><th>Origen</th></tr></thead><tbody>';
+  facts.forEach(f=>{
+    const origen = f.origen_valor||'calculado';
+    const badge = origen==='proveedor'?'badge-proveedor':origen==='imagen_proveedor'?'badge-imagen':'badge-calculado';
+    h+=`<tr>
+      <td><strong>${f.numero_factura}</strong></td>
+      <td>${f.proveedor_nombre||f.proveedor_nit}</td>
+      <td>${cop(f.valor_factura)}</td>
+      <td style="color:#10b981">-${cop(f.descuento_pronto_pago)}</td>
+      <td>+${cop(f.flete)}</td>
+      <td style="font-weight:700;color:#9333ea">${cop(f.valor_final)}</td>
+      <td style="white-space:nowrap">${f.fecha_vencimiento||'—'}</td>
+      <td><span class="badge ${badge}">${origen}</span></td>
+    </tr>`;
+  });
+  h+='</tbody></table>';
+  document.getElementById('tFact').innerHTML = h;
+}
+
+function clearFiltros() {
+  document.getElementById('filtroDesde').value = '';
+  document.getElementById('filtroHasta').value = '';
+  loadFacturas();
+}
+
+// ==================== SELECTOR DE PROVEEDORES ====================
+async function loadSelectorProveedores() {
+  const hasta = document.getElementById('filtroMsgHasta').value;
+  // Solo muestra proveedores con facturas marcadas para pago (incluir_pago=1)
+  let url = '/facturas/agrupadas?estado=pendiente&solo_incluir=1';
+  if (hasta) url += `&vencimiento_hasta=${hasta}`;
+  const r = await fetch(url).then(r=>r.json());
+  const ag = r.agrupadas || [];
+
+  if (!ag.length) {
+    document.getElementById('provSelector').innerHTML = '<div class="empty"><div class="icon">🏢</div>No hay facturas pendientes con ese filtro</div>';
+    updateSelCount();
+    return;
+  }
+
+  // Obtener teléfonos
+  const provR = await fetch('/proveedores').then(r=>r.json());
+  const telMap = {};
+  (provR.proveedores||[]).forEach(p=>{ telMap[p.nit]=p.telefono; });
+
+  let h = '';
+  ag.sort((a,b)=>(a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||'')).forEach(p=>{
+    const tel = telMap[p.proveedor_nit] || null;
+    h+=`<div class="prov-row" id="prow-${p.proveedor_nit}" onclick="toggleProv('${p.proveedor_nit}')">
+      <input type="checkbox" id="chk-${p.proveedor_nit}" value="${p.proveedor_nit}" onchange="updateSelCount()" onclick="event.stopPropagation()"/>
+      <div class="prov-info">
+        <div class="prov-name">${p.proveedor_nombre||p.proveedor_nit}</div>
+        <div class="prov-meta">NIT: ${p.proveedor_nit} · ${p.cantidad_facturas} factura(s) · Vence: ${p.ultima_vencimiento||'—'}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="prov-total">${cop(p.total_valor_final)}</div>
+        <div class="prov-phone">${tel?'📱 '+tel:'⚠️ Sin teléfono'}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('provSelector').innerHTML = h;
+  updateSelCount();
+}
+
+function toggleProv(nit) {
+  const chk = document.getElementById('chk-'+nit);
+  const row = document.getElementById('prow-'+nit);
+  chk.checked = !chk.checked;
+  row.classList.toggle('selected', chk.checked);
+  updateSelCount();
+}
+
+function selAll(val) {
+  document.querySelectorAll('#provSelector input[type=checkbox]').forEach(c=>{
+    c.checked = val;
+    document.getElementById('prow-'+c.value)?.classList.toggle('selected', val);
+  });
+  updateSelCount();
+}
+
+function updateSelCount() {
+  const n = document.querySelectorAll('#provSelector input[type=checkbox]:checked').length;
+  document.getElementById('selCount').textContent = `${n} seleccionado${n!==1?'s':''}`;
+}
+
+function getSelectedNits() {
+  return Array.from(document.querySelectorAll('#provSelector input[type=checkbox]:checked')).map(c=>c.value);
+}
+
+// ==================== GENERAR MENSAJES ====================
+async function generarMensajes() {
+  const nits = getSelectedNits();
+  if (!nits.length) { alert('Selecciona al menos un proveedor'); return; }
+  const btn = document.getElementById('btnGenMsg');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generando con IA...';
+  showResult('rMensajes','info','⏳ Llamando a Claude AI...');
+
+  const body = {
+    fecha_pago: document.getElementById('fechaPagoMsg').value || null,
+    solo_generar: document.getElementById('modoMsg').value === 'true',
+    nits_seleccionados: nits,
+  };
+
+  try {
+    const r = await fetch('/mensajes/generar', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const d = await r.json();
+    if (d.error) { showResult('rMensajes','error','❌ '+d.error); return; }
+
+    showResult('rMensajes','success',
+      `✅ ${d.mensaje}\n📊 Generados: ${d.total_generados||d.total} | Enviados: ${d.total_enviados||0} | Sin teléfono: ${d.sin_telefono||0}`);
+
+    const msgs = d.mensajes || d.detalle || [];
+    if (msgs.length) {
+      let h = '';
+      msgs.forEach(m=>{
+        if (!m.mensaje && !m.exito) return;
+        h+=`<div class="msg-card">
+          <div class="mc-header">
+            <div><div class="mc-name">🏢 ${m.proveedor_nombre||m.proveedor_nit}</div><div class="mc-nit">NIT: ${m.proveedor_nit}</div></div>
+            <div><div class="mc-total">${m.total_pagar?cop(m.total_pagar):''}</div><div style="font-size:11px;color:#888">${m.telefono?'📱 '+m.telefono:'⚠️ Sin teléfono'}</div></div>
+          </div>
+          ${m.mensaje?`<div class="msg-bubble">${esc(m.mensaje)}</div>`:'<div style="color:#ef4444;font-size:12px">❌ Error generando mensaje</div>'}
+        </div>`;
+      });
+      document.getElementById('msgPreview').innerHTML = h;
+      document.getElementById('msgPreviewCard').style.display = 'block';
+    }
+    loadDashboard();
+  } catch(e) { showResult('rMensajes','error','❌ '+e.message); }
+  finally { btn.disabled=false; btn.innerHTML='✨ Generar Mensajes con IA'; }
+}
+
+// ==================== BOT CHAT ====================
+async function loadChatProvSelect() {
+  const r = await fetch('/facturas/agrupadas?estado=pendiente').then(r=>r.json());
+  const sel = document.getElementById('chatProv');
+  sel.innerHTML = '<option value="">— Selecciona un proveedor —</option>';
+  (r.agrupadas||[]).sort((a,b)=>(a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||'')).forEach(p=>{
+    sel.innerHTML += `<option value="${p.proveedor_nit}">${p.proveedor_nombre||p.proveedor_nit} (${p.proveedor_nit})</option>`;
+  });
+}
+
+async function enviarRespuesta() {
+  const nit = document.getElementById('chatProv').value;
+  const txt = document.getElementById('chatInput').value.trim();
+  if (!nit || !txt) { alert('Selecciona proveedor y escribe la respuesta'); return; }
+
+  addChatMsg('prov', txt);
+  document.getElementById('chatInput').value = '';
+
+  const btn = document.getElementById('btnChat');
+  btn.disabled=true; btn.textContent='...';
+
+  try {
+    const r = await fetch('/mensajes/responder', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({proveedor_nit: nit, respuesta_proveedor: txt})
+    });
+    const d = await r.json();
+    if (d.error) { addChatMsg('bot','❌ '+d.error); return; }
+
+    addChatMsg('bot', d.mensaje_bot);
+
+    if (d.actualizacion) {
+      const a = d.actualizacion;
+      addChatMsg('bot',
+        `💰 Valor ajustado:\n• Anterior: ${cop(a.valor_anterior)}\n• Nuevo: ${cop(a.valor_nuevo)}\n• Ahorro: ${cop(a.ahorro)}`
+      );
+      loadDashboard();
+    }
+  } catch(e) { addChatMsg('bot','❌ Error: '+e.message); }
+  finally { btn.disabled=false; btn.textContent='Enviar'; }
+}
+
+function addChatMsg(who, text) {
+  const area = document.getElementById('chatArea');
+  if (area.children.length === 1 && area.children[0].tagName !== 'DIV'.concat('')) {
+    area.innerHTML = '';
+  }
+  // limpiar placeholder
+  if (area.querySelector('div[style]')) area.innerHTML = '';
+  const wrapper = document.createElement('div');
+  const lbl = document.createElement('div');
+  lbl.className = 'chat-label';
+  lbl.textContent = who === 'bot' ? '🤖 MAKABOT' : '🏢 Proveedor';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-msg ' + who;
+  bubble.textContent = text;
+  wrapper.appendChild(lbl);
+  wrapper.appendChild(bubble);
+  area.appendChild(wrapper);
+  area.scrollTop = area.scrollHeight;
+}
+
+// ==================== IMÁGENES IA ====================
+async function loadImgProvSelect() {
+  const r = await fetch('/facturas/agrupadas?estado=pendiente').then(r=>r.json());
+  const sel = document.getElementById('imgProv');
+  sel.innerHTML = '<option value="">— Sin asignar —</option>';
+  (r.agrupadas||[]).sort((a,b)=>(a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||'')).forEach(p=>{
+    sel.innerHTML += `<option value="${p.proveedor_nit}">${p.proveedor_nombre||p.proveedor_nit} (${p.proveedor_nit})</option>`;
+  });
+}
+
+function previsualizarImagen(inp) {
+  const file = inp.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('imgPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('btnAnalizarImg').disabled = false;
+    document.getElementById('btnAplicarImg').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analizarImagen(aplicar) {
+  const file = document.getElementById('fimg').files[0];
+  if (!file) { alert('Selecciona una imagen'); return; }
+
+  const btnId = aplicar ? 'btnAplicarImg' : 'btnAnalizarImg';
+  const btn = document.getElementById(btnId);
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Analizando...';
+  showResult('rImg','info','⏳ IA analizando imagen...');
+
+  const fd = new FormData();
+  fd.append('imagen', file);
+  const nit = document.getElementById('imgProv').value;
+  if (nit) { fd.append('nit_proveedor', nit); fd.append('aplicar_automatico', aplicar ? 'true' : 'false'); }
+
+  try {
+    const r = await fetch('/facturas/analizar-imagen', {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.error) { showResult('rImg','error','❌ '+d.error); return; }
+
+    showResult('rImg','success','✅ Análisis completado');
+
+    // Mostrar resultado
+    const analisis = d.analisis;
+    let h = '';
+    if (analisis.facturas_encontradas?.length) {
+      analisis.facturas_encontradas.forEach((f,i)=>{
+        h+=`<div style="margin-bottom:14px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">
+          <div style="font-weight:700;margin-bottom:8px;font-size:13px">📄 Factura ${f.numero_factura||'#'+(i+1)}</div>
+          <div class="analisis-row"><span>Valor factura</span><span>${f.valor_factura!=null?cop(f.valor_factura):'—'}</span></div>
+          <div class="analisis-row"><span>Descuento</span><span style="color:#10b981">${f.descuento!=null?'-'+cop(f.descuento):'—'}</span></div>
+          <div class="analisis-row"><span>Flete</span><span>${f.flete!=null?cop(f.flete):'—'}</span></div>
+          <div class="analisis-row"><span>Valor neto</span><span>${f.valor_neto!=null?cop(f.valor_neto):'—'}</span></div>
+        </div>`;
+      });
+    }
+    if (analisis.total_imagen) {
+      h+=`<div style="font-weight:700;font-size:14px;color:#9333ea;padding:8px 0">💰 Total imagen: ${cop(analisis.total_imagen)}</div>`;
+    }
+    if (analisis.notas) {
+      h+=`<div style="font-size:12px;color:#666;padding:8px;background:#f0f0f0;border-radius:6px;margin-top:8px">📝 ${analisis.notas}</div>`;
+    }
+    if (d.actualizaciones?.length) {
+      h+=`<div style="margin-top:14px"><strong style="font-size:13px">✅ Facturas actualizadas (${d.actualizaciones.length}):</strong>`;
+      d.actualizaciones.forEach(a=>{
+        h+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #eee">
+          Factura ${a.numero_factura}: ${cop(a.valor_final_anterior)} → <strong style="color:#10b981">${cop(a.valor_final_nuevo)}</strong>
+        </div>`;
+      });
+      h+='</div>';
+      loadDashboard();
+    }
+    document.getElementById('analisisContent').innerHTML = h || '<div class="empty"><div class="icon">🔍</div>No se encontraron datos claros en la imagen</div>';
+    document.getElementById('analisisCard').style.display = 'block';
+  } catch(e) { showResult('rImg','error','❌ '+e.message); }
+  finally { btn.disabled=false; btn.innerHTML = aplicar ? '✅ Analizar y Aplicar' : '🤖 Analizar con IA'; }
+}
+
+// ==================== PAGOS ====================
+async function generarPagos() {
+  const btn = document.getElementById('btnPagos');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generando...';
+  showResult('rPagos','info','⏳ Generando archivo...');
+  const fecha = document.getElementById('fechaPagoXls').value;
+  const url = '/pagos/generar'+(fecha?`?fecha_pago=${fecha}`:'');
+  try {
+    const d = await fetch(url).then(r=>r.json());
+    if (d.error) { showResult('rPagos','error','❌ '+d.error); return; }
+    const el = document.getElementById('rPagos');
+    el.className='result-box show success';
+    el.innerHTML=`<pre>✅ ${d.mensaje}\n📊 ${d.total_proveedores} proveedores | ${d.total_facturas} facturas | 💰 ${cop(d.total_pagar)}</pre>
+    <a href="${d.descargar}" download><button class="btn btn-success" style="margin-top:10px">⬇ Descargar ${d.archivo}</button></a>`;
+    loadPagosHist(); loadDashboard();
+  } catch(e) { showResult('rPagos','error','❌ '+e.message); }
+  finally { btn.disabled=false; btn.innerHTML='💾 Generar Excel de Pagos'; }
+}
+
+async function loadPagosHist() {
+  const r = await fetch('/pagos/historial').then(r=>r.json());
+  const p = r.pagos || [];
+  if (!p.length) { document.getElementById('tPagos').innerHTML='<div class="empty"><div class="icon">💳</div>Sin pagos</div>'; return; }
+  let h = '<table><thead><tr><th>Proveedor</th><th>NIT</th><th>Valor</th><th>Banco</th><th>Cuenta</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>';
+  p.forEach(x=>{
+    h+=`<tr><td>${x.proveedor_nombre||'—'}</td><td>${x.proveedor_nit}</td><td style="font-weight:700;color:#9333ea">${cop(x.valor_pago)}</td><td>${x.banco||'—'}</td><td>${x.cuenta||'—'}</td><td><span class="badge badge-procesado">${x.estado}</span></td><td style="font-size:11px;color:#888">${x.created_at}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  document.getElementById('tPagos').innerHTML = h;
+}
+
+// ==================== HELPERS ====================
+function cop(v) {
+  if (!v && v!==0) return '$0';
+  return '$'+Math.round(v).toLocaleString('es-CO');
+}
+function parseCop(str) {
+  if (!str) return 0;
+  return parseFloat(String(str).replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.')) || 0;
+}
+function showResult(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className='result-box show '+type;
+  el.innerHTML='<pre>'+msg+'</pre>';
+}
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Convierte número serial de Excel a YYYY-MM-DD (para datos ya guardados en BD)
+function fmtFecha(val) {
+  if (!val || val === '0' || val === 0 || val === '') return '—';
+  const n = Number(val);
+  if (!isNaN(n) && n > 36526 && n < 73050) {
+    const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dy = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${dy}`;
+  }
+  return String(val);
+}
+
+// Limpia el nombre del proveedor: quita NIT, teléfono y ciudad si vienen pegados
+function limpiaNombre(nombre) {
+  if (!nombre) return '';
+  // Quita todo lo que viene después de "\" o "|" o "Nit" o "Cels" (común en algunos Excel)
+  return nombre.split(/\\|\/|\|nit|cels|\d{3}\s*\d{3}/i)[0].trim();
+}
+
+// ==================== VENCIMIENTOS ====================
+let vencData = [];        // datos crudos
+let vencFiltro = 'todos'; // semáforo activo
+let vencSort = { col: 'fecha_vencimiento', dir: 1 };
+
+function limpiarFiltrosVenc() {
+  document.getElementById('vFiltDesde').value = '';
+  document.getElementById('vFiltHasta').value = '';
+  document.getElementById('vBuscar').value = '';
+  document.getElementById('vFiltProv').value = '';
+  document.getElementById('vFiltEstado').value = 'pendiente';
+  loadVencimientos();
+}
+
+async function loadVencimientos() {
+  const prov   = document.getElementById('vFiltProv')?.value || '';
+  const estado = document.getElementById('vFiltEstado')?.value || '';
+  const desde  = document.getElementById('vFiltDesde')?.value || '';
+  const hasta  = document.getElementById('vFiltHasta')?.value || '';
+  let url = '/facturas/vencimientos?';
+  if (estado) url += `estado=${estado}&`;
+  if (prov)   url += `proveedor_nit=${prov}&`;
+  if (desde)  url += `vencimiento_desde=${desde}&`;
+  if (hasta)  url += `vencimiento_hasta=${hasta}&`;
+
+  const r = await fetch(url).then(r=>r.json());
+  vencData = r.facturas || [];
+  renderVencimientos();
+  actualizarResumenFondos();
+}
+
+function semaforo(diasParaVencer) {
+  if (diasParaVencer === null || diasParaVencer === undefined || isNaN(diasParaVencer)) return { cls: 'sem-normal', label: 'sin fecha', filtro: 'lejana' };
+  if (diasParaVencer < 0)  return { cls: 'sem-vencida', label: 'VENCIDA',    filtro: 'vencida' };
+  if (diasParaVencer === 0) return { cls: 'sem-hoy',    label: 'HOY',        filtro: 'hoy' };
+  if (diasParaVencer <= 7)  return { cls: 'sem-pronto', label: `${diasParaVencer}d`,  filtro: 'pronto' };
+  if (diasParaVencer <= 30) return { cls: 'sem-normal', label: `${diasParaVencer}d`,  filtro: 'normal' };
+  return { cls: 'sem-lejana', label: `${diasParaVencer}d`, filtro: 'lejana' };
+}
+
+function diasChip(dias, tipo) {
+  if (dias === null || dias === undefined) return '<span style="color:#aaa">—</span>';
+  const map = { vencida:'dias-vencida', hoy:'dias-hoy', pronto:'dias-pronto', normal:'dias-normal', lejana:'dias-lejana' };
+  const cls = map[tipo] || 'dias-normal';
+  return `<span class="dias-chip ${cls}">${tipo==='vencida'?Math.abs(dias)+' atrás':dias+' días'}</span>`;
+}
+
+function renderVencimientos() {
+  const buscar = (document.getElementById('vBuscar')?.value || '').toLowerCase();
+
+  // Contadores semáforo
+  const cnts = { vencida:0, hoy:0, pronto:0, normal:0, lejana:0 };
+  vencData.forEach(f => {
+    const s = semaforo(f.dias_para_vencer);
+    cnts[s.filtro] = (cnts[s.filtro]||0)+1;
+  });
+  document.getElementById('cnt-todos').textContent   = vencData.length;
+  document.getElementById('cnt-vencida').textContent = cnts.vencida;
+  document.getElementById('cnt-hoy').textContent     = cnts.hoy;
+  document.getElementById('cnt-pronto').textContent  = cnts.pronto;
+  document.getElementById('cnt-normal').textContent  = cnts.normal;
+  document.getElementById('cnt-lejana').textContent  = cnts.lejana;
+
+  // Filtrar
+  let rows = vencData.filter(f => {
+    const s = semaforo(f.dias_para_vencer);
+    if (vencFiltro !== 'todos' && s.filtro !== vencFiltro) return false;
+    if (buscar && !`${f.numero_factura} ${f.proveedor_nombre} ${f.proveedor_nit}`.toLowerCase().includes(buscar)) return false;
+    return true;
+  });
+
+  // Ordenar: incluidas primero, excluidas al final; dentro de cada grupo por columna activa
+  rows.sort((a,b) => {
+    const exclA = a.incluir_pago === 0 ? 1 : 0;
+    const exclB = b.incluir_pago === 0 ? 1 : 0;
+    if (exclA !== exclB) return exclA - exclB;
+    let va = a[vencSort.col] ?? '';
+    let vb = b[vencSort.col] ?? '';
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return va < vb ? -vencSort.dir : va > vb ? vencSort.dir : 0;
+  });
+
+  // Totales pie
+  const totalRows     = rows.length;
+  const totalPagar    = rows.filter(f=>f.incluir_pago!==0).reduce((s,f)=>s+f.valor_final,0);
+  const totalExcluido = rows.filter(f=>f.incluir_pago===0).reduce((s,f)=>s+f.valor_final,0);
+  const inclCount     = rows.filter(f=>f.incluir_pago!==0).length;
+  const exclCount     = rows.filter(f=>f.incluir_pago===0).length;
+  document.getElementById('vrc-cnt').textContent    = totalRows + ' facturas';
+  document.getElementById('vrc-pagar').textContent  = cop(totalPagar);
+  document.getElementById('vrc-pagar-cnt').textContent = inclCount + ' factura' + (inclCount!==1?'s':'') + ' seleccionada' + (inclCount!==1?'s':'');
+  document.getElementById('vrc-excl').textContent   = cop(totalExcluido);
+  document.getElementById('vrc-excl-cnt').textContent = exclCount + ' factura' + (exclCount!==1?'s':'') + ' excluida' + (exclCount!==1?'s':'');
+
+  // Renderizar filas
+  let h = '';
+  rows.forEach(f => {
+    const sem    = semaforo(f.dias_para_vencer);
+    const excl   = f.incluir_pago === 0;
+    const origen = f.origen_valor || 'calculado';
+    const obadge = origen==='proveedor'?'badge-proveedor':origen==='imagen_proveedor'?'badge-imagen':'badge-calculado';
+    const estadoBadge = f.estado==='pendiente'?'badge-pendiente':'badge-procesado';
+
+    h += `<tr class="${excl?'row-excluida':'row-incluida'}" id="vrow-${f.id}">
+      <td class="sc1"><input type="checkbox" class="chk-venc chk-pagar" data-id="${f.id}" onchange="onChkVenc()" /></td>
+      <td class="sc2" style="text-align:center">
+        <button class="${excl?'btn-pagar-off':'btn-pagar-on'}" id="btnpagar-${f.id}"
+          onclick="toggleIncluir(${f.id}, ${excl?true:false}, '${f.numero_factura}')">
+          ${excl ? '➕ PAGAR' : '✅ PAGANDO'}
+        </button>
+      </td>
+      <td class="sc3" title="${sem.label}"><span class="semaforo ${sem.cls}"></span></td>
+      <td class="sc4"><strong>${f.numero_factura}</strong></td>
+      <td class="sc5" style="white-space:nowrap" title="${f.proveedor_nombre||''}">${limpiaNombre(f.p_nombre||f.proveedor_nombre)||f.proveedor_nit}</td>
+      <td style="font-size:11px;color:#888">${f.proveedor_nit}</td>
+      <td style="white-space:nowrap;font-size:11px">${fmtFecha(f.fecha_factura)}</td>
+      <td style="white-space:nowrap">
+        <input type="date" class="notas-inp" value="${f.fecha_vencimiento||''}"
+          title="Editar fecha de vencimiento"
+          style="width:130px;font-size:11px;font-weight:600"
+          onblur="ajustarFactura(${f.id}, {fecha_vencimiento: this.value})"
+          onkeypress="if(event.key==='Enter'){this.blur()}" />
+      </td>
+      <td>${diasChip(f.dias_para_vencer, sem.filtro)}</td>
+      <td><span class="dias-chip dias-lejana">${f.dias_sistema??'—'} días</span></td>
+      <td style="text-align:right">${cop(f.valor_factura)}</td>
+      <td style="text-align:right;color:#10b981">-${cop(f.descuento_pronto_pago)}</td>
+      <td style="text-align:right">
+        <input class="notas-inp" type="number" min="0" step="1"
+          value="${f.flete||0}"
+          title="Editar flete (se resta del total)"
+          style="width:80px;text-align:right"
+          onblur="ajustarFactura(${f.id}, {flete: this.value})"
+          onkeypress="if(event.key==='Enter'){this.blur()}" />
+      </td>
+      <td style="text-align:right;font-weight:700">${cop(f.valor_final)}</td>
+      <td><span class="badge ${obadge}">${origen}</span></td>
+      <td style="font-size:11px">${f.banco||'—'}</td>
+      <td style="font-size:11px">${f.cuenta||'—'}</td>
+      <td style="font-size:11px">${f.titular_nombre||'<span style="color:#f59e0b;font-size:10px">⚠️ Falta</span>'}</td>
+      <td style="font-size:11px">${f.titular_id||'<span style="color:#f59e0b;font-size:10px">⚠️ Falta</span>'}</td>
+      <td><span class="badge ${estadoBadge}">${f.estado}</span></td>
+      <td>
+        <input class="notas-inp" value="${(f.notas||'').replace(/"/g,'&quot;')}"
+          placeholder="Agregar nota..."
+          onblur="guardarNota(${f.id}, this.value)"
+          onkeypress="if(event.key==='Enter'){this.blur()}" />
+      </td>
+    </tr>`;
+  });
+
+  document.getElementById('tbodyVenc').innerHTML = h ||
+    `<tr><td colspan="21" class="empty"><div class="icon">🗓️</div>Sin facturas en esta categoría</td></tr>`;
+}
+
+function filtrarTablaVenc() { renderVencimientos(); }
+
+function filtrarSemaforo(filtro, btn) {
+  vencFiltro = filtro;
+  document.querySelectorAll('.rv-chip').forEach(c=>c.classList.remove('activo'));
+  btn.classList.add('activo');
+  renderVencimientos();
+}
+
+function sortVenc(col) {
+  if (vencSort.col === col) vencSort.dir *= -1;
+  else { vencSort.col = col; vencSort.dir = 1; }
+  renderVencimientos();
+}
+
+async function toggleIncluir(id, incluir, factura) {
+  const row = document.getElementById('vrow-'+id);
+  const btn = document.getElementById('btnpagar-'+id);
+  try {
+    await fetch(`/facturas/${id}/incluir`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ incluir })
+    });
+    // Actualizar dato local
+    const idx = vencData.findIndex(f=>f.id===id);
+    if (idx >= 0) vencData[idx].incluir_pago = incluir ? 1 : 0;
+
+    // Actualizar botón y color de fila inmediatamente
+    if (btn) {
+      btn.className = incluir ? 'btn-pagar-on' : 'btn-pagar-off';
+      btn.textContent = incluir ? '✅ PAGANDO' : '➕ PAGAR';
+      btn.onclick = () => toggleIncluir(id, !incluir, factura);
+    }
+    if (row) {
+      row.classList.toggle('row-incluida', incluir);
+      row.classList.toggle('row-excluida', !incluir);
+    }
+
+    // Reordenar tabla y actualizar totales
+    renderVencimientos();
+    actualizarResumenFondos();
+  } catch(e) { console.error(e); }
+}
+
+async function actualizarResumenFondos() {
+  try {
+    const desde = document.getElementById('vFiltDesde')?.value || '';
+    const hasta  = document.getElementById('vFiltHasta')?.value || '';
+    let url = '/fondos/resumen?';
+    if (desde) url += 'vencimiento_desde=' + desde + '&';
+    if (hasta)  url += 'vencimiento_hasta=' + hasta + '&';
+    const r = await fetch(url).then(r => r.json());
+    actualizarResumen(r);
+    actualizarTarjetaFondosVenc(r);
+  } catch(e) {}
+}
+
+function actualizarTarjetaFondosVenc(r) {
+  // Toma el total a pagar de las facturas actualmente seleccionadas en pantalla
+  const totalSelec = vencData.filter(f => f.incluir_pago === 1).reduce((s,f) => s + f.valor_final, 0);
+  const disponible = (r.totalFondos || 0) - (r.totalGastos || 0);
+  const saldoFinal = disponible - totalSelec;
+  const ok = saldoFinal >= 0;
+
+  const el = (id) => document.getElementById(id);
+  if (!el('vf-recursos')) return;
+
+  el('vf-recursos').textContent   = cop(r.totalFondos || 0);
+  el('vf-gastos').textContent     = '- ' + cop(r.totalGastos || 0);
+  el('vf-disponible').textContent = cop(disponible);
+  el('vf-apagar').textContent     = '- ' + cop(totalSelec);
+  el('vf-saldo').textContent      = cop(saldoFinal);
+
+  const row = el('vf-saldo-row');
+  row.className = 'vrc-fondos-row ' + (ok ? 'saldo-ok' : 'saldo-mal');
+}
+
+async function guardarNota(id, nota) {
+  await fetch(`/facturas/${id}/incluir`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ incluir: vencData.find(f=>f.id===id)?.incluir_pago !== 0, notas: nota })
+  });
+  const idx = vencData.findIndex(f=>f.id===id);
+  if (idx >= 0) vencData[idx].notas = nota;
+}
+
+async function recalcularDescuentoProveedor() {
+  const nit = document.getElementById('vFiltProv').value;
+  if (!nit) {
+    alert('Selecciona un proveedor en el filtro para recalcular su descuento.');
+    return;
+  }
+  const nombre = document.getElementById('vFiltProv').selectedOptions[0]?.text || nit;
+  if (!confirm(`¿Recalcular el descuento en todas las facturas PENDIENTES de "${nombre}" con el % actual registrado?`)) return;
+  try {
+    const res = await fetch(`/proveedores/${nit}/recalcular-facturas`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) { alert('Error: ' + data.error); return; }
+    alert(data.mensaje);
+    loadVencimientos();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function ajustarFactura(id, campos) {
+  try {
+    const res = await fetch(`/facturas/${id}/ajustar`, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(campos)
+    });
+    if (!res.ok) { const e = await res.json(); alert('Error: ' + e.error); return; }
+    const data = await res.json();
+    // Actualizar vencData en memoria
+    const idx = vencData.findIndex(f => f.id === id);
+    if (idx >= 0) Object.assign(vencData[idx], data.factura);
+    // Re-renderizar tabla y totales
+    renderVencimientos();
+    renderTotalesPie();
+  } catch(e) {
+    alert('Error guardando: ' + e.message);
+  }
+}
+
+function renderTotalesPie() {
+  const buscar = (document.getElementById('vBuscar')?.value||'').toLowerCase();
+  const rows = vencData.filter(f => {
+    const s = semaforo(f.dias_para_vencer);
+    if (vencFiltro !== 'todos' && s.filtro !== vencFiltro) return false;
+    if (buscar && !`${f.numero_factura} ${f.proveedor_nombre} ${f.proveedor_nit}`.toLowerCase().includes(buscar)) return false;
+    return true;
+  });
+  const totalPagar = rows.filter(f=>f.incluir_pago!==0).reduce((s,f)=>s+f.valor_final,0);
+  const inclCount  = rows.filter(f=>f.incluir_pago!==0).length;
+  const exclCount  = rows.filter(f=>f.incluir_pago===0).length;
+  const totalExcl  = rows.filter(f=>f.incluir_pago===0).reduce((s,f)=>s+f.valor_final,0);
+  document.getElementById('vrc-cnt').textContent       = rows.length + ' facturas';
+  document.getElementById('vrc-pagar').textContent     = cop(totalPagar);
+  document.getElementById('vrc-pagar-cnt').textContent = inclCount + ' seleccionada' + (inclCount!==1?'s':'');
+  document.getElementById('vrc-excl').textContent      = cop(totalExcl);
+  document.getElementById('vrc-excl-cnt').textContent  = exclCount + ' excluida' + (exclCount!==1?'s':'');
+}
+
+function onChkVenc() {
+  const sel = document.querySelectorAll('.chk-venc:checked');
+  const bar = document.getElementById('bulkBar');
+  bar.classList.toggle('show', sel.length > 0);
+  document.getElementById('bulkCount').textContent = `${sel.length} seleccionada${sel.length!==1?'s':''}`;
+}
+
+function selAllVenc(checked) {
+  document.querySelectorAll('.chk-venc').forEach(c => { c.checked = checked; });
+  onChkVenc();
+}
+
+async function bulkIncluir(incluir) {
+  const ids = Array.from(document.querySelectorAll('.chk-venc:checked')).map(c=>parseInt(c.dataset.id));
+  if (!ids.length) return;
+  await fetch('/facturas/incluir-lote', {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ ids, incluir })
+  });
+  ids.forEach(id => {
+    const idx = vencData.findIndex(f=>f.id===id);
+    if (idx>=0) vencData[idx].incluir_pago = incluir?1:0;
+  });
+  document.getElementById('chkAll').checked = false;
+  renderVencimientos();
+}
+
+function exportarSeleccionadas() {
+  const incluidas = vencData.filter(f => f.incluir_pago !== 0);
+  if (!incluidas.length) { alert('No hay facturas marcadas para pago'); return; }
+  // Generar CSV simple
+  const cols = ['numero_factura','proveedor_nombre','proveedor_nit','fecha_factura','fecha_vencimiento','dias_para_vencer','dias_sistema','valor_factura','descuento_pronto_pago','flete','valor_final','banco','cuenta','tipo_cuenta','estado','notas'];
+  const header = ['Factura','Proveedor','NIT','F.Factura','F.Vencimiento','Días para vencer','Días en sistema','Valor','Descuento','Flete','Total Final','Banco','Cuenta','Tipo','Estado','Notas'];
+  let csv = header.join(';') + '\n';
+  const fechaCols = new Set(['fecha_factura','fecha_vencimiento']);
+  incluidas.forEach(f => {
+    csv += cols.map(c => {
+      const v = fechaCols.has(c) ? fmtFecha(f[c]) : (f[c]??'');
+      return `"${v.toString().replace(/"/g,'""')}"`;
+    }).join(';') + '\n';
+  });
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `facturas_pago_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+async function initVencProvSelect() {
+  const r = await fetch('/facturas/agrupadas').then(r=>r.json());
+  const sel = document.getElementById('vFiltProv');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Todos —</option>';
+  (r.agrupadas||[]).sort((a,b)=>(a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||'')).forEach(p => {
+    sel.innerHTML += `<option value="${p.proveedor_nit}">${p.proveedor_nombre||p.proveedor_nit}</option>`;
+  });
+}
+
+// ==================== FONDOS & PLAN DE PAGOS ====================
+const CATEGORIAS_GASTO = ['Servicios','Arriendos','Salarios','Jornales','Reparaciones','Mantenimientos','Impuestos','Otros'];
+
+async function fondosResumenUrl() {
+  const desde = document.getElementById('vFiltDesde')?.value || '';
+  const hasta  = document.getElementById('vFiltHasta')?.value || '';
+  let url = '/fondos/resumen?';
+  if (desde) url += 'vencimiento_desde=' + desde + '&';
+  if (hasta)  url += 'vencimiento_hasta=' + hasta + '&';
+  return url;
+}
+
+async function loadFondos() {
+  const r = await fetch(await fondosResumenUrl()).then(r => r.json());
+  renderCuentas(r.cuentas || []);
+  renderGastos(r.gastos || []);
+  actualizarResumen(r);
+}
+
+function renderCuentas(cuentas) {
+  const tbody = document.getElementById('tblCuentas');
+  tbody.innerHTML = cuentas.map(c => `
+    <tr style="border-bottom:1px solid #f1f5f9">
+      <td style="padding:12px 10px;font-weight:600">${c.nombre}</td>
+      <td style="padding:8px 10px;text-align:right">
+        <input type="number" min="0" step="1000"
+          value="${c.saldo || 0}"
+          style="width:180px;text-align:right;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:15px;font-weight:600"
+          onchange="guardarCuenta(${c.id}, this.value)"
+          oninput="recalcularFondos()"/>
+      </td>
+    </tr>`).join('');
+  recalcularFondos();
+}
+
+function renderGastos(gastos) {
+  const tbody = document.getElementById('bodyGastos');
+  tbody.innerHTML = gastos.map(g => `
+    <tr id="gasto-row-${g.id}" style="border-bottom:1px solid #f1f5f9">
+      <td style="padding:8px 6px">
+        <select style="padding:7px;border:1px solid #e2e8f0;border-radius:6px;width:100%" onchange="actualizarGasto(${g.id})">
+          ${CATEGORIAS_GASTO.map(cat => `<option value="${cat}" ${cat===g.categoria?'selected':''}>${cat}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:8px 6px">
+        <input type="text" value="${g.descripcion||''}" placeholder="Descripción opcional"
+          style="width:100%;padding:7px;border:1px solid #e2e8f0;border-radius:6px"
+          onchange="actualizarGasto(${g.id})"/>
+      </td>
+      <td style="padding:8px 6px;text-align:right">
+        <input type="number" min="0" step="1000" value="${g.valor||0}"
+          style="width:160px;text-align:right;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;font-weight:600"
+          onchange="actualizarGasto(${g.id})"
+          oninput="recalcularFondos()"/>
+      </td>
+      <td style="padding:8px 6px;text-align:center">
+        <button onclick="eliminarGasto(${g.id})" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:13px">✕</button>
+      </td>
+    </tr>`).join('');
+  recalcularFondos();
+}
+
+function recalcularFondos() {
+  const inputsCuentas = document.querySelectorAll('#tblCuentas input[type=number]');
+  const inputsGastos = document.querySelectorAll('#bodyGastos input[type=number]');
+  const totalR = Array.from(inputsCuentas).reduce((s, i) => s + (parseFloat(i.value) || 0), 0);
+  const totalG = Array.from(inputsGastos).reduce((s, i) => s + (parseFloat(i.value) || 0), 0);
+  document.getElementById('totalRecursos').textContent = cop(totalR);
+  document.getElementById('totalGastos').textContent = cop(totalG);
+  const saldoNeto = totalR - totalG;
+  document.getElementById('rTotalRecursos').textContent = cop(totalR);
+  document.getElementById('rTotalGastos').textContent = cop(totalG);
+  document.getElementById('rSaldoNeto').textContent = cop(saldoNeto);
+  // Recalcular saldo final usando el totalAPagar que ya está en pantalla
+  const totalAPagarEl = document.getElementById('rTotalAPagar');
+  const totalAPagar = totalAPagarEl ? parseCop(totalAPagarEl.textContent) : 0;
+  const saldoFinal = saldoNeto - totalAPagar;
+  document.getElementById('rSaldoFinal').textContent = cop(saldoFinal);
+  const box = document.getElementById('rSaldoFinalBox');
+  const ok = saldoFinal >= 0;
+  if (box) {
+    box.style.background = ok ? '#f0fdf4' : '#fef2f2';
+    box.style.borderColor = ok ? '#16a34a' : '#dc2626';
+  }
+  const sfEl = document.getElementById('rSaldoFinal');
+  const sfLbl = document.getElementById('rSaldoFinalLabel');
+  if (sfEl) sfEl.style.color = ok ? '#166534' : '#dc2626';
+  if (sfLbl) sfLbl.style.color = ok ? '#166534' : '#dc2626';
+}
+
+function actualizarResumen(r) {
+  document.getElementById('rTotalRecursos').textContent = cop(r.totalFondos);
+  document.getElementById('rTotalGastos').textContent = cop(r.totalGastos);
+  document.getElementById('rSaldoNeto').textContent = cop(r.saldoNeto);
+  document.getElementById('rTotalAPagar').textContent = cop(r.totalAPagar);
+  document.getElementById('rSaldoFinal').textContent = cop(r.saldoFinal);
+  document.getElementById('totalRecursos').textContent = cop(r.totalFondos);
+  document.getElementById('totalGastos').textContent = cop(r.totalGastos);
+
+  const box = document.getElementById('rSaldoFinalBox');
+  const alerta = document.getElementById('alertaFondos');
+  const ok = document.getElementById('okFondos');
+  const btn = document.getElementById('btnGenerarPlan');
+
+  if (r.fondosSuficientes) {
+    box.style.background = '#f0fdf4'; box.style.borderColor = '#16a34a';
+    document.getElementById('rSaldoFinal').style.color = '#166534';
+    document.getElementById('rSaldoFinalLabel').style.color = '#166534';
+    alerta.style.display = 'none'; ok.style.display = 'block';
+    btn.disabled = false; btn.style.opacity = '1';
+  } else {
+    box.style.background = '#fef2f2'; box.style.borderColor = '#dc2626';
+    document.getElementById('rSaldoFinal').style.color = '#dc2626';
+    document.getElementById('rSaldoFinalLabel').style.color = '#dc2626';
+    alerta.style.display = 'block'; ok.style.display = 'none';
+    btn.disabled = true; btn.style.opacity = '0.5';
+  }
+}
+
+async function guardarCuenta(id, valor) {
+  await fetch(`/fondos/cuentas/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ saldo: parseFloat(valor) || 0 })
+  });
+  // Recargar resumen del servidor
+  const r = await fetch(await fondosResumenUrl()).then(r => r.json());
+  actualizarResumen(r);
+}
+
+async function addGasto() {
+  const r = await fetch('/fondos/gastos', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ categoria: 'Servicios', descripcion: '', valor: 0 })
+  }).then(r => r.json());
+  await loadFondos();
+}
+
+async function actualizarGasto(id) {
+  const row = document.getElementById(`gasto-row-${id}`);
+  if (!row) return;
+  const cat = row.querySelector('select').value;
+  const desc = row.querySelectorAll('input')[0].value;
+  const val = parseFloat(row.querySelectorAll('input[type=number]')[0].value) || 0;
+  await fetch(`/fondos/gastos/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ categoria: cat, descripcion: desc, valor: val })
+  });
+  const r = await fetch(await fondosResumenUrl()).then(r => r.json());
+  actualizarResumen(r);
+}
+
+async function eliminarGasto(id) {
+  await fetch(`/fondos/gastos/${id}`, { method: 'DELETE' });
+  await loadFondos();
+}
+
+function irAPagos() {
+  // Navegar a la pestaña de pagos
+  const btn = document.querySelector('nav button:last-child');
+  showTab('pagos', btn);
+}
+
+// ==================== ALTURA DINÁMICA VENCIMIENTOS ====================
+function adjustVencHeight() {
+  const el = document.getElementById('tab-vencimientos');
+  if (!el || !el.classList.contains('active')) return;
+  const topFromViewport = el.getBoundingClientRect().top;
+  el.style.height = Math.max(200, window.innerHeight - topFromViewport - 8) + 'px';
+}
+window.addEventListener('resize', adjustVencHeight);
+
+// ==================== INIT ====================
+checkStatus();
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('fechaPagoMsg').value = today;
+document.getElementById('fechaPagoXls').value = today;
+document.getElementById('filtroMsgHasta').value = today;
+loadSelectorProveedores();
+
+// ===== COLUMN RESIZER =====
+function initColResizer(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const ths = table.querySelectorAll('thead th');
+  ths.forEach(th => {
+    // Evitar duplicar handles
+    if (th.querySelector('.col-resizer')) return;
+    const handle = document.createElement('div');
+    handle.className = 'col-resizer';
+    th.appendChild(handle);
+
+    let startX, startW;
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      startX = e.pageX;
+      startW = th.offsetWidth;
+      handle.classList.add('resizing');
+      const onMove = ev => {
+        const newW = Math.max(50, startW + (ev.pageX - startX));
+        th.style.width = newW + 'px';
+        th.style.minWidth = newW + 'px';
+      };
+      const onUp = () => {
+        handle.classList.remove('resizing');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+// Inicializar resizer después de cada render de la tabla
+const _origRenderVenc = renderVencimientos;
+renderVencimientos = function() {
+  _origRenderVenc();
+  initColResizer('tablaVenc');
+};
+</script>
+</body>
+</html>
