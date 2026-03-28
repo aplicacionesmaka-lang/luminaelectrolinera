@@ -23,6 +23,7 @@ app.use("/mensajes", require("./routes/mensajes"));
 app.use("/pagos", require("./routes/pagos"));
 app.use("/fondos", require("./routes/fondos"));
 app.use("/soportes", require("./routes/soportes"));
+app.use("/cxp",      require("./routes/cxp"));
 app.use("/webhook", require("./routes/webhook"));
 
 // Ruta principal - servir el dashboard

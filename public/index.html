@@ -269,6 +269,7 @@
   <button onclick="showTab('fondos',this)">💰 Fondos & Plan</button>
   <button onclick="showTab('pagos',this)">💳 Pagos</button>
   <button onclick="showTab('soportes',this)">📎 Soportes de Pago</button>
+  <button onclick="showTab('cxp',this)">🏦 CxP ERP</button>
 </nav>
 
 <main>
@@ -719,6 +720,20 @@
   </div>
 </div>
 
+<!-- ==================== CxP ERP ==================== -->
+<div class="tab" id="tab-cxp">
+  <div class="stats" id="cxpStats"></div>
+  <div class="card">
+    <h2>🏦 Cuentas por Pagar — ERP</h2>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-secondary" onclick="loadCxP()">🔄 Actualizar</button>
+      <button class="btn btn-warning"  onclick="loadCxP(true)">⚠️ Solo vencidas</button>
+      <input type="text" id="cxpSearch" placeholder="Buscar proveedor o factura..." style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:220px" oninput="buscarCxP(this.value)"/>
+    </div>
+    <div class="table-wrap" id="tCxP"><div class="empty"><div class="icon">🏦</div>Cargando datos del ERP...</div></div>
+  </div>
+</div>
+
 <!-- ==================== SOPORTES DE PAGO ==================== -->
 <div class="tab" id="tab-soportes">
   <div class="card">
@@ -788,6 +803,7 @@ function showTab(name, btn) {
   if (name === 'imagenes') loadImgProvSelect();
   if (name === 'pagos') loadPagosHist();
   if (name === 'soportes') { loadSoportesProvSelect(); loadSoportes(); }
+  if (name === 'cxp') loadCxP();
   if (name === 'vencimientos') { adjustVencHeight(); initVencProvSelect(); loadVencimientos(); }
   if (name === 'fondos') loadFondos();
 }
@@ -2010,6 +2026,75 @@ function initColResizer(tableId) {
       document.addEventListener('mouseup', onUp);
     });
   });
+}
+
+// ==================== CxP ERP ====================
+let cxpTimer = null;
+
+async function loadCxP(soloVencidas = false) {
+  const cont = document.getElementById('tCxP');
+  cont.innerHTML = '<div class="empty"><div class="icon">⏳</div>Consultando ERP...</div>';
+  try {
+    const url = soloVencidas ? '/cxp?vencidas=1' : '/cxp';
+    const [dataFact, dataRes] = await Promise.all([
+      fetch(url).then(r=>r.json()),
+      fetch('/cxp/resumen').then(r=>r.json())
+    ]);
+    renderCxPStats(dataRes);
+    renderCxPTabla(dataFact.facturas || []);
+  } catch(e) {
+    cont.innerHTML = `<div class="empty"><div class="icon">❌</div>Error: ${e.message}</div>`;
+  }
+}
+
+function renderCxPStats(data) {
+  const fmt = v => '$' + Number(v||0).toLocaleString('es-CO');
+  document.getElementById('cxpStats').innerHTML = `
+    <div class="stat-card"><div class="num">${data.proveedores?.length||0}</div><div class="lbl">Proveedores con saldo</div></div>
+    <div class="stat-card"><div class="num" style="color:#ef4444">${fmt(data.total_vencido)}</div><div class="lbl">Total vencido</div></div>
+    <div class="stat-card"><div class="num">${fmt(data.total_pendiente)}</div><div class="lbl">Total pendiente</div></div>
+  `;
+}
+
+function renderCxPTabla(facturas) {
+  const cont = document.getElementById('tCxP');
+  if (!facturas.length) { cont.innerHTML = '<div class="empty"><div class="icon">✅</div>Sin facturas pendientes</div>'; return; }
+  const fmt = v => '$' + Number(v||0).toLocaleString('es-CO');
+  cont.innerHTML = `<table>
+    <thead><tr>
+      <th>Factura</th><th>Proveedor</th><th>NIT</th><th>F. Factura</th><th>Vencimiento</th>
+      <th>Valor Neto</th><th>Abonado</th><th>Saldo</th><th>Estado</th>
+    </tr></thead>
+    <tbody>${facturas.map(f => {
+      const dias = f.dias_para_vencer;
+      const color = dias < 0 ? '#fee2e2' : dias <= 7 ? '#fef9c3' : '#fff';
+      const badge = dias < 0 ? `<span style="color:#ef4444;font-weight:700">⚠️ ${Math.abs(dias)}d vencida</span>`
+                  : dias <= 7 ? `<span style="color:#d97706;font-weight:700">⏰ ${dias}d</span>`
+                  : `<span style="color:#10b981">${dias}d</span>`;
+      return `<tr style="background:${color}">
+        <td><b>${f.factura_completa||f.numero_factura}</b></td>
+        <td>${f.proveedor_nombre||'—'}</td>
+        <td style="font-size:11px;color:#888">${f.nit||''}</td>
+        <td>${f.fecha_factura||''}</td>
+        <td>${f.fecha_vencimiento||''} ${badge}</td>
+        <td>${fmt(f.valor_neto)}</td>
+        <td>${fmt(f.valor_abonado)}</td>
+        <td style="font-weight:700">${fmt(f.saldo_pendiente)}</td>
+        <td>${f.estado||''}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+async function buscarCxP(q) {
+  clearTimeout(cxpTimer);
+  if (!q.trim()) { loadCxP(); return; }
+  cxpTimer = setTimeout(async () => {
+    try {
+      const data = await fetch(`/cxp/buscar?q=${encodeURIComponent(q)}`).then(r=>r.json());
+      renderCxPTabla(data.facturas || []);
+    } catch(e) {}
+  }, 400);
 }
 
 // Inicializar resizer después de cada render de la tabla
