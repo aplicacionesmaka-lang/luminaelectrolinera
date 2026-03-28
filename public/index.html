@@ -268,6 +268,7 @@
   <button onclick="showTab('imagenes',this)">🖼️ Imágenes IA</button>
   <button onclick="showTab('fondos',this)">💰 Fondos & Plan</button>
   <button onclick="showTab('pagos',this)">💳 Pagos</button>
+  <button onclick="showTab('soportes',this)">📎 Soportes de Pago</button>
 </nav>
 
 <main>
@@ -718,6 +719,57 @@
   </div>
 </div>
 
+<!-- ==================== SOPORTES DE PAGO ==================== -->
+<div class="tab" id="tab-soportes">
+  <div class="card">
+    <h2>📎 Subir Comprobante de Pago</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:16px">Sube el soporte del pago realizado. El bot notificará automáticamente al proveedor por WhatsApp y enviará el comprobante.</p>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Proveedor *</label>
+        <select id="sNit">
+          <option value="">— Seleccionar proveedor —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Valor pagado</label>
+        <input type="number" id="sValor" placeholder="Ej: 1500000" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>Fecha del pago</label>
+        <input type="date" id="sFecha"/>
+      </div>
+      <div class="form-group">
+        <label>Facturas cubiertas</label>
+        <input type="text" id="sFacturas" placeholder="Ej: F-001, F-002"/>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Notas adicionales</label>
+        <textarea id="sNotas" rows="2" placeholder="Ej: Pago parcial, retención aplicada..."></textarea>
+      </div>
+    </div>
+    <div class="upload-zone" id="soporteZone" onclick="document.getElementById('sFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleSDrop(event)">
+      <div class="icon">📤</div>
+      <p id="sFileLabel">Haz clic o arrastra el comprobante aquí</p>
+      <small>Imagen (JPG, PNG) o PDF — máx 20MB</small>
+      <input type="file" id="sFile" accept="image/*,.pdf" onchange="onSFileChange(this)"/>
+    </div>
+    <br/>
+    <button class="btn btn-success" id="btnSubirSoporte" onclick="subirSoporte()">📤 Subir y Notificar Proveedor</button>
+    <div class="result-box" id="rSoporte"></div>
+  </div>
+  <div class="card">
+    <h2>📋 Historial de Soportes</h2>
+    <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="loadSoportes()">🔄 Actualizar</button>
+      <select id="sFilterNit" onchange="loadSoportes()" style="padding:7px 11px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="">Todos los proveedores</option>
+      </select>
+    </div>
+    <div class="table-wrap" id="tSoportes"><div class="empty"><div class="icon">📎</div>Sin soportes subidos</div></div>
+  </div>
+</div>
+
 </main>
 
 <script>
@@ -735,6 +787,7 @@ function showTab(name, btn) {
   if (name === 'mensajes') { loadSelectorProveedores(); loadChatProvSelect(); }
   if (name === 'imagenes') loadImgProvSelect();
   if (name === 'pagos') loadPagosHist();
+  if (name === 'soportes') { loadSoportesProvSelect(); loadSoportes(); }
   if (name === 'vencimientos') { adjustVencHeight(); initVencProvSelect(); loadVencimientos(); }
   if (name === 'fondos') loadFondos();
 }
@@ -1965,6 +2018,110 @@ renderVencimientos = function() {
   _origRenderVenc();
   initColResizer('tablaVenc');
 };
+
+// ==================== SOPORTES DE PAGO ====================
+async function loadSoportesProvSelect() {
+  const sel = document.getElementById('sNit');
+  const fsel = document.getElementById('sFilterNit');
+  if (sel.options.length > 1) return;
+  const data = await fetch('/proveedores').then(r=>r.json()).catch(()=>({proveedores:[]}));
+  (data.proveedores||[]).forEach(p => {
+    const o1 = new Option(`${p.nombre} (${p.nit})`, p.nit);
+    const o2 = new Option(`${p.nombre} (${p.nit})`, p.nit);
+    sel.add(o1);
+    if(fsel) fsel.add(o2);
+  });
+}
+
+function onSFileChange(input) {
+  const label = document.getElementById('sFileLabel');
+  if (input.files[0]) label.textContent = '✅ ' + input.files[0].name;
+}
+
+function handleSDrop(e) {
+  e.preventDefault();
+  document.getElementById('soporteZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('sFile').files = dt.files;
+    document.getElementById('sFileLabel').textContent = '✅ ' + file.name;
+  }
+}
+
+async function subirSoporte() {
+  const nit      = document.getElementById('sNit').value.trim();
+  const valor    = document.getElementById('sValor').value.trim();
+  const fecha    = document.getElementById('sFecha').value;
+  const facturas = document.getElementById('sFacturas').value.trim();
+  const notas    = document.getElementById('sNotas').value.trim();
+  const fileInput= document.getElementById('sFile');
+  const res      = document.getElementById('rSoporte');
+
+  if (!nit)                return res.innerHTML = '<div class="alert alert-error">Selecciona un proveedor</div>';
+  if (!fileInput.files[0]) return res.innerHTML = '<div class="alert alert-error">Selecciona el archivo de soporte</div>';
+
+  const btn = document.getElementById('btnSubirSoporte');
+  btn.disabled = true;
+  btn.textContent = '⏳ Subiendo...';
+  res.innerHTML = '';
+
+  const fd = new FormData();
+  fd.append('proveedor_nit', nit);
+  fd.append('soporte', fileInput.files[0]);
+  if (valor)    fd.append('valor', valor);
+  if (fecha)    fd.append('fecha_pago', fecha);
+  if (facturas) fd.append('facturas', facturas);
+  if (notas)    fd.append('notas', notas);
+
+  try {
+    const r = await fetch('/soportes/upload', { method:'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Error al subir');
+    res.innerHTML = `<div class="alert alert-success">✅ Soporte guardado. Proveedor <b>${d.proveedor_nombre}</b> notificado por WhatsApp.</div>`;
+    // Limpiar form
+    document.getElementById('sNit').value = '';
+    document.getElementById('sValor').value = '';
+    document.getElementById('sFecha').value = '';
+    document.getElementById('sFacturas').value = '';
+    document.getElementById('sNotas').value = '';
+    document.getElementById('sFile').value = '';
+    document.getElementById('sFileLabel').textContent = 'Haz clic o arrastra el comprobante aquí';
+    loadSoportes();
+  } catch(err) {
+    res.innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Subir y Notificar Proveedor';
+  }
+}
+
+async function loadSoportes() {
+  const nit = document.getElementById('sFilterNit')?.value || '';
+  const url = nit ? `/soportes/proveedor/${nit}` : '/soportes';
+  const data = await fetch(url).then(r=>r.json()).catch(()=>({soportes:[]}));
+  const soportes = data.soportes || [];
+  const cont = document.getElementById('tSoportes');
+  if (!soportes.length) {
+    cont.innerHTML = '<div class="empty"><div class="icon">📎</div>Sin soportes registrados</div>';
+    return;
+  }
+  cont.innerHTML = `<table>
+    <thead><tr>
+      <th>Fecha</th><th>Proveedor</th><th>Facturas</th><th>Valor</th><th>Fecha Pago</th><th>Notificado</th><th>Soporte</th>
+    </tr></thead>
+    <tbody>${soportes.map(s => `<tr>
+      <td>${new Date(s.created_at).toLocaleDateString('es-CO')}</td>
+      <td><b>${s.proveedor_nombre||s.proveedor_nit}</b></td>
+      <td>${s.facturas||'—'}</td>
+      <td>${s.valor ? '$'+Number(s.valor).toLocaleString('es-CO') : '—'}</td>
+      <td>${s.fecha_pago||'—'}</td>
+      <td style="text-align:center">${s.notificado ? '✅' : '⏳'}</td>
+      <td><a href="/soportes/ver/${s.archivo_nombre}" target="_blank" class="btn btn-info" style="padding:5px 10px;font-size:11px">👁️ Ver</a></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
 </script>
 </body>
 </html>

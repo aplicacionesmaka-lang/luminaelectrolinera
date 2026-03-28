@@ -121,6 +121,46 @@ async function enviarMensajesLote(mensajes) {
   return resultados;
 }
 
+/**
+ * Envía un documento/imagen via WhatsApp usando una URL pública
+ */
+async function enviarDocumento(telefono, urlArchivo, nombreArchivo, mimeType = "image/jpeg") {
+  const token   = process.env.WHATSAPP_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_ID;
+
+  if (!token || !phoneId) {
+    console.log(`\n📎 [WA SIMULADO] Documento para ${telefono}: ${urlArchivo}\n─────────────────`);
+    return null;
+  }
+
+  const to = telefono.replace(/\D/g, "");
+  const esImagen = mimeType.startsWith("image/");
+
+  const body = esImagen
+    ? {
+        messaging_product: "whatsapp",
+        to,
+        type: "image",
+        image: { link: urlArchivo, caption: nombreArchivo },
+      }
+    : {
+        messaging_product: "whatsapp",
+        to,
+        type: "document",
+        document: { link: urlArchivo, caption: nombreArchivo, filename: nombreArchivo },
+      };
+
+  const res = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Meta API error: ${JSON.stringify(data)}`);
+  return data.messages?.[0]?.id;
+}
+
 function getHistorialConversaciones(proveedorNit = null) {
   if (proveedorNit) {
     return db.prepare(
@@ -130,4 +170,4 @@ function getHistorialConversaciones(proveedorNit = null) {
   return db.prepare("SELECT * FROM conversaciones ORDER BY created_at DESC").all();
 }
 
-module.exports = { enviarMensajeReal, descargarMedia, enviarMensajesLote, getHistorialConversaciones };
+module.exports = { enviarMensajeReal, descargarMedia, enviarMensajesLote, getHistorialConversaciones, enviarDocumento };

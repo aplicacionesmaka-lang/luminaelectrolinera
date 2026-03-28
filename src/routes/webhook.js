@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const db = require("../models/db");
 const { responderProveedor, analizarImagenProveedor, extraerDatosCuenta, extraerDatosCuentaImagen } = require("../services/claudeService");
-const { enviarMensajeReal, descargarMedia } = require("../services/whatsappService");
+const { enviarMensajeReal, descargarMedia, enviarDocumento } = require("../services/whatsappService");
+const { buscarSoporteProveedor } = require("../services/soportesService");
+const SERVER_URL = process.env.SERVER_URL || "http://217.71.206.34:3000";
 
 const CAMPOS_CUENTA = ["banco", "tipo_cuenta", "numero_cuenta", "titular_nombre", "titular_id"];
 const LABEL_CAMPOS = {
@@ -197,6 +199,40 @@ async function manejarTexto(from, proveedor, texto) {
     } else {
       db.prepare("DELETE FROM estados_conversacion WHERE proveedor_nit=?").run(proveedor.nit);
     }
+  }
+
+  // Detectar consulta sobre pagos / comprobante
+  const textLower = texto.toLowerCase();
+  const esPreguntaPago = /pag(o|aron|aste|amos)|comprobante|soporte|transferencia|consignaci[oó]n|deposit|ya pag|cuándo pag|cuando pag|me pagan|recib[ií]/.test(textLower);
+  if (esPreguntaPago) {
+    const soporte = buscarSoporteProveedor(proveedor.nit, texto);
+    if (soporte) {
+      const valorFmt = soporte.valor ? `$${Number(soporte.valor).toLocaleString("es-CO")}` : "";
+      const fechaFmt = soporte.fecha_pago || new Date(soporte.created_at).toLocaleDateString("es-CO");
+      const factStr  = soporte.facturas ? `\n📄 Facturas: ${soporte.facturas}` : "";
+      const msg =
+        `Hola ${proveedor.nombre} 👋\n\n` +
+        `Encontramos el comprobante de pago:\n` +
+        `💰 Valor: ${valorFmt}\n` +
+        `📅 Fecha: ${fechaFmt}` +
+        factStr +
+        `\n\nTe enviamos el soporte a continuación. ¡Que Dios les bendiga! 🙏\n\n_MakaBot - Tesorería MAKA QCUTE SAS_`;
+      await enviarMensajeReal(from, msg);
+      try {
+        const urlArchivo = `${SERVER_URL}/soportes/ver/${soporte.archivo_nombre}`;
+        await enviarDocumento(from, urlArchivo, soporte.archivo_nombre, soporte.mime_type);
+      } catch (e) {
+        console.error("Error enviando soporte por WA:", e.message);
+      }
+    } else {
+      const msg =
+        `Hola ${proveedor.nombre} 👋\n\n` +
+        `No encontramos un comprobante de pago registrado para tu cuenta en este momento. ` +
+        `Nuestro equipo de tesorería te confirmará a la brevedad.\n\n` +
+        `¡Bendiciones! 🙏\n\n_MakaBot - Tesorería MAKA QCUTE SAS_`;
+      await enviarMensajeReal(from, msg);
+    }
+    return;
   }
 
   const facturas = db.prepare("SELECT * FROM facturas WHERE proveedor_nit = ? AND estado = 'pendiente'").all(proveedor.nit);

@@ -106,6 +106,21 @@ db.exec(`
     numero_cuenta INTEGER DEFAULT 1,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS soportes_pago (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    proveedor_nit TEXT NOT NULL,
+    proveedor_nombre TEXT,
+    facturas TEXT,
+    valor REAL,
+    fecha_pago TEXT,
+    archivo_nombre TEXT NOT NULL,
+    archivo_path TEXT NOT NULL,
+    mime_type TEXT DEFAULT 'image/jpeg',
+    notas TEXT,
+    notificado INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Agregar columnas nuevas a proveedores si no existen (migraciones)
