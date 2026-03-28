@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../models/db");
-const { responderProveedor, analizarImagenProveedor, extraerDatosCuenta, extraerDatosCuentaImagen } = require("../services/claudeService");
+const { responderProveedor, analizarImagenProveedor, extraerDatosCuenta, extraerDatosCuentaImagen, extraerDatosSoporte } = require("../services/claudeService");
 const { enviarMensajeReal, descargarMedia, enviarDocumento } = require("../services/whatsappService");
 const { buscarSoporteProveedor } = require("../services/soportesService");
 const SERVER_URL = process.env.SERVER_URL || "http://217.71.206.34:3000";
@@ -44,6 +44,15 @@ router.post("/whatsapp", express.json(), async (req, res) => {
     const msgType = msg.type;
 
     console.log(`\n📥 WhatsApp de +${from} — tipo: ${msgType}`);
+
+    // ── Detectar si es número interno (equipo de tesorería) ──
+    const numerosInternos = (process.env.NUMEROS_INTERNOS || "")
+      .split(",").map(n => n.replace(/\D/g, "").slice(-10));
+    const fromLast10 = from.replace(/\D/g, "").slice(-10);
+    if (numerosInternos.includes(fromLast10)) {
+      await manejarMensajeInterno(from, msg, msgType);
+      return;
+    }
 
     const proveedor = buscarProveedorPorTelefono(from);
     if (!proveedor) {
@@ -287,6 +296,92 @@ async function manejarImagen(from, proveedor, base64, mimeType) {
   } catch (err) {
     console.error("Error procesando imagen:", err.message);
     await enviarMensajeReal(from, "Recibimos tu imagen pero hubo un problema al procesarla. Nuestro equipo la revisará pronto. ¡Bendiciones! 🙏");
+  }
+}
+
+/* ── Manejo de mensajes del equipo interno ── */
+async function manejarMensajeInterno(from, msg, msgType) {
+  console.log(`🏢 Mensaje INTERNO de +${from}`);
+
+  // Solo procesar imágenes
+  if (msgType !== "image" && msgType !== "document") {
+    await enviarMensajeReal(from,
+      `Hola equipo 👋\n\n` +
+      `Para registrar un soporte de pago envíame:\n` +
+      `📸 *Imagen o PDF* del comprobante\n` +
+      `📝 *Con el caption:* Nombre del proveedor, número(s) de factura, valor pagado\n\n` +
+      `Ejemplo:\n_"Textiles ABC, Facturas F-001 F-002, $1.500.000"_\n\n` +
+      `_MakaBot - Tesorería MAKA QCUTE SAS_`
+    );
+    return;
+  }
+
+  // Obtener caption del mensaje
+  const caption = msg.image?.caption || msg.document?.caption || "";
+
+  if (!caption.trim()) {
+    await enviarMensajeReal(from,
+      `⚠️ Recibí la imagen pero le falta el caption.\n\n` +
+      `Por favor reenvíala con el caption:\n` +
+      `_"Nombre proveedor, Factura(s), Valor"_\n\n` +
+      `Ejemplo:\n_"Textiles ABC, F-001 y F-002, $1.500.000"_\n\n` +
+      `_MakaBot - Tesorería MAKA QCUTE SAS_`
+    );
+    return;
+  }
+
+  await enviarMensajeReal(from, `⏳ Procesando soporte... un momento.`);
+
+  try {
+    // Descargar imagen
+    const mediaId = msg.image?.id || msg.document?.id;
+    const mimeType = msg.image?.mime_type || msg.document?.mime_type || "image/jpeg";
+    const { buffer } = await descargarMedia(mediaId);
+    const originalname = msg.document?.filename || `soporte_${Date.now()}.jpg`;
+
+    // Usar IA para extraer datos del caption
+    const proveedores = db.prepare("SELECT nit, nombre FROM proveedores").all();
+    const datos = await extraerDatosSoporte(caption, proveedores);
+
+    if (!datos || !datos.proveedor_nit) {
+      await enviarMensajeReal(from,
+        `⚠️ No pude identificar el proveedor con: _"${caption}"_\n\n` +
+        `Verifica que el nombre coincida con uno de los proveedores registrados e intenta de nuevo.\n\n` +
+        `_MakaBot - Tesorería MAKA QCUTE SAS_`
+      );
+      return;
+    }
+
+    // Guardar soporte y notificar proveedor
+    const { guardarSoporte } = require("../services/soportesService");
+    const resultado = await guardarSoporte({
+      proveedor_nit: datos.proveedor_nit,
+      facturas:      datos.facturas,
+      valor:         datos.valor,
+      fecha_pago:    datos.fecha_pago,
+      notas:         datos.notas,
+      buffer,
+      originalname,
+      mimetype: mimeType,
+    });
+
+    const valorFmt = datos.valor ? `$${Number(datos.valor).toLocaleString("es-CO")}` : "no especificado";
+    await enviarMensajeReal(from,
+      `✅ *Soporte registrado y proveedor notificado*\n\n` +
+      `🏢 Proveedor: *${resultado.proveedor_nombre}*\n` +
+      `📄 Facturas: ${datos.facturas || "—"}\n` +
+      `💰 Valor: ${valorFmt}\n` +
+      `📅 Fecha: ${datos.fecha_pago || new Date().toLocaleDateString("es-CO")}\n\n` +
+      `El comprobante fue enviado al proveedor por WhatsApp. 🙏\n\n` +
+      `_MakaBot - Tesorería MAKA QCUTE SAS_`
+    );
+
+    console.log(`✅ Soporte interno procesado: ${resultado.proveedor_nombre}`);
+  } catch (err) {
+    console.error("Error procesando soporte interno:", err.message);
+    await enviarMensajeReal(from,
+      `❌ Error al procesar el soporte: ${err.message}\n\nIntenta de nuevo o sube el soporte desde el panel web.\n\n_MakaBot - Tesorería MAKA QCUTE SAS_`
+    );
   }
 }
 

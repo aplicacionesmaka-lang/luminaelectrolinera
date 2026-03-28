@@ -345,6 +345,45 @@ Responde SOLO con este JSON:
   return JSON.parse(jsonMatch[0]);
 }
 
+/**
+ * Extrae datos de soporte de pago del caption enviado por equipo interno.
+ * El caption puede decir: "Textiles ABC, F-001 F-002, $1.500.000" o similar.
+ */
+async function extraerDatosSoporte(caption, proveedoresLista) {
+  const nombresProveedores = proveedoresLista.map(p => `${p.nombre} (NIT: ${p.nit})`).join("\n");
+
+  const prompt = `Eres el asistente de tesorería de MAKA QCUTE SAS (Colombia).
+
+El equipo interno envió este mensaje junto con un comprobante de pago:
+"${caption}"
+
+Lista de proveedores registrados en el sistema:
+${nombresProveedores}
+
+Extrae la información del pago e identifica a cuál proveedor corresponde comparando con la lista anterior.
+
+Responde SOLO con este JSON:
+{
+  "proveedor_nit": "NIT exacto del proveedor de la lista o null si no identificas",
+  "proveedor_nombre": "nombre del proveedor identificado o null",
+  "facturas": "números de factura separados por coma o null",
+  "valor": número sin puntos ni símbolos o null,
+  "fecha_pago": "YYYY-MM-DD o null",
+  "notas": "cualquier información adicional relevante o null"
+}`;
+
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 400,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const text = response.content[0].text.trim();
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
+  return JSON.parse(jsonMatch[0]);
+}
+
 module.exports = {
   generarMensajeProveedor,
   generarMensajesLote,
@@ -352,4 +391,5 @@ module.exports = {
   analizarImagenProveedor,
   extraerDatosCuenta,
   extraerDatosCuentaImagen,
+  extraerDatosSoporte,
 };
