@@ -339,9 +339,10 @@ async function manejarMensajeInterno(from, msg, msgType) {
     const { buffer } = await descargarMedia(mediaId);
     const originalname = msg.document?.filename || `soporte_${Date.now()}.jpg`;
 
-    // Usar IA para extraer datos del caption
+    // Usar IA para extraer datos del caption + imagen
     const proveedores = db.prepare("SELECT nit, nombre FROM proveedores").all();
-    const datos = await extraerDatosSoporte(caption, proveedores);
+    const imageBase64 = buffer.toString("base64");
+    const datos = await extraerDatosSoporte(caption, proveedores, imageBase64, mimeType);
 
     if (!datos || !datos.proveedor_nit) {
       await enviarMensajeReal(from,

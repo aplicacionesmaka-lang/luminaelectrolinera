@@ -346,36 +346,51 @@ Responde SOLO con este JSON:
 }
 
 /**
- * Extrae datos de soporte de pago del caption enviado por equipo interno.
- * El caption puede decir: "Textiles ABC, F-001 F-002, $1.500.000" o similar.
+ * Extrae datos de soporte de pago del caption + imagen enviados por equipo interno.
+ * El caption puede venir en formato compacto: "TAHINO13780 13781" o "Proveedor F-001 F-002 $1.500.000"
+ * El valor se extrae de la imagen si no está en el caption.
  */
-async function extraerDatosSoporte(caption, proveedoresLista) {
+async function extraerDatosSoporte(caption, proveedoresLista, imageBase64 = null, mimeType = "image/jpeg") {
   const nombresProveedores = proveedoresLista.map(p => `${p.nombre} (NIT: ${p.nit})`).join("\n");
 
   const prompt = `Eres el asistente de tesorería de MAKA QCUTE SAS (Colombia).
 
-El equipo interno envió este mensaje junto con un comprobante de pago:
+El equipo de tesorería envió un comprobante de pago con este caption:
 "${caption}"
+
+${imageBase64 ? "También te adjunto la imagen del comprobante para que extraigas el valor, fecha y demás datos visibles." : ""}
 
 Lista de proveedores registrados en el sistema:
 ${nombresProveedores}
 
-Extrae la información del pago e identifica a cuál proveedor corresponde comparando con la lista anterior.
+INSTRUCCIONES:
+1. El caption suele venir en formato compacto: nombre del proveedor pegado o junto a número(s) de factura. Ejemplo: "TAHINO13780 13781" → proveedor: TAHINO, facturas: 13780 y 13781
+2. Busca el proveedor más parecido en la lista (por nombre parcial, siglas o palabras clave)
+3. El valor del pago está en la imagen del comprobante (busca "Transferencia realizada", "Valor total", monto principal en grande)
+4. La fecha también está en la imagen del comprobante
+5. Los números que NO son del proveedor y son largos (5+ dígitos o con guion) son números de factura
 
 Responde SOLO con este JSON:
 {
-  "proveedor_nit": "NIT exacto del proveedor de la lista o null si no identificas",
+  "proveedor_nit": "NIT exacto del proveedor de la lista o null",
   "proveedor_nombre": "nombre del proveedor identificado o null",
   "facturas": "números de factura separados por coma o null",
-  "valor": número sin puntos ni símbolos o null,
+  "valor": número entero sin puntos ni símbolos o null,
   "fecha_pago": "YYYY-MM-DD o null",
-  "notas": "cualquier información adicional relevante o null"
+  "notas": "observación relevante o null"
 }`;
+
+  const content = imageBase64
+    ? [
+        { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
+        { type: "text", text: prompt },
+      ]
+    : prompt;
 
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 400,
-    messages: [{ role: "user", content: prompt }],
+    max_tokens: 500,
+    messages: [{ role: "user", content }],
   });
 
   const text = response.content[0].text.trim();
