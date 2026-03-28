@@ -1,19 +1,22 @@
+require("dotenv").config();
 const sql = require("mssql");
-
-const config = {
-  user:     process.env.SQLSERVER_USER     || "js",
-  password: process.env.SQLSERVER_PASSWORD || "JustR34d#",
-  server:   process.env.SQLSERVER_HOST     || "localhost",
-  port:     parseInt(process.env.SQLSERVER_PORT || "2987"),
-  database: process.env.SQLSERVER_DB       || "BD_SEG_QCUTE",
-  options:  { encrypt: false, trustServerCertificate: true },
-  pool:     { max: 5, min: 0, idleTimeoutMillis: 30000 },
-};
 
 let pool = null;
 
+function getConfig() {
+  return {
+    user:     process.env.SQLSERVER_USER     || "js",
+    password: process.env.SQLSERVER_PASSWORD || "JustR34d#",
+    server:   process.env.SQLSERVER_HOST     || "localhost",
+    port:     parseInt(process.env.SQLSERVER_PORT || "2987"),
+    database: process.env.SQLSERVER_DB       || "BD_SEG_QCUTE",
+    options:  { encrypt: false, trustServerCertificate: true },
+    pool:     { max: 5, min: 0, idleTimeoutMillis: 30000 },
+  };
+}
+
 async function getPool() {
-  if (!pool) pool = await sql.connect(config);
+  if (!pool) pool = await sql.connect(getConfig());
   return pool;
 }
 
