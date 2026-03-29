@@ -4,6 +4,7 @@ const db = require("../models/db");
 const { responderProveedor, analizarImagenProveedor, extraerDatosCuenta, extraerDatosCuentaImagen, extraerDatosSoporte } = require("../services/claudeService");
 const { enviarMensajeReal, descargarMedia, enviarDocumento } = require("../services/whatsappService");
 const { buscarSoporteProveedor } = require("../services/soportesService");
+const { buscarFacturasProveedor } = require("../services/sqlServerService");
 const SERVER_URL = process.env.SERVER_URL || "http://217.71.206.34:3000";
 
 const CAMPOS_CUENTA = ["banco", "tipo_cuenta", "numero_cuenta", "titular_nombre", "titular_id"];
@@ -244,7 +245,8 @@ async function manejarTexto(from, proveedor, texto) {
     return;
   }
 
-  const facturas = db.prepare("SELECT * FROM facturas WHERE proveedor_nit = ? AND estado = 'pendiente'").all(proveedor.nit);
+  // Consultar facturas directamente del ERP SQL Server
+  const facturas = await buscarFacturasProveedor(proveedor.nit);
 
   if (facturas.length === 0) {
     const msg = `Hola ${proveedor.nombre} 👋\nActualmente no tienes facturas pendientes en nuestro sistema. Si tienes alguna duda, con gusto te ayudamos.\n\n¡Que Dios les bendiga! 🙏\n\n_MakaBot - Tesorería MAKA QCUTE SAS_`;
@@ -253,15 +255,18 @@ async function manejarTexto(from, proveedor, texto) {
     return;
   }
 
-  const totalCalculado = facturas.reduce((s, f) => s + f.valor_final, 0);
-  const analisis = await responderProveedor({ nombreProveedor: proveedor.nombre, respuestaProveedor: texto, totalCalculado, facturas });
+  // Mapear campos ERP al formato que espera responderProveedor
+  const facturasFormato = facturas.map(f => ({
+    numero_factura: f.factura_completa || f.numero_factura,
+    valor_factura:  f.valor_neto,
+    valor_final:    f.saldo_pendiente,
+    descuento_pronto_pago: 0,
+    flete:          0,
+    fecha_vencimiento: f.fecha_vencimiento,
+  }));
 
-  if (analisis.accion === "ajustado" && analisis.origen_valor === "proveedor" && analisis.valor_aceptado < totalCalculado) {
-    const ratio = analisis.valor_aceptado / totalCalculado;
-    const stmt = db.prepare("UPDATE facturas SET valor_final = ?, valor_proveedor = ?, origen_valor = 'proveedor' WHERE id = ?");
-    db.transaction(() => { for (const f of facturas) stmt.run(Math.round(f.valor_final * ratio * 100) / 100, analisis.valor_aceptado, f.id); })();
-    console.log(`💰 Valor ajustado: $${totalCalculado.toLocaleString()} → $${analisis.valor_aceptado.toLocaleString()}`);
-  }
+  const totalCalculado = facturasFormato.reduce((s, f) => s + f.valor_final, 0);
+  const analisis = await responderProveedor({ nombreProveedor: proveedor.nombre, respuestaProveedor: texto, totalCalculado, facturas: facturasFormato });
 
   db.prepare("INSERT INTO conversaciones (proveedor_nit, mensaje_enviado, respuesta, estado) VALUES (?,?,?,'respondido')").run(proveedor.nit, `[WA]: ${texto}`, analisis.mensaje_respuesta);
   await enviarMensajeReal(from, analisis.mensaje_respuesta);
