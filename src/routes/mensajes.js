@@ -1,70 +1,115 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
 const db = require("../models/db");
 const { generarMensajesLote, responderProveedor } = require("../services/claudeService");
 const { enviarMensajesLote, getHistorialConversaciones } = require("../services/whatsappService");
-
-const upload = multer({ storage: multer.memoryStorage() });
+const { getCuentasPorPagar } = require("../services/sqlServerService");
+const { enviarRecordatorioInmediato } = require("../services/recordatorioService");
 
 // POST /mensajes/generar
 // Body: { fecha_pago, solo_generar, nits_seleccionados: ["nit1","nit2",...] }
 router.post("/generar", express.json(), async (req, res) => {
   try {
-    const { fecha_pago, solo_generar = false, nits_seleccionados = [] } = req.body;
+    const { fecha_pago, solo_generar = false, nits_seleccionados = [], vencimiento_hasta = null } = req.body;
 
-    let query = `
-      SELECT
-        f.*,
-        p.nombre as p_nombre,
-        p.telefono as p_telefono,
-        p.telefono2 as p_telefono2,
-        p.banco, p.cuenta, p.tipo_cuenta, p.titular_nombre, p.titular_id
-      FROM facturas f
-      LEFT JOIN proveedores p ON f.proveedor_nit = p.nit
-      WHERE f.estado = 'pendiente' AND f.incluir_pago = 1
-    `;
-    const params = [];
+    // --- Datos del ERP ---
+    const erpFacturas = await getCuentasPorPagar({ soloVencidas: false });
 
-    // Filtrar por NITs seleccionados si se enviaron
-    if (nits_seleccionados.length > 0) {
-      const placeholders = nits_seleccionados.map(() => "?").join(",");
-      query += ` AND f.proveedor_nit IN (${placeholders})`;
-      params.push(...nits_seleccionados);
-    }
-    query += " ORDER BY f.proveedor_nit";
+    // Ajustes locales (flete, excluidas)
+    const ajustesRows = db.prepare("SELECT * FROM facturas_erp_ajustes").all();
+    const ajMap = {};
+    ajustesRows.forEach(a => { ajMap[a.idreg] = a; });
 
-    const facturasRaw = db.prepare(query).all(...params);
+    // Datos bancarios de proveedores (SQLite)
+    const provRows = db.prepare(
+      "SELECT nit, nombre, telefono, telefono2, banco, cuenta, tipo_cuenta, titular_nombre, titular_id, descuento_cacharro, descuento_joyeria, descuento_activo FROM proveedores"
+    ).all();
+    const provMap = {};
+    provRows.forEach(p => { provMap[p.nit] = p; });
 
-    if (facturasRaw.length === 0) {
+    // Solo incluir facturas ESTRICTAMENTE marcadas para pago (incluir_pago = 1)
+    // Sin registro o incluir_pago != 1 → excluir
+    const toISO2 = d => { if (!d) return null; if (d instanceof Date) return d.toISOString().slice(0,10); return String(d).slice(0,10); };
+    const incluidas = erpFacturas.filter(f => {
+      const aj = ajMap[String(f.idreg)];
+      if (!aj || aj.incluir_pago !== 1) return false;
+      // Usar el NIT efectivo (después del override) para el filtro de selección
+      const nitEfectivo = aj?.proveedor_nit_override || f.nit;
+      const seleccionada = nits_seleccionados.length === 0 || nits_seleccionados.includes(nitEfectivo);
+      if (!seleccionada) return false;
+      if (vencimiento_hasta) {
+        const fecVen = aj?.fecha_vencimiento_override || toISO2(f.fecha_vencimiento);
+        if (!fecVen || fecVen > vencimiento_hasta) return false;
+      }
+      return true;
+    });
+
+    if (incluidas.length === 0) {
       return res.status(400).json({ error: "No hay facturas pendientes para los proveedores seleccionados" });
     }
 
+    const toISO = d => {
+      if (!d) return null;
+      if (d instanceof Date) return d.toISOString().slice(0, 10);
+      return String(d).slice(0, 10);
+    };
+
     // Agrupar por proveedor
     const porProveedor = {};
-    for (const f of facturasRaw) {
-      const nit = f.proveedor_nit;
+    incluidas.forEach(f => {
+      const aj   = ajMap[String(f.idreg)] || {};
+      // Aplicar override de proveedor si fue corregido manualmente
+      const nit  = aj.proveedor_nit_override    || f.nit;
+      const nombreErp = aj.proveedor_nombre_override || f.proveedor_nombre;
+      const prov = provMap[nit] || {};
+      const flete = aj.flete != null ? aj.flete : 0;
+      const saldo = parseFloat(f.saldo_pendiente) || 0;
+      let descuento = 0;
+      if (aj.descuento != null && aj.descuento > 0) {
+        descuento = aj.descuento;
+      } else {
+        const tipo = prov.descuento_activo || 'cacharro';
+        const pct  = tipo === 'joyeria' ? (prov.descuento_joyeria || 0) : (prov.descuento_cacharro || 0);
+        descuento  = Math.round(saldo * pct);
+      }
+      const valorFinal = Math.max(0, saldo - flete - descuento);
+
       if (!porProveedor[nit]) {
         porProveedor[nit] = {
           proveedor: {
             nit,
-            nombre: f.p_nombre || f.proveedor_nombre,
-            telefono: f.p_telefono,
-            telefono2: f.p_telefono2,
-            banco: f.banco,
-            cuenta: f.cuenta,
-            tipo_cuenta: f.tipo_cuenta,
-            titular_nombre: f.titular_nombre,
-            titular_id: f.titular_id,
+            nombre:         prov.nombre || nombreErp,
+            telefono:       prov.telefono || null,   // SOLO MakaBot SQLite — nunca usar ERP
+            telefono2:      prov.telefono2 || null,
+            banco:          prov.banco || '',
+            cuenta:         prov.cuenta || '',
+            tipo_cuenta:    prov.tipo_cuenta || '',
+            titular_nombre: prov.titular_nombre || '',
+            titular_id:     prov.titular_id || '',
           },
           facturas: [],
         };
       }
-      porProveedor[nit].facturas.push(f);
-    }
+      porProveedor[nit].facturas.push({
+        id:                    String(f.idreg),
+        numero_factura:        f.numero_factura,
+        fecha_factura:         toISO(f.fecha_factura),
+        fecha_vencimiento:     aj.fecha_vencimiento_override || toISO(f.fecha_vencimiento),
+        valor_factura:         parseFloat(f.valor_bruto) || saldo,
+        descuento_pronto_pago: descuento,
+        flete,
+        valor_final:           valorFinal,
+        saldo_pendiente:       saldo,
+        proveedor_nit:         nit,
+        proveedor_nombre:      f.proveedor_nombre,
+        estado:                'pendiente',
+      });
+    });
 
     const proveedoresConFacturas = Object.values(porProveedor);
-    console.log(`Generando mensajes para ${proveedoresConFacturas.length} proveedores...`);
+    console.log(`[DEBUG] vencimiento_hasta=${vencimiento_hasta} incluidas=${incluidas.length}`);
+    proveedoresConFacturas.forEach(p => console.log(`  ${p.proveedor.nombre}: ${p.facturas.length} facturas`));
+    console.log(`Generando mensajes para ${proveedoresConFacturas.length} proveedores (ERP)...`);
 
     const mensajesGenerados = await generarMensajesLote(proveedoresConFacturas, fecha_pago);
 
@@ -79,13 +124,13 @@ router.post("/generar", express.json(), async (req, res) => {
     const envios = await enviarMensajesLote(mensajesGenerados);
 
     res.json({
-      mensaje: "Mensajes generados y enviados",
+      mensaje:        "Mensajes generados y enviados",
       total_generados: mensajesGenerados.length,
-      total_enviados: envios.filter((e) => e.estado === "enviado").length,
-      sin_telefono: envios.filter((e) => e.estado === "sin_telefono").length,
-      errores: envios.filter((e) => e.estado === "error").length,
-      detalle: envios,
-      mensajes: mensajesGenerados,
+      total_enviados:  envios.filter(e => e.estado === "enviado").length,
+      sin_telefono:    envios.filter(e => e.estado === "sin_telefono").length,
+      errores:         envios.filter(e => e.estado === "error").length,
+      detalle:         envios,
+      mensajes:        mensajesGenerados,
     });
   } catch (err) {
     console.error("Error generando mensajes:", err);
@@ -94,8 +139,6 @@ router.post("/generar", express.json(), async (req, res) => {
 });
 
 // POST /mensajes/responder
-// Body: { proveedor_nit, respuesta_proveedor }
-// El bot analiza la respuesta y ajusta valores si el proveedor tiene un valor menor
 router.post("/responder", express.json(), async (req, res) => {
   try {
     const { proveedor_nit, respuesta_proveedor } = req.body;
@@ -104,18 +147,34 @@ router.post("/responder", express.json(), async (req, res) => {
     }
 
     const proveedor = db.prepare("SELECT * FROM proveedores WHERE nit = ?").get(proveedor_nit);
-    const facturas = db.prepare(
-      "SELECT * FROM facturas WHERE proveedor_nit = ? AND estado = 'pendiente'"
-    ).all(proveedor_nit);
+
+    const erpFacturas = await getCuentasPorPagar({ nit: proveedor_nit });
+    const ajustesRows = db.prepare("SELECT * FROM facturas_erp_ajustes").all();
+    const ajMap = {};
+    ajustesRows.forEach(a => { ajMap[a.idreg] = a; });
+
+    const facturas = erpFacturas.filter(f => {
+      const aj = ajMap[String(f.idreg)] || {};
+      return aj.incluir_pago !== 0;
+    }).map(f => {
+      const aj    = ajMap[String(f.idreg)] || {};
+      const flete = aj.flete || 0;
+      const saldo = parseFloat(f.saldo_pendiente) || 0;
+      return {
+        id:             String(f.idreg),
+        numero_factura: f.numero_factura,
+        valor_final:    Math.max(0, saldo - flete),
+        saldo_pendiente: saldo,
+      };
+    });
 
     if (facturas.length === 0) {
       return res.status(404).json({ error: "No hay facturas pendientes para este proveedor" });
     }
 
-    const totalCalculado = facturas.reduce((sum, f) => sum + f.valor_final, 0);
-    const nombreProveedor = proveedor?.nombre || facturas[0]?.proveedor_nombre || proveedor_nit;
+    const totalCalculado  = facturas.reduce((s, f) => s + f.valor_final, 0);
+    const nombreProveedor = proveedor?.nombre || proveedor_nit;
 
-    // Llamar a Claude para analizar la respuesta
     const analisis = await responderProveedor({
       nombreProveedor,
       respuestaProveedor: respuesta_proveedor,
@@ -123,47 +182,67 @@ router.post("/responder", express.json(), async (req, res) => {
       facturas,
     });
 
-    // Si Claude determinó que hay un valor del proveedor menor → actualizar
-    let actualizacion = null;
-    if (
-      analisis.accion === "ajustado" &&
-      analisis.origen_valor === "proveedor" &&
-      analisis.valor_aceptado < totalCalculado
-    ) {
-      // Distribuir el ajuste proporcionalmente entre las facturas
-      const ratio = analisis.valor_aceptado / totalCalculado;
-      const updateStmt = db.prepare(
-        "UPDATE facturas SET valor_final = ?, valor_proveedor = ?, origen_valor = 'proveedor' WHERE id = ?"
-      );
-      const txn = db.transaction(() => {
-        for (const f of facturas) {
-          const nuevoValor = Math.round(f.valor_final * ratio * 100) / 100;
-          updateStmt.run(nuevoValor, nuevoValor, f.id);
-        }
-      });
-      txn();
-
-      actualizacion = {
-        valor_anterior: totalCalculado,
-        valor_nuevo: analisis.valor_aceptado,
-        ahorro: totalCalculado - analisis.valor_aceptado,
-      };
-    }
-
-    // Registrar la conversación
     db.prepare(
       "INSERT INTO conversaciones (proveedor_nit, mensaje_enviado, respuesta, estado) VALUES (?,?,?,'respondido')"
     ).run(proveedor_nit, `[RESPUESTA PROVEEDOR]: ${respuesta_proveedor}`, analisis.mensaje_respuesta);
 
     res.json({
-      mensaje_bot: analisis.mensaje_respuesta,
-      accion: analisis.accion,
+      mensaje_bot:    analisis.mensaje_respuesta,
+      accion:         analisis.accion,
       valor_aceptado: analisis.valor_aceptado,
-      origen_valor: analisis.origen_valor,
-      actualizacion,
+      origen_valor:   analisis.origen_valor,
     });
   } catch (err) {
     console.error("Error respondiendo:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /mensajes/recordatorio — Enviar recordatorio inmediato a un proveedor y activar ciclo 72h
+// Body: { nit } — busca datos en SQLite + ERP automáticamente
+router.post("/recordatorio", express.json(), async (req, res) => {
+  try {
+    const { nit } = req.body;
+    if (!nit) return res.status(400).json({ error: "nit requerido" });
+
+    const prov = db.prepare("SELECT * FROM proveedores WHERE nit = ?").get(nit);
+    if (!prov) return res.status(404).json({ error: "Proveedor no encontrado en MakaBot" });
+    if (!prov.telefono) return res.status(400).json({ error: "Proveedor sin teléfono registrado en MakaBot" });
+
+    // Obtener facturas del ERP
+    const erpFacturas = await getCuentasPorPagar({ soloVencidas: false });
+    const ajustesRows = db.prepare("SELECT * FROM facturas_erp_ajustes").all();
+    const ajMap = {};
+    ajustesRows.forEach(a => { ajMap[a.idreg] = a; });
+
+    const facturasDelProv = erpFacturas.filter(f => {
+      if (f.nit !== nit) return false;
+      const aj = ajMap[String(f.idreg)];
+      return !(aj && aj.incluir_pago === 0);
+    });
+
+    const facturasList = facturasDelProv.map(f => f.numero_factura).join(", ");
+    const total = facturasDelProv.reduce((s, f) => s + (parseFloat(f.saldo_pendiente) || 0), 0);
+
+    const mensaje = await enviarRecordatorioInmediato({
+      proveedor_nit:    nit,
+      proveedor_nombre: prov.nombre,
+      telefono:         prov.telefono,
+      facturas:         facturasList,
+      total,
+    });
+
+    res.json({
+      ok: true,
+      proveedor: prov.nombre,
+      telefono:  prov.telefono,
+      facturas:  facturasList,
+      total,
+      mensaje,
+      nota: "Recordatorio enviado. Se repetirá automáticamente cada 72h si no responde.",
+    });
+  } catch (err) {
+    console.error("Error enviando recordatorio:", err);
     res.status(500).json({ error: err.message });
   }
 });

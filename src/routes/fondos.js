@@ -93,7 +93,7 @@ router.get("/resumen", (req, res) => {
     const cuentas = db.prepare("SELECT * FROM cuentas ORDER BY id").all();
     const gastos = db.prepare("SELECT * FROM gastos_semana").all();
 
-    let queryTotal = "SELECT SUM(valor_final) as total FROM facturas WHERE incluir_pago = 1 AND estado = 'pendiente'";
+    let queryTotal = "SELECT SUM(valor_final) as total FROM facturas WHERE estado = 'pendiente'";
     const params = [];
     if (vencimiento_desde) { queryTotal += " AND fecha_vencimiento >= ?"; params.push(vencimiento_desde); }
     if (vencimiento_hasta) { queryTotal += " AND fecha_vencimiento <= ?"; params.push(vencimiento_hasta); }

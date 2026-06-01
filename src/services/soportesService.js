@@ -10,9 +10,12 @@ if (!fs.existsSync(SOPORTES_DIR)) fs.mkdirSync(SOPORTES_DIR, { recursive: true }
  * Guarda el archivo de soporte en disco y en la BD,
  * luego notifica al proveedor por WhatsApp.
  */
-async function guardarSoporte({ proveedor_nit, facturas, valor, fecha_pago, notas, buffer, originalname, mimetype }) {
-  const proveedor = db.prepare("SELECT * FROM proveedores WHERE nit = ?").get(proveedor_nit);
-  if (!proveedor) throw new Error(`Proveedor NIT ${proveedor_nit} no encontrado`);
+async function guardarSoporte({ proveedor_nit, proveedor_nombre_erp = null, facturas, valor, fecha_pago, notas, buffer, originalname, mimetype }) {
+  let proveedor = db.prepare("SELECT * FROM proveedores WHERE nit = ?").get(proveedor_nit);
+  // Si no está en SQLite, usar nombre pasado o NIT como fallback (proveedor solo en ERP)
+  if (!proveedor) {
+    proveedor = { nit: proveedor_nit, nombre: proveedor_nombre_erp || proveedor_nit, telefono: null, telefono2: null };
+  }
 
   // Guardar archivo en disco
   const timestamp = Date.now();

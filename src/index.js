@@ -17,14 +17,18 @@ app.use(express.static(path.join(__dirname, "..")));  // para descargar ejemplos
 require("./models/db");
 
 // Rutas API
-app.use("/facturas", require("./routes/facturas"));
+app.use("/facturas",    require("./routes/facturas"));
 app.use("/proveedores", require("./routes/proveedores"));
 app.use("/mensajes", require("./routes/mensajes"));
 app.use("/pagos", require("./routes/pagos"));
 app.use("/fondos", require("./routes/fondos"));
 app.use("/soportes", require("./routes/soportes"));
-app.use("/cxp",      require("./routes/cxp"));
-app.use("/webhook", require("./routes/webhook"));
+app.use("/cxp",        require("./routes/cxp"));
+app.use("/inventario", require("./routes/inventario"));
+app.use("/webhook",    require("./routes/webhook"));
+app.use("/ventas",     require("./routes/ventas"));
+app.use("/compras",    require("./routes/compras"));
+app.use("/cxc",        require("./routes/cxc"));
 
 // Ruta principal - servir el dashboard
 app.get("/", (req, res) => {
@@ -43,12 +47,7 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🤖 MAKABOT arrancado en http://localhost:${PORT}`);
-  console.log(`📊 Empresa: MAKA QCUTE SAS`);
-  console.log(`🗄️  Base de datos: makabot.db`);
-  console.log(`\n📋 Endpoints disponibles:`);
-  console.log(`  POST /facturas/upload`);
-  console.log(`  POST /proveedores/upload`);
-  console.log(`  POST /mensajes/generar`);
-  console.log(`  GET  /pagos/generar\n`);
+  console.log(`\n✨ LUMINA GESTIÓN INTEGRAL arrancado en http://localhost:${PORT}`);
+
+  // WhatsApp deshabilitado en LUMINA (se comparte servidor con MAKABOT)
 });

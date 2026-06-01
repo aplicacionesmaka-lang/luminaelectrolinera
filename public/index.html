@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAKABOT — Cuentas por Pagar</title>
+  <title>LUMINA — Gestión Integral</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf4ff;color:#2d1b69}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f7ff;color:#0f2a4a}
 
-    header{background:linear-gradient(135deg,#2d1b69,#6d28d9);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(109,40,217,.4)}
-    .logo{font-size:26px;font-weight:900;letter-spacing:-1px;color:#f9a8d4}
+    header{background:linear-gradient(135deg,#0f2a4a,#1e6fb5);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(30,111,181,.4)}
+    .logo{font-size:26px;font-weight:900;letter-spacing:-1px;color:#7dd3fc}
     .subtitle{font-size:12px;opacity:.65;margin-top:2px}
     .badge-online{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #10b981;background:rgba(16,185,129,.15);color:#10b981}
 
     nav{background:#fff;border-bottom:2px solid #eee;display:flex;padding:0 28px;gap:2px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow-x:auto}
     nav button{padding:13px 18px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:500;color:#666;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
-    nav button:hover{color:#9333ea}
-    nav button.active{color:#9333ea;border-bottom-color:#9333ea;font-weight:700}
+    nav button:hover{color:#1e6fb5}
+    nav button.active{color:#1e6fb5;border-bottom-color:#1e6fb5;font-weight:700}
 
     main{max-width:1150px;margin:0 auto;padding:24px 16px}
     .tab{display:none}.tab.active{display:block}
@@ -26,18 +26,18 @@
 
     .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
     .stat-card{background:#fff;border-radius:12px;padding:18px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.06);border:1px solid #eee}
-    .stat-card .num{font-size:28px;font-weight:800;color:#9333ea;line-height:1}
+    .stat-card .num{font-size:28px;font-weight:800;color:#1e6fb5;line-height:1}
     .stat-card .lbl{font-size:11px;color:#888;margin-top:5px;font-weight:500}
 
     .upload-zone{border:2px dashed #d0d0d0;border-radius:10px;padding:26px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}
-    .upload-zone:hover,.upload-zone.drag{border-color:#9333ea;background:#fdf4ff}
+    .upload-zone:hover,.upload-zone.drag{border-color:#1e6fb5;background:#f0f7ff}
     .upload-zone .icon{font-size:32px;margin-bottom:6px}
     .upload-zone p{color:#666;font-size:13px}
     .upload-zone small{color:#aaa;font-size:11px}
     .upload-zone input[type=file]{display:none}
 
     .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-    .btn-primary{background:#9333ea;color:#fff}.btn-primary:hover{background:#7c3aed;transform:translateY(-1px)}
+    .btn-primary{background:#1e6fb5;color:#fff}.btn-primary:hover{background:#1a5f9e;transform:translateY(-1px)}
     .btn-secondary{background:#f0f0f0;color:#333}.btn-secondary:hover{background:#e0e0e0}
     .btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
     .btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
@@ -47,7 +47,7 @@
     .form-group{margin-bottom:14px}
     .form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555}
     .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none;transition:border-color .2s;font-family:inherit}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#9333ea}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1e6fb5}
 
     table{width:100%;border-collapse:collapse;font-size:12px}
     th{background:#f8f8f8;padding:9px 12px;text-align:left;font-weight:600;color:#555;border-bottom:2px solid #eee;white-space:nowrap;position:sticky;top:0;z-index:10}
@@ -136,12 +136,12 @@
     .prov-selector{display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:10px}
     .prov-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:2px solid #eee;cursor:pointer;transition:all .2s;user-select:none}
     .prov-row:hover{border-color:#c084fc;background:#faf0ff}
-    .prov-row.selected{border-color:#9333ea;background:#f3e8ff}
-    .prov-row input[type=checkbox]{width:18px;height:18px;accent-color:#9333ea;cursor:pointer;flex-shrink:0}
+    .prov-row.selected{border-color:#1e6fb5;background:#f3e8ff}
+    .prov-row input[type=checkbox]{width:18px;height:18px;accent-color:#1e6fb5;cursor:pointer;flex-shrink:0}
     .prov-row .prov-info{flex:1}
     .prov-row .prov-name{font-weight:700;font-size:13px}
     .prov-row .prov-meta{font-size:11px;color:#888;margin-top:2px}
-    .prov-row .prov-total{font-size:14px;font-weight:800;color:#9333ea;text-align:right}
+    .prov-row .prov-total{font-size:14px;font-weight:800;color:#1e6fb5;text-align:right}
     .prov-row .prov-phone{font-size:11px;color:#10b981;margin-top:2px;text-align:right}
 
     .sel-controls{display:flex;gap:8px;margin-bottom:10px;align-items:center}
@@ -164,13 +164,13 @@
     .chat-label{font-size:10px;color:#888;margin-bottom:2px}
     .chat-input-row{display:flex;gap:8px;margin-top:10px}
     .chat-input-row input{flex:1;padding:9px 13px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none}
-    .chat-input-row input:focus{border-color:#9333ea}
+    .chat-input-row input:focus{border-color:#1e6fb5}
 
     /* IMAGEN ANALISIS */
     .img-preview{max-width:300px;max-height:250px;border-radius:8px;border:1px solid #ddd;margin-top:10px;display:none}
     .analisis-result{background:#f0fdf4;border:1px solid #10b981;border-radius:8px;padding:14px;margin-top:12px;font-size:12px;display:none}
     .analisis-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e5e7eb}
-    .analisis-row:last-child{border-bottom:none;font-weight:700;color:#9333ea}
+    .analisis-row:last-child{border-bottom:none;font-weight:700;color:#1e6fb5}
 
     /* FILTROS */
     .filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:14px;background:#f9f9f9;border-radius:10px;border:1px solid #eee;margin-bottom:16px}
@@ -205,7 +205,7 @@
     .sem-lejana{background:#3b82f6}
     .venc-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
     .venc-toolbar .form-group{margin:0;min-width:140px}
-    .chk-pagar{width:18px;height:18px;accent-color:#9333ea;cursor:pointer}
+    .chk-pagar{width:18px;height:18px;accent-color:#1e6fb5;cursor:pointer}
     .row-incluida { background: #f0fdf4; }
     .row-incluida td { border-left: 0; }
     .row-excluida { background: #f8fafc; }
@@ -248,34 +248,68 @@
     .bulk-bar{display:flex;gap:8px;align-items:center;padding:10px 14px;background:#fff3cd;border-radius:8px;border:1px solid #ffc107;margin-bottom:12px;display:none}
     .bulk-bar.show{display:flex}
   </style>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
   <div>
-    <div class="logo">🤖 MAKABOT</div>
-    <div class="subtitle">MAKA QCUTE SAS — Automatización Cuentas por Pagar</div>
+    <div class="logo">✨ LUMINA</div>
+    <div class="subtitle">LUMINA GESTIÓN INTEGRAL — CxP · CxC · Pagos · WhatsApp</div>
   </div>
   <div class="badge-online" id="statusBadge">● Conectando...</div>
 </header>
 
 <nav>
   <button class="active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
-  <button onclick="showTab('proveedores',this)">🏢 Proveedores</button>
-  <button onclick="showTab('facturas',this)">📄 Facturas</button>
+  <button onclick="showTab('cxc',this)">📥 CxC — Cobros</button>
+  <button onclick="showTab('fondos',this)">💰 Fondos & Plan</button>
   <button onclick="showTab('vencimientos',this)">🗓️ Vencimientos</button>
   <button onclick="showTab('mensajes',this)">💬 Mensajes & Bot</button>
-  <button onclick="showTab('imagenes',this)">🖼️ Imágenes IA</button>
-  <button onclick="showTab('fondos',this)">💰 Fondos & Plan</button>
+  <button onclick="showTab('soportes',this)">📎 Soportes & Comprobantes</button>
+  <button onclick="showTab('proveedores',this)">🏢 Proveedores</button>
   <button onclick="showTab('pagos',this)">💳 Pagos</button>
-  <button onclick="showTab('soportes',this)">📎 Soportes de Pago</button>
   <button onclick="showTab('cxp',this)">🏦 CxP ERP</button>
+  <button onclick="showTab('inventario',this)">📦 Inventario</button>
+  <button onclick="showTab('ventas',this)">📈 Ventas y Resultados</button>
+  <button onclick="showTab('whatsapp',this)" id="btnTabWA">📱 WhatsApp</button>
 </nav>
 
 <main>
 
 <!-- ========== DASHBOARD ========== -->
 <div class="tab active" id="tab-dashboard">
+
+  <!-- ── CxC RESUMEN ── -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:16px;font-weight:800;color:#1e6fb5">📥 Cuentas por Cobrar</span>
+    <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px" onclick="loadDashboardCxC()">🔄</button>
+    <button class="btn btn-primary"   style="padding:4px 10px;font-size:11px" onclick="showTab('cxc',document.querySelector('nav button:nth-child(2)'))">Ver detalle →</button>
+  </div>
+
+  <!-- KPIs CxC -->
+  <div class="stats" style="margin-bottom:12px">
+    <div class="stat-card"><div class="num" id="d-cxc-total" style="color:#1e6fb5">—</div><div class="lbl">Total por Cobrar</div></div>
+    <div class="stat-card"><div class="num" id="d-cxc-vencida" style="color:#ef4444">—</div><div class="lbl">Cartera Vencida</div></div>
+    <div class="stat-card"><div class="num" id="d-cxc-proximas" style="color:#f59e0b">—</div><div class="lbl">Vence ≤7 días</div></div>
+    <div class="stat-card"><div class="num" id="d-cxc-clientes" style="color:#10b981">—</div><div class="lbl">Clientes con saldo</div></div>
+  </div>
+
+  <!-- CxC por semanas -->
+  <div class="grid-2" style="margin-bottom:14px">
+    <div class="card">
+      <h2>📆 CxC — Próximas 4 semanas</h2>
+      <div id="dashCxCSemanas"><div class="empty"><div class="icon">📅</div>Cargando...</div></div>
+    </div>
+    <div class="card">
+      <h2>👥 CxC — Por cliente (mayor deuda)</h2>
+      <div id="dashCxCClientes"><div class="empty"><div class="icon">👥</div>Cargando...</div></div>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:2px dashed #e2e8f0;margin:6px 0 14px"/>
+  <div style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:10px">📤 Cuentas por Pagar (CxP)</div>
+
   <div class="stats">
     <div class="stat-card"><div class="num" id="s-prov">—</div><div class="lbl">Proveedores</div></div>
     <div class="stat-card"><div class="num" id="s-fact">—</div><div class="lbl">Facturas Pendientes</div></div>
@@ -283,8 +317,8 @@
     <div class="stat-card"><div class="num" id="s-msg">—</div><div class="lbl">Mensajes Enviados</div></div>
   </div>
   <!-- Flujo de caja semanal -->
-  <div class="card" style="margin-bottom:16px">
-    <h2>📆 Flujo de Caja — Próximas 4 Semanas</h2>
+  <div class="card" style="margin-bottom:16px;margin-top:14px">
+    <h2>📆 CxP — Próximas 4 Semanas</h2>
     <div id="dashFlujoCaja"><div class="empty"><div class="icon">📅</div>Cargando...</div></div>
   </div>
 
@@ -296,9 +330,9 @@
     <div class="card">
       <h2>🚀 Flujo de trabajo</h2>
       <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
-        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#9333ea;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">1</span><span>Sube Excel de <strong>Proveedores</strong> con datos bancarios</span></div>
-        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#9333ea;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">2</span><span>Sube Excel de <strong>Facturas</strong> y filtra por <strong>fecha de vencimiento</strong></span></div>
-        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#9333ea;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">3</span><span><strong>Selecciona</strong> los proveedores a pagar y genera mensajes WhatsApp con IA</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#1e6fb5;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">1</span><span>Sube Excel de <strong>Proveedores</strong> con datos bancarios</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#1e6fb5;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">2</span><span>Sube Excel de <strong>Facturas</strong> y filtra por <strong>fecha de vencimiento</strong></span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#1e6fb5;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">3</span><span><strong>Selecciona</strong> los proveedores a pagar y genera mensajes WhatsApp con IA</span></div>
         <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#ec4899;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">4</span><span>El <strong>Bot responde</strong> y compara valores — acepta el del proveedor si es menor</span></div>
         <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#a855f7;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">5</span><span>Sube <strong>imágenes</strong> del proveedor con liquidación — IA extrae los valores</span></div>
         <div style="display:flex;gap:10px;align-items:center"><span style="width:26px;height:26px;background:#10b981;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">6</span><span>Descarga el archivo de <strong>Pagos</strong> en Excel</span></div>
@@ -319,54 +353,25 @@
     </div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="document.getElementById('fprov').click()">📤 Subir</button>
-      <a href="/ejemplo_proveedores.xlsx" download><button class="btn btn-secondary" type="button">⬇ Ejemplo</button></a>
+      <a href="${API_BASE}/ejemplo_proveedores.xlsx" download><button class="btn btn-secondary" type="button">⬇ Ejemplo</button></a>
     </div>
     <div class="result-box" id="rProv"></div>
   </div>
   <div class="card">
     <h2>🏢 Proveedores registrados</h2>
-    <button class="btn btn-secondary" onclick="loadProveedores()" style="margin-bottom:12px">🔄 Actualizar</button>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <input id="buscaProv" type="text" placeholder="🔍 Buscar por nombre o NIT..."
+        oninput="filtrarProveedores()"
+        style="flex:1;min-width:200px;padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px"/>
+      <button class="btn btn-secondary" onclick="loadProveedores()">🔄 Actualizar</button>
+      <button class="btn btn-primary" onclick="crearProveedor()" style="background:#10b981;border-color:#10b981">➕ Nuevo Proveedor</button>
+      <span id="provCount" style="font-size:12px;color:#9ca3af"></span>
+    </div>
     <div class="table-wrap" id="tProv"><div class="empty"><div class="icon">🏢</div>Sin proveedores</div></div>
   </div>
 </div>
 
 <!-- ========== FACTURAS ========== -->
-<div class="tab" id="tab-facturas">
-  <div class="card">
-    <h2>📤 Subir Excel de Facturas</h2>
-    <div class="upload-zone" id="zfact" onclick="document.getElementById('ffact').click()">
-      <div class="icon">📄</div>
-      <p><strong>Clic o arrastra</strong> el archivo Excel</p>
-      <small>Columnas: numero_factura, proveedor_nit, valor_factura, descuento_pronto_pago, flete, fecha_vencimiento</small>
-      <input type="file" id="ffact" accept=".xlsx,.xls" onchange="uploadExcel('facturas','ffact','rFact')"/>
-    </div>
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="document.getElementById('ffact').click()">📤 Subir</button>
-      <a href="/ejemplo_facturas.xlsx" download><button class="btn btn-secondary" type="button">⬇ Ejemplo</button></a>
-    </div>
-    <div class="result-box" id="rFact"></div>
-  </div>
-
-  <!-- FILTROS -->
-  <div class="card">
-    <h2>🔍 Filtrar Facturas por Fecha de Vencimiento</h2>
-    <div class="filters">
-      <div class="form-group">
-        <label>Vencimiento desde</label>
-        <input type="date" id="filtroDesde"/>
-      </div>
-      <div class="form-group">
-        <label>Vencimiento hasta</label>
-        <input type="date" id="filtroHasta"/>
-      </div>
-      <button class="btn btn-primary" onclick="loadFacturas()">🔍 Filtrar</button>
-      <button class="btn btn-secondary" onclick="clearFiltros()">✕ Limpiar</button>
-      <span id="factCount" class="tag" style="align-self:center"></span>
-    </div>
-    <div class="table-wrap" id="tFact"><div class="empty"><div class="icon">📄</div>Sube facturas o aplica un filtro</div></div>
-  </div>
-</div>
-
 <!-- ========== VENCIMIENTOS ========== -->
 <div class="tab" id="tab-vencimientos">
 
@@ -389,11 +394,11 @@
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
         <div class="form-group" style="margin:0;flex:1;min-width:160px">
           <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">📅 Vencimiento desde</label>
-          <input type="date" id="vFiltDesde" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:2px solid #9333ea;border-radius:8px;font-size:14px"/>
+          <input type="date" id="vFiltDesde" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:2px solid #1e6fb5;border-radius:8px;font-size:14px"/>
         </div>
         <div class="form-group" style="margin:0;flex:1;min-width:160px">
           <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">📅 Vencimiento hasta</label>
-          <input type="date" id="vFiltHasta" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:2px solid #9333ea;border-radius:8px;font-size:14px"/>
+          <input type="date" id="vFiltHasta" onchange="loadVencimientos()" style="width:100%;padding:8px 10px;border:2px solid #1e6fb5;border-radius:8px;font-size:14px"/>
         </div>
         <div class="form-group" style="margin:0;flex:1;min-width:160px">
           <label style="font-weight:600;color:#374151;display:block;margin-bottom:4px">🏢 Proveedor</label>
@@ -417,7 +422,7 @@
           <button class="btn btn-secondary" onclick="limpiarFiltrosVenc()" style="white-space:nowrap">✕ Limpiar</button>
           <button class="btn btn-secondary" onclick="loadVencimientos()" style="white-space:nowrap">🔄</button>
           <button class="btn btn-success" onclick="exportarSeleccionadas()" style="white-space:nowrap">💾 Exportar</button>
-          <button class="btn btn-secondary" onclick="recalcularDescuentoProveedor()" style="white-space:nowrap;background:#f59e0b;color:#fff;border-color:#f59e0b" title="Recalcula el descuento de las facturas pendientes del proveedor seleccionado con el % actual registrado">🔁 Recalcular Dto.</button>
+          <button class="btn btn-secondary" onclick="recalcularDescuentoProveedor()" style="white-space:nowrap;background:#f59e0b;color:#fff;border-color:#f59e0b" title="Recarga datos: los descuentos se calculan automáticamente desde el % registrado en cada proveedor">🔁 Actualizar Dto.</button>
         </div>
       </div>
     </div>
@@ -454,6 +459,7 @@
         <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px">
           <div class="vrc-fondos-row"><span>Recursos totales</span><span id="vf-recursos">—</span></div>
           <div class="vrc-fondos-row"><span>Gastos semana</span><span id="vf-gastos">—</span></div>
+          <div class="vrc-fondos-row" style="color:#1e6fb5"><span>+ Recaudo CxC estimado</span><span id="vf-cxc">—</span></div>
           <div class="vrc-fondos-row"><span>Disponible</span><span id="vf-disponible">—</span></div>
           <div class="vrc-fondos-row"><span>Seleccionado a pagar</span><span id="vf-apagar">—</span></div>
           <div class="vrc-fondos-row" id="vf-saldo-row"><span>Saldo final</span><span id="vf-saldo">—</span></div>
@@ -472,6 +478,7 @@
             <th class="sc4" onclick="sortVenc('numero_factura')" style="cursor:pointer">Factura ↕</th>
             <th class="sc5" onclick="sortVenc('proveedor_nombre')" style="cursor:pointer">Proveedor ↕</th>
             <th>NIT</th>
+            <th onclick="sortVenc('tienda')" style="cursor:pointer">Tienda ↕</th>
             <th onclick="sortVenc('fecha_factura')" style="cursor:pointer">F. Factura ↕</th>
             <th onclick="sortVenc('fecha_vencimiento')" style="cursor:pointer">F. Vencimiento ↕</th>
             <th onclick="sortVenc('dias_para_vencer')" style="cursor:pointer">Días para vencer ↕</th>
@@ -552,56 +559,69 @@
     <div id="msgPreview"></div>
   </div>
 
-  <!-- BOT: RESPONDER A PROVEEDOR -->
+  <!-- MENSAJES A CLIENTES (CxC) -->
+  <div class="card" style="border:2px solid #bfdbfe">
+    <h2 style="color:#1e40af">📥 Mensajes a Clientes — CxC</h2>
+
+    <!-- Filtros -->
+    <div class="filters" style="margin-bottom:12px">
+      <div class="form-group">
+        <label>Facturas con vencimiento hasta</label>
+        <input type="date" id="cxcMsgHasta"/>
+      </div>
+      <div class="form-group">
+        <label>Filtrar por cliente</label>
+        <select id="cxcMsgCliente" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;min-width:200px">
+          <option value="">Todos los clientes</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="loadSelectorClientes()">🔄 Cargar</button>
+    </div>
+
+    <!-- Cuenta para informar a clientes -->
+    <div class="form-group" style="max-width:500px;margin-bottom:12px">
+      <label>🏦 Cuenta de pago a informar (se incluye en el mensaje)</label>
+      <textarea id="cxcCuentaPago" rows="2" placeholder="Ej: Bancolombia Cta. Ahorros 123-456789-00 a nombre de LUMINA GESTIÓN INTEGRAL NIT 900.XXX.XXX-X"
+        style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit"></textarea>
+    </div>
+
+    <div class="sel-controls">
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="selAllClientes(true)">✓ Todos</button>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="selAllClientes(false)">✗ Ninguno</button>
+      <span id="selCountClientes" style="font-size:12px;color:#666;margin-left:auto">0 seleccionados</span>
+    </div>
+    <div class="prov-selector" id="clienteSelector" style="border-color:#bfdbfe">
+      <div class="empty"><div class="icon">👥</div>Carga los clientes con el filtro de arriba</div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-primary" onclick="enviarRecordatoriosSeleccionados()" style="background:#1e40af">📲 Enviar Recordatorios</button>
+      <button class="btn btn-secondary" onclick="previsualizarMensajeCxC()">👁️ Vista previa</button>
+    </div>
+    <div id="rMensajesCxC" class="result-box"></div>
+    <div id="previewMensajeCxC" style="display:none;margin-top:12px;padding:14px;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;white-space:pre-wrap;line-height:1.7"></div>
+  </div>
+
+  <!-- BOT: CONVERSACIONES -->
   <div class="card">
-    <h2>🤖 Bot — Responder a Proveedor</h2>
-    <p style="font-size:12px;color:#666;margin-bottom:14px">Escribe la respuesta que envió el proveedor. El bot la analiza, compara valores y responde automáticamente. Si el proveedor informa un valor <strong>menor</strong>, se aplica ese valor.</p>
+    <h2>🤖 Bot — Conversaciones WhatsApp</h2>
     <div class="form-group">
       <label>Seleccionar proveedor</label>
-      <select id="chatProv"><option value="">— Selecciona un proveedor —</option></select>
+      <select id="chatProv" onchange="cargarHistorialChat()"><option value="">— Selecciona un proveedor —</option></select>
     </div>
-    <div class="chat-area" id="chatArea">
-      <div style="text-align:center;color:#aaa;font-size:12px;margin:auto">Selecciona un proveedor y escribe su respuesta</div>
+    <div class="chat-area" id="chatArea" style="min-height:300px;max-height:500px;overflow-y:auto;padding:12px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:10px">
+      <div style="text-align:center;color:#aaa;font-size:12px;margin:auto;padding:40px 0">Selecciona un proveedor para ver el historial de mensajes</div>
     </div>
+    <p style="font-size:11px;color:#888;margin-bottom:8px">💡 El bot responde automáticamente por WhatsApp. Este panel muestra el historial y permite simular respuestas.</p>
     <div class="chat-input-row">
-      <input type="text" id="chatInput" placeholder="Escribe la respuesta del proveedor..." onkeypress="if(event.key==='Enter')enviarRespuesta()"/>
+      <input type="text" id="chatInput" placeholder="Simular respuesta del proveedor..." onkeypress="if(event.key==='Enter')enviarRespuesta()"/>
       <button class="btn btn-info" id="btnChat" onclick="enviarRespuesta()">Enviar</button>
     </div>
   </div>
 </div>
 
 <!-- ========== IMÁGENES IA ========== -->
-<div class="tab" id="tab-imagenes">
-  <div class="card">
-    <h2>🖼️ Analizar Imagen del Proveedor con IA</h2>
-    <p style="font-size:12px;color:#666;margin-bottom:16px">El proveedor envía una foto de su liquidación mostrando descuentos y flete. La IA extrae los valores automáticamente y los puede aplicar a las facturas.</p>
-
-    <div class="form-group" style="max-width:300px">
-      <label>Proveedor (opcional — para aplicar valores)</label>
-      <select id="imgProv"><option value="">— Sin asignar —</option></select>
-    </div>
-
-    <div class="upload-zone" id="zimg" onclick="document.getElementById('fimg').click()">
-      <div class="icon">📸</div>
-      <p><strong>Clic o arrastra</strong> la imagen de la liquidación</p>
-      <small>JPG, PNG, WEBP — máx 5MB</small>
-      <input type="file" id="fimg" accept="image/*" onchange="previsualizarImagen(this)"/>
-    </div>
-    <img id="imgPreview" class="img-preview"/>
-
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" id="btnAnalizarImg" onclick="analizarImagen(false)" disabled>🤖 Analizar con IA</button>
-      <button class="btn btn-success" id="btnAplicarImg" onclick="analizarImagen(true)" disabled>✅ Analizar y Aplicar</button>
-    </div>
-    <p style="font-size:11px;color:#888;margin-top:6px">"Aplicar" actualiza automáticamente las facturas del proveedor con los valores de la imagen</p>
-    <div class="result-box" id="rImg"></div>
-  </div>
-
-  <div class="card" id="analisisCard" style="display:none">
-    <h2>📊 Resultado del Análisis</h2>
-    <div id="analisisContent"></div>
-  </div>
-</div>
+<div class="tab" id="tab-imagenes" style="display:none"></div>
 
 <!-- ========== FONDOS ========== -->
 <div class="tab" id="tab-fondos">
@@ -652,6 +672,43 @@
     </table>
   </div>
 
+  <!-- ESTIMACIÓN RECAUDO CxC -->
+  <div class="card" style="margin-top:16px">
+    <h2>📥 Estimación de Recaudo CxC</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:14px">Clasifica cada cliente según probabilidad de pago. El total estimado se suma a los recursos disponibles.</p>
+    <div style="display:grid;gap:10px;max-width:560px">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f0fdf4;border-radius:10px;border:1px solid #86efac">
+        <span style="font-size:18px">🟢</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#166534">Clientes seguros en el pago</div>
+          <div style="font-size:11px;color:#6b7280">Clientes con clasificación "seguro"</div>
+        </div>
+        <span style="font-size:17px;font-weight:800;color:#166534" id="rCxCSeguro">$0</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fefce8;border-radius:10px;border:1px solid #fde68a">
+        <span style="font-size:18px">🟡</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#92400e">Clientes dudosos</div>
+          <div style="font-size:11px;color:#6b7280">Clientes con clasificación "dudoso"</div>
+        </div>
+        <span style="font-size:17px;font-weight:800;color:#92400e" id="rCxCDudoso">$0</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fef2f2;border-radius:10px;border:1px solid #fecaca">
+        <span style="font-size:18px">🔴</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#991b1b">Clientes en cobro</div>
+          <div style="font-size:11px;color:#6b7280">Clientes con clasificación "cobro"</div>
+        </div>
+        <span style="font-size:17px;font-weight:800;color:#991b1b" id="rCxCCobro">$0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#eff6ff;border-radius:10px;border:2px solid #bfdbfe">
+        <span style="font-size:14px;font-weight:700;color:#1e40af">= Total estimado de recaudo CxC</span>
+        <span style="font-size:19px;font-weight:800;color:#1e40af" id="rCxCTotal">$0</span>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#888;margin-top:10px">Para clasificar clientes ve a la pestaña <strong>CxC — Cobros</strong> y ajusta la columna Clasificación.</p>
+  </div>
+
   <!-- RESUMEN PLAN DE PAGOS -->
   <div class="card" style="margin-top:16px" id="cardResumenFondos">
     <h2>📊 Resumen Plan de Pagos</h2>
@@ -665,6 +722,11 @@
       <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#fff7ed;border-radius:10px;border:1px solid #fed7aa">
         <span style="font-size:15px;color:#64748b">📋 − Gastos Estimados Semana</span>
         <span style="font-size:18px;font-weight:700;color:#ea580c" id="rTotalGastos">$0</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe">
+        <span style="font-size:15px;color:#1e40af">📥 + Recaudo CxC estimado</span>
+        <span style="font-size:18px;font-weight:700;color:#1e40af" id="rRecaudoCxC">$0</span>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#f0fdf4;border-radius:10px;border:2px solid #86efac">
@@ -703,14 +765,8 @@
 <div class="tab" id="tab-pagos">
   <div class="card">
     <h2>💳 Generar Archivo de Pagos Excel</h2>
-    <p style="font-size:12px;color:#666;margin-bottom:14px">Genera el Excel consolidado con todos los proveedores y facturas pendientes. Los valores ya ajustados (por proveedor o imagen IA) se reflejan automáticamente.</p>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>Fecha de pago</label>
-        <input type="date" id="fechaPagoXls"/>
-      </div>
-    </div>
-    <button class="btn btn-success" id="btnPagos" onclick="generarPagos()">💾 Generar Excel de Pagos</button>
+    <p style="font-size:12px;color:#666;margin-bottom:14px">Genera el Excel con las facturas seleccionadas en la pestaña <strong>Vencimientos</strong>. Incluye datos bancarios capturados por WhatsApp. Los proveedores sin datos bancarios aparecen marcados para gestión.</p>
+    <button class="btn btn-success" id="btnPagos" onclick="generarPagos()" style="font-size:15px;padding:12px 28px">💾 Generar Excel de Pagos</button>
     <div class="result-box" id="rPagos"></div>
   </div>
   <div class="card">
@@ -734,11 +790,14 @@
   </div>
 </div>
 
-<!-- ==================== SOPORTES DE PAGO ==================== -->
+<!-- ==================== SOPORTES & COMPROBANTES ==================== -->
 <div class="tab" id="tab-soportes">
+
+  <!-- SUBIR COMPROBANTE + ANÁLISIS IA -->
   <div class="card">
     <h2>📎 Subir Comprobante de Pago</h2>
-    <p style="font-size:12px;color:#666;margin-bottom:16px">Sube el soporte del pago realizado. El bot notificará automáticamente al proveedor por WhatsApp y enviará el comprobante.</p>
+    <p style="font-size:12px;color:#666;margin-bottom:16px">Sube el soporte del pago. La IA extrae automáticamente proveedor, facturas y valor. El bot notifica al proveedor por WhatsApp con el comprobante adjunto.</p>
+
     <div class="grid-2">
       <div class="form-group">
         <label>Proveedor *</label>
@@ -763,17 +822,58 @@
         <textarea id="sNotas" rows="2" placeholder="Ej: Pago parcial, retención aplicada..."></textarea>
       </div>
     </div>
+
     <div class="upload-zone" id="soporteZone" onclick="document.getElementById('sFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleSDrop(event)">
       <div class="icon">📤</div>
       <p id="sFileLabel">Haz clic o arrastra el comprobante aquí</p>
       <small>Imagen (JPG, PNG) o PDF — máx 20MB</small>
-      <input type="file" id="sFile" accept="image/*,.pdf" onchange="onSFileChange(this)"/>
+      <input type="file" id="sFile" accept="image/*,.pdf" onchange="onSFileChange(this); analizarComprobante(this)"/>
     </div>
-    <br/>
-    <button class="btn btn-success" id="btnSubirSoporte" onclick="subirSoporte()">📤 Subir y Notificar Proveedor</button>
+
+    <!-- Resultado análisis IA del comprobante -->
+    <div id="sAnalisisBox" style="display:none;margin-top:12px;padding:12px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:13px">
+      <strong>🤖 IA detectó:</strong>
+      <div id="sAnalisisContent" style="margin-top:6px;color:#166534"></div>
+      <button class="btn btn-secondary" onclick="aplicarAnalisis()" style="margin-top:8px;font-size:12px;padding:5px 12px">✅ Aplicar valores detectados</button>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-success" id="btnSubirSoporte" onclick="subirSoporte()">📤 Subir y Notificar Proveedor</button>
+      <button class="btn btn-primary" id="btnSoloAnalizar" onclick="soloAnalizarSoporte()" style="display:none">🤖 Solo Analizar con IA</button>
+    </div>
     <div class="result-box" id="rSoporte"></div>
   </div>
-  <div class="card">
+
+  <!-- Análisis de liquidación proveedor (antes tab-imagenes) -->
+  <div class="card" style="margin-top:16px">
+    <h2>🖼️ Analizar Liquidación del Proveedor con IA</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:16px">Sube una imagen de la liquidación del proveedor (descuentos, fletes). La IA extrae los valores y los aplica a las facturas del proveedor.</p>
+    <div class="form-group" style="max-width:300px">
+      <label>Proveedor (opcional)</label>
+      <select id="imgProv"><option value="">— Sin asignar —</option></select>
+    </div>
+    <div class="upload-zone" id="zimg" onclick="document.getElementById('fimg').click()">
+      <div class="icon">📸</div>
+      <p><strong>Clic o arrastra</strong> la imagen de la liquidación</p>
+      <small>JPG, PNG, WEBP — máx 5MB</small>
+      <input type="file" id="fimg" accept="image/*" onchange="previsualizarImagen(this)"/>
+    </div>
+    <img id="imgPreview" class="img-preview"/>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="btnAnalizarImg" onclick="analizarImagen(false)" disabled>🤖 Analizar con IA</button>
+      <button class="btn btn-success" id="btnAplicarImg" onclick="analizarImagen(true)" disabled>✅ Analizar y Aplicar</button>
+    </div>
+    <p style="font-size:11px;color:#888;margin-top:6px">"Aplicar" actualiza automáticamente las facturas del proveedor</p>
+    <div class="result-box" id="rImg"></div>
+  </div>
+
+  <div class="card" id="analisisCard" style="display:none;margin-top:16px">
+    <h2>📊 Resultado del Análisis</h2>
+    <div id="analisisContent"></div>
+  </div>
+
+  <!-- Historial -->
+  <div class="card" style="margin-top:16px">
     <h2>📋 Historial de Soportes</h2>
     <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
       <button class="btn btn-secondary" onclick="loadSoportes()">🔄 Actualizar</button>
@@ -783,13 +883,427 @@
     </div>
     <div class="table-wrap" id="tSoportes"><div class="empty"><div class="icon">📎</div>Sin soportes subidos</div></div>
   </div>
+
+  <!-- ======= COMPROBANTES DE CLIENTES ======= -->
+  <div style="margin-top:24px;margin-bottom:10px;font-size:15px;font-weight:800;color:#1e40af">📥 Comprobantes de Pagos de Clientes (CxC)</div>
+
+  <div class="card" style="border:2px solid #bfdbfe">
+    <h2 style="color:#1e40af">📤 Registrar Comprobante de Cliente</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:14px">Registra cuando un cliente envía su comprobante de pago. El valor se abona automáticamente a sus facturas.</p>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Cliente *</label>
+        <select id="compCliente"><option value="">— Seleccionar cliente —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Valor pagado</label>
+        <input type="number" id="compValor" placeholder="Ej: 4500000" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>Fecha del pago</label>
+        <input type="date" id="compFecha"/>
+      </div>
+      <div class="form-group">
+        <label>Facturas cubiertas</label>
+        <input type="text" id="compFacturas" placeholder="Ej: FV-001, FV-002"/>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Notas</label>
+        <textarea id="compNotas" rows="2" placeholder="Ej: Pago parcial, transferencia..."></textarea>
+      </div>
+    </div>
+    <div class="upload-zone" id="compZone" onclick="document.getElementById('compFile').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+      ondrop="handleCompDrop(event)">
+      <div class="icon">📤</div>
+      <p id="compFileLabel">Haz clic o arrastra el comprobante del cliente aquí</p>
+      <small>Imagen (JPG, PNG) o PDF — máx 20MB</small>
+      <input type="file" id="compFile" accept="image/*,.pdf" onchange="document.getElementById('compFileLabel').textContent='✅ '+this.files[0].name"/>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn btn-success" id="btnSubirComp" onclick="subirComprobanteCliente()">📤 Registrar Comprobante</button>
+    </div>
+    <div class="result-box" id="rComp"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;border:1px solid #bfdbfe">
+    <h2 style="color:#1e40af">📋 Historial de Comprobantes de Clientes</h2>
+    <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="loadComprobantesClientes()">🔄 Actualizar</button>
+      <select id="compFilterCliente" onchange="loadComprobantesClientes()" style="padding:7px 11px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="">Todos los clientes</option>
+      </select>
+    </div>
+    <div class="table-wrap" id="tCompClientes"><div class="empty"><div class="icon">📥</div>Sin comprobantes registrados</div></div>
+  </div>
+</div>
+
+<!-- ==================== INVENTARIO ==================== -->
+<div class="tab" id="tab-inventario">
+  <div class="card">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <h3 style="margin:0">📦 Inventario por Tienda</h3>
+      <select id="invTienda" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="">Todas las tiendas</option>
+        <option value="002">MAKA ARRECIFES</option>
+        <option value="009">LA 30 SANTA MARTA</option>
+        <option value="010">PLAZA DEL SOL</option>
+      </select>
+      <select id="invDias" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="30">Últimos 30 días</option>
+        <option value="60" selected>Últimos 60 días</option>
+        <option value="90">Últimos 90 días</option>
+      </select>
+      <select id="invProveedor" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:180px" onchange="filtrarInventario()">
+        <option value="">Todos los proveedores</option>
+      </select>
+      <button class="btn btn-secondary" onclick="loadInventario()">🔄 Actualizar</button>
+      <button class="btn" style="background:#16a34a;color:#fff" onclick="exportarInventarioExcel()">⬇️ Exportar Excel</button>
+    </div>
+    <p style="font-size:11px;color:#777;margin:0 0 8px">
+      Ordenado por menor saldo primero · Haz clic en cualquier fila para ver el detalle y generar reporte
+      &nbsp;<span style="padding:2px 6px;background:#dcfce7;color:#16a34a;border-radius:10px">&lt;30%</span>
+      <span style="padding:2px 6px;background:#fef9c3;color:#ca8a04;border-radius:10px;margin-left:4px">30-69%</span>
+      <span style="padding:2px 6px;background:#fee2e2;color:#dc2626;border-radius:10px;margin-left:4px">≥70%</span>
+    </p>
+    <div class="table-wrap" id="tInventario" style="max-height:520px"><div class="empty"><div class="icon">📦</div>Selecciona una tienda y actualiza</div></div>
+  </div>
+</div>
+
+<!-- Modal detalle artículo -->
+<div id="invModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;overflow:auto">
+  <div style="background:#fff;max-width:820px;margin:40px auto;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden">
+    <div style="background:#1e40af;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:15px;font-weight:700" id="invModalTitle">Detalle de Artículo</div>
+        <div style="font-size:12px;opacity:.8" id="invModalSub"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="imprimirReporte()" style="background:#fff;color:#1e40af;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px">🖨️ Imprimir</button>
+        <button onclick="document.getElementById('invModal').style.display='none'" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px">✕ Cerrar</button>
+      </div>
+    </div>
+    <div id="invModalBody" style="padding:20px"></div>
+  </div>
+</div>
+
+<!-- ==================== TAB VENTAS ==================== -->
+<div class="tab" id="tab-ventas">
+
+  <!-- SUB-TABS -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid #e2e8f0;padding-bottom:0">
+    <button id="subTabVentasBtn" onclick="switchSubTabVentas('ventas')"
+      style="padding:8px 18px;border:none;background:none;cursor:pointer;font-weight:700;font-size:13px;color:#4f46e5;border-bottom:3px solid #4f46e5;margin-bottom:-2px">
+      📈 Ventas
+    </button>
+    <button id="subTabPyGBtn" onclick="switchSubTabVentas('pyg')"
+      style="padding:8px 18px;border:none;background:none;cursor:pointer;font-weight:600;font-size:13px;color:#6b7280;border-bottom:3px solid transparent;margin-bottom:-2px">
+      📊 P&amp;G — Estado de Resultados
+    </button>
+  </div>
+
+  <!-- SUB-TAB VENTAS -->
+  <div id="subVentas">
+    <!-- FILTROS -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="form-group" style="margin:0;min-width:120px">
+          <label style="font-size:11px;font-weight:600">Tienda</label>
+          <select id="vntAlm" style="width:100%;padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px">
+            <option value="">Todas</option>
+            <option value="002">ARRE</option>
+            <option value="009">LA30</option>
+            <option value="010">PLAZA</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;min-width:120px">
+          <label style="font-size:11px;font-weight:600">Agrupar por</label>
+          <select id="vntGrp" style="width:100%;padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px">
+            <option value="dia">Día</option>
+            <option value="mes" selected>Mes</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:11px;font-weight:600">Desde</label>
+          <input type="date" id="vntDesde" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:11px;font-weight:600">Hasta</label>
+          <input type="date" id="vntHasta" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px"/>
+        </div>
+        <button class="btn btn-primary" onclick="loadVentas()" style="white-space:nowrap">🔄 Consultar</button>
+        <button class="btn btn-secondary" onclick="vntPreset('mes')" style="white-space:nowrap">Este mes</button>
+        <button class="btn btn-secondary" onclick="vntPreset('anio')" style="white-space:nowrap">Este año</button>
+        <button class="btn btn-secondary" onclick="exportarVentasCSV()" style="white-space:nowrap">📥 CSV</button>
+      </div>
+    </div>
+
+    <!-- CARDS RESUMEN -->
+    <div class="stats" style="margin-bottom:12px">
+      <div class="stat-card"><div class="num" id="vnt-total">$0</div><div class="lbl">Ventas (ValNeto)</div></div>
+      <div class="stat-card"><div class="num" id="vnt-costo">$0</div><div class="lbl">Costo</div></div>
+      <div class="stat-card"><div class="num" id="vnt-margen">$0</div><div class="lbl">Margen</div></div>
+      <div class="stat-card"><div class="num" id="vnt-pct">0%</div><div class="lbl">% Margen</div></div>
+      <div class="stat-card"><div class="num" id="vnt-presup">$0</div><div class="lbl">Presupuesto</div></div>
+      <div class="stat-card"><div class="num" id="vnt-avance">0%</div><div class="lbl">% Avance</div></div>
+    </div>
+
+    <!-- BARRA AVANCE PRESUPUESTO -->
+    <div class="card" style="margin-bottom:12px;padding:14px 20px" id="vntPresupCard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-weight:700;font-size:13px;color:#374151">Avance vs Presupuesto</span>
+        <button class="btn btn-secondary" style="padding:4px 12px;font-size:11px" onclick="mostrarModalPresupuesto()">✏️ Definir Presupuesto</button>
+      </div>
+      <div style="background:#e5e7eb;border-radius:6px;height:18px;overflow:hidden">
+        <div id="vntBarraAvance" style="height:100%;background:#10b981;border-radius:6px;transition:.4s;width:0%"></div>
+      </div>
+      <div id="vntPresupDetalle" style="display:flex;gap:20px;margin-top:8px;font-size:11px;color:#6b7280;flex-wrap:wrap"></div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card">
+      <h2>📈 Detalle de Ventas <small id="vntCount" style="font-size:12px;font-weight:400;color:#9ca3af"></small></h2>
+      <div class="table-wrap" id="tVentas"><div class="empty"><div class="icon">📈</div>Selecciona un rango y consulta</div></div>
+    </div>
+  </div><!-- /subVentas -->
+
+  <!-- SUB-TAB P&G -->
+  <div id="subPyG" style="display:none">
+    <!-- FILTROS P&G -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div class="form-group" style="margin:0">
+          <label style="font-size:11px;font-weight:600">Desde</label>
+          <input type="date" id="pygDesde" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:11px;font-weight:600">Hasta</label>
+          <input type="date" id="pygHasta" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px"/>
+        </div>
+        <button class="btn btn-primary" onclick="loadPyG()" style="white-space:nowrap">🔄 Consultar</button>
+        <button class="btn btn-secondary" onclick="pygPreset('mes')" style="white-space:nowrap">Este mes</button>
+        <button class="btn btn-secondary" onclick="pygPreset('anio')" style="white-space:nowrap">Este año</button>
+      </div>
+    </div>
+    <!-- TABLA P&G -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="tPyG"><div class="empty"><div class="icon">📊</div>Selecciona un período y consulta</div></div>
+    </div>
+  </div><!-- /subPyG -->
+
+  <!-- MODAL PRESUPUESTO -->
+  <div id="modalPresupuesto" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto">
+      <h3 style="margin:0 0 16px;font-size:1.1rem">✏️ Definir Presupuesto de Ventas</h3>
+      <div style="display:grid;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;font-weight:600">Año</label>
+            <input id="pAnio" type="number" value="2026" style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600">Mes (1-12)</label>
+            <input id="pMes" type="number" min="1" max="12" style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151">Presupuesto ARRE (002)</label>
+          <input id="pArre" type="number" min="0" placeholder="0" style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151">Presupuesto LA30 (009)</label>
+          <input id="pLa30" type="number" min="0" placeholder="0" style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151">Presupuesto PLAZA (010)</label>
+          <input id="pPlaza" type="number" min="0" placeholder="0" style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalPresupuesto').style.display='none'">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarPresupuesto()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== CxC — CUENTAS POR COBRAR ==================== -->
+<div class="tab" id="tab-cxc">
+
+  <!-- KPIs -->
+  <div class="stats" id="cxcStats">
+    <div class="stat-card"><div class="num" id="cxcTotal">—</div><div class="lbl">Total por Cobrar</div></div>
+    <div class="stat-card"><div class="num" style="color:#10b981" id="cxcVigente">—</div><div class="lbl">Cartera Vigente</div></div>
+    <div class="stat-card"><div class="num" style="color:#ef4444" id="cxcVencidas">—</div><div class="lbl">Cartera Vencida</div></div>
+    <div class="stat-card"><div class="num" style="color:#f59e0b" id="cxcProximas">—</div><div class="lbl">Vence en 7 días</div></div>
+    <div class="stat-card"><div class="num" style="color:#1e6fb5" id="cxcClientes">—</div><div class="lbl">Clientes con saldo</div></div>
+  </div>
+
+  <!-- Antigüedad de cartera -->
+  <div class="card">
+    <h2>📊 Cartera por Antigüedad — Por Cliente</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <button class="btn btn-secondary" onclick="loadCxCCartera()">🔄 Actualizar</button>
+      <button class="btn btn-primary"   onclick="abrirNuevaFacturaCxC()">➕ Nueva factura</button>
+      <button class="btn btn-success"   onclick="enviarRecordatoriosMasivo()">📲 Recordatorios masivos</button>
+    </div>
+    <div class="table-wrap">
+      <table id="tCxCCartera">
+        <thead>
+          <tr style="background:#f0f7ff">
+            <th>Cliente</th>
+            <th>Clasificación</th>
+            <th style="text-align:right;color:#10b981">Vigente (0-30d)</th>
+            <th style="text-align:right;color:#f59e0b">Vencida 1-30d</th>
+            <th style="text-align:right;color:#f97316">Vencida 31-60d</th>
+            <th style="text-align:right;color:#ef4444">Vencida 61-90d</th>
+            <th style="text-align:right;color:#991b1b">Vencida 91+d</th>
+            <th style="text-align:right">Total</th>
+            <th style="text-align:center">Contactos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyCxCCartera">
+          <tr><td colspan="10" class="empty"><div class="icon">📥</div>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Facturas detalle -->
+  <div class="card">
+    <h2>📄 Facturas por Cobrar — Detalle</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <button class="btn btn-secondary" onclick="loadCxCTabla()">🔄 Actualizar</button>
+      <button class="btn btn-warning"   onclick="loadCxCTabla('vencidas')">⚠️ Solo vencidas</button>
+      <select id="cxcFiltroCliente" onchange="loadCxCTabla()" style="padding:7px 11px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="">Todos los clientes</option>
+      </select>
+      <input type="text" id="cxcSearch" placeholder="Buscar factura o cliente..." oninput="buscarCxC(this.value)" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:220px"/>
+    </div>
+    <div class="table-wrap" id="tCxC"><div class="empty"><div class="icon">📥</div>Cargando...</div></div>
+  </div>
+
+  <!-- Clientes -->
+  <div class="card">
+    <h2>👥 Clientes</h2>
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <button class="btn btn-secondary" onclick="loadCxCClientes()">🔄 Actualizar</button>
+      <button class="btn btn-primary"   onclick="abrirNuevoCliente()">➕ Nuevo cliente</button>
+    </div>
+    <div class="table-wrap" id="tCxCClientes"><div class="empty"><div class="icon">👥</div>Cargando...</div></div>
+  </div>
+
+  <!-- Modal nueva factura CxC -->
+  <div id="modalNuevaFacturaCxC" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:460px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto">
+      <h3 style="margin:0 0 16px">➕ Nueva Factura CxC</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">N° Factura</label>
+          <input id="cxcFacNum" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Cliente</label>
+          <select id="cxcFacCliente" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"><option value="">— Seleccionar —</option></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Valor factura</label>
+          <input id="cxcFacValor" type="number" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Abonado</label>
+          <input id="cxcFacAbono" type="number" value="0" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Descuento</label>
+          <input id="cxcFacDescuento" type="number" value="0" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Flete</label>
+          <input id="cxcFacFlete" type="number" value="0" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Fecha factura</label>
+          <input id="cxcFacFecha" type="date" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Fecha vencimiento</label>
+          <input id="cxcFacVenc" type="date" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+      </div>
+      <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Notas</label>
+        <input id="cxcFacNotas" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+      <div id="cxcFacMsg" style="margin-bottom:8px;font-size:12px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalNuevaFacturaCxC').style.display='none'">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarFacturaCxC()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal nuevo cliente -->
+  <div id="modalNuevoCliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:440px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="margin:0 0 16px">👤 Nuevo Cliente</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Nombre / Razón Social</label>
+          <input id="cliNombre" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">NIT / Cédula</label>
+          <input id="cliNit" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Teléfono WhatsApp</label>
+          <input id="cliTel" type="text" placeholder="3001234567" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Ciudad</label>
+          <input id="cliCiudad" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+      </div>
+      <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Contacto</label>
+        <input id="cliContacto" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"/></div>
+      <div id="cliMsg" style="margin-bottom:8px;font-size:12px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalNuevoCliente').style.display='none'">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab WhatsApp -->
+<div class="tab" id="tab-whatsapp">
+  <div class="card">
+    <h2>📱 WhatsApp — Conexión del Bot</h2>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Sin Meta Developers. Conecta escaneando el QR con tu celular (igual que WhatsApp Web).</p>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <span style="font-weight:600;font-size:14px">Estado:</span>
+      <span id="waStatusBadge" style="padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;background:#f3f4f6;color:#374151">Cargando...</span>
+      <button onclick="refreshWAStatus()" style="padding:6px 14px;background:#6366f1;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">🔄 Actualizar</button>
+    </div>
+
+    <div id="waQRBox" style="min-height:120px;background:#f9fafb;border-radius:12px;border:2px dashed #d1d5db;display:flex;align-items:center;justify-content:center">
+      <div style="color:#9ca3af;text-align:center;padding:20px">⏳ Cargando estado...</div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;font-size:13px">
+        <strong>📋 Instrucciones:</strong><br>
+        1. Espera a que aparezca el QR arriba<br>
+        2. Abre <strong>WhatsApp</strong> en tu celular<br>
+        3. Ve a <strong>Configuración → Dispositivos vinculados → Vincular dispositivo</strong><br>
+        4. Escanea el QR — el bot queda activo inmediatamente<br>
+        <br>
+        <strong>⚠️ Importante:</strong> El celular con ese número debe tener internet activo (como WhatsApp Web).
+      </div>
+    </div>
+  </div>
 </div>
 
 </main>
 
 <script>
+// ==================== API BASE (proxy-aware) ====================
+const API_BASE = (function() {
+  const p = window.location.pathname;
+  // Si se accede bajo /lumina/ (proxy de MAKABOT) usar ese prefijo
+  const m = p.match(/^(\/lumina)\//);
+  return m ? m[1] : '';
+})();
+function api(path) { return API_BASE + path; }
+
 // ==================== GLOBALS ====================
 let proveedoresData = [];
+let invDataCache = [];
+let invSort = { col: null, dir: 1 };
 
 // ==================== TABS ====================
 function showTab(name, btn) {
@@ -798,20 +1312,23 @@ function showTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   if (name === 'proveedores') loadProveedores();
-  if (name === 'facturas') loadFacturas();
-  if (name === 'mensajes') { loadSelectorProveedores(); loadChatProvSelect(); }
+  if (name === 'mensajes') { loadSelectorProveedores(); loadChatProvSelect(); loadSelectorClientes(); }
   if (name === 'imagenes') loadImgProvSelect();
   if (name === 'pagos') loadPagosHist();
-  if (name === 'soportes') { loadSoportesProvSelect(); loadSoportes(); }
+  if (name === 'soportes') { loadSoportesProvSelect(); loadSoportes(); loadComprobantesProvSelect(); loadComprobantesClientes(); }
   if (name === 'cxp') loadCxP();
+  if (name === 'cxc') loadCxC();
+  if (name === 'inventario') loadInventario();
+  if (name === 'ventas') loadVentas();
   if (name === 'vencimientos') { adjustVencHeight(); initVencProvSelect(); loadVencimientos(); }
   if (name === 'fondos') loadFondos();
+  if (name === 'whatsapp') loadWhatsapp();
 }
 
 // ==================== STATUS ====================
 async function checkStatus() {
   try {
-    await fetch('/proveedores');
+    await fetch(api('/proveedores'));
     document.getElementById('statusBadge').textContent = '● En línea';
   } catch(e) {
     document.getElementById('statusBadge').textContent = '● Sin conexión';
@@ -826,11 +1343,11 @@ async function checkStatus() {
 async function loadDashboard() {
   try {
     const [pR, fR, mR, agR, vR] = await Promise.all([
-      fetch('/proveedores').then(r=>r.json()),
-      fetch('/facturas').then(r=>r.json()),
-      fetch('/mensajes/historial').then(r=>r.json()),
-      fetch('/facturas/agrupadas?estado=pendiente').then(r=>r.json()),
-      fetch('/facturas/vencimientos?estado=pendiente').then(r=>r.json()),
+      fetch(api('/proveedores')).then(r=>r.json()),
+      fetch(api('/facturas')).then(r=>r.json()),
+      fetch(api('/mensajes/historial')).then(r=>r.json()),
+      fetch(api('/facturas/agrupadas?estado=pendiente')).then(r=>r.json()),
+      fetch(api('/facturas/vencimientos?estado=pendiente')).then(r=>r.json()),
     ]);
     document.getElementById('s-prov').textContent = pR.total || 0;
     document.getElementById('s-fact').textContent = fR.total || 0;
@@ -840,6 +1357,7 @@ async function loadDashboard() {
 
     renderFlujoCaja(vR.facturas || []);
     renderDeudaProveedores(agR.agrupadas || []);
+    loadDashboardCxC();
   } catch(e) { console.error(e); }
 }
 
@@ -875,7 +1393,7 @@ function renderFlujoCaja(facturas) {
   }
 
   const fmt = d => d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
-  const colores = ['#9333ea','#2563eb','#059669','#d97706'];
+  const colores = ['#1e6fb5','#2563eb','#059669','#d97706'];
   const etiquetas = ['Esta semana','Próxima semana','Semana 3','Semana 4'];
 
   let h = '<div style="display:flex;flex-direction:column;gap:10px">';
@@ -932,10 +1450,10 @@ function renderDeudaProveedores(agrupadas) {
       <span style="font-size:11px;font-weight:700;color:#9ca3af;width:18px;text-align:right;flex-shrink:0">${i+1}</span>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:12px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.proveedor_nombre||r.proveedor_nit}</div>
-        <div style="height:4px;background:#e5e7eb;border-radius:2px;margin-top:4px"><div style="height:4px;background:#9333ea;border-radius:2px;width:${pct}%"></div></div>
+        <div style="height:4px;background:#e5e7eb;border-radius:2px;margin-top:4px"><div style="height:4px;background:#1e6fb5;border-radius:2px;width:${pct}%"></div></div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-weight:700;color:#9333ea;font-size:13px">${cop(r.total_valor_final)}</div>
+        <div style="font-weight:700;color:#1e6fb5;font-size:13px">${cop(r.total_valor_final)}</div>
         <div style="font-size:10px;color:#9ca3af">${r.cantidad_facturas} fact. · ${pct}%</div>
       </div>
     </div>`;
@@ -951,7 +1469,7 @@ function uploadExcel(tipo, inputId, resultId) {
   showResult(resultId, 'info', `⏳ Procesando ${file.name}...`);
   const fd = new FormData();
   fd.append('archivo', file);
-  fetch(`/${tipo}/upload`, {method:'POST', body:fd})
+  fetch(api(`/${tipo}/upload`), {method:'POST', body:fd})
     .then(r=>r.json())
     .then(d=>{
       if (d.error) { showResult(resultId,'error','❌ '+d.error); return; }
@@ -964,7 +1482,6 @@ function uploadExcel(tipo, inputId, resultId) {
       showResult(resultId,'success',msg);
       loadDashboard();
       if (tipo==='proveedores') loadProveedores();
-      if (tipo==='facturas') loadFacturas();
     })
     .catch(e=>showResult(resultId,'error','❌ '+e.message));
 }
@@ -986,16 +1503,24 @@ function uploadExcel(tipo, inputId, resultId) {
 });
 
 // ==================== PROVEEDORES ====================
-async function loadProveedores() {
-  const r = await fetch('/proveedores').then(r=>r.json());
-  proveedoresData = r.proveedores || [];
-  if (!proveedoresData.length) { document.getElementById('tProv').innerHTML='<div class="empty"><div class="icon">🏢</div>Sin proveedores</div>'; return; }
+function filtrarProveedores() {
+  const q = (document.getElementById('buscaProv')?.value || '').toLowerCase().trim();
+  const filtrados = q
+    ? proveedoresData.filter(p => (p.nombre||'').toLowerCase().includes(q) || (p.nit||'').toLowerCase().includes(q))
+    : proveedoresData;
+  renderProveedores(filtrados);
+}
+
+function renderProveedores(lista) {
+  const count = document.getElementById('provCount');
+  if (count) count.textContent = lista.length + ' de ' + proveedoresData.length + ' proveedores';
+  if (!lista.length) { document.getElementById('tProv').innerHTML='<div class="empty"><div class="icon">🔍</div>Sin resultados</div>'; return; }
   let h = `<table><thead><tr>
     <th>Nombre</th><th>NIT</th><th>Teléfono</th><th>Ciudad</th>
     <th>Banco</th><th>Cuenta</th><th>Tipo</th><th>Titular</th><th>ID Titular</th>
     <th>Desc. Cacharro</th><th>Desc. Joyería</th><th>Activo</th><th>Acciones</th>
   </tr></thead><tbody>`;
-  proveedoresData.forEach(p=>{
+  lista.forEach(p=>{
     const tieneJoyeria = p.descuento_joyeria != null;
     const dCach = p.descuento_cacharro ? (p.descuento_cacharro*100).toFixed(0)+'%' : '0%';
     const dJoy  = tieneJoyeria ? (p.descuento_joyeria*100).toFixed(0)+'%' : '—';
@@ -1025,8 +1550,15 @@ async function loadProveedores() {
   document.getElementById('tProv').innerHTML = h;
 }
 
+async function loadProveedores() {
+  const r = await fetch(api('/proveedores')).then(r=>r.json());
+  proveedoresData = r.proveedores || [];
+  const q = document.getElementById('buscaProv')?.value || '';
+  filtrarProveedores();
+}
+
 async function cambiarDescuento(nit, valor) {
-  await fetch(`/proveedores/${nit}/descuento`, {
+  await fetch(api(`/proveedores/${nit}/descuento`), {
     method:'PUT', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({descuento_activo: valor})
   });
@@ -1090,8 +1622,73 @@ async function guardarProveedor(nit, modal) {
     descuento_joyeria: dJoy,
     descuento_activo: dJoy != null ? 'cacharro' : 'cacharro',
   };
-  const r = await fetch(`/proveedores/${nit}`, {
+  const r = await fetch(api(`/proveedores/${nit}`), {
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+  }).then(r=>r.json());
+  if (r.error) { alert('Error: '+r.error); return; }
+  modal.remove();
+  loadProveedores();
+}
+
+function crearProveedor() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `<div style="background:#fff;border-radius:12px;padding:28px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 16px">➕ Nuevo Proveedor</h3>
+    <div style="display:grid;gap:10px">
+      <label style="font-size:12px;font-weight:600">Nombre *<input id="np-nombre" placeholder="Nombre del proveedor" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">NIT *<input id="np-nit" placeholder="Ej: 900123456-1" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Teléfono WhatsApp<input id="np-tel" placeholder="3001234567" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Ciudad<input id="np-ciudad" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 12px;font-size:11px;color:#b45309">
+        ⚠️ <strong>Datos bancarios para pago:</strong> banco, cuenta, tipo, nombre y cédula del titular
+      </div>
+      <label style="font-size:12px;font-weight:600">Banco<input id="np-banco" placeholder="Ej: Bancolombia" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Número de cuenta<input id="np-cuenta" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600">Tipo cuenta
+        <select id="np-tipo" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+          <option value="">— Seleccionar —</option>
+          <option value="Ahorros">Ahorros</option>
+          <option value="Corriente">Corriente</option>
+        </select>
+      </label>
+      <label style="font-size:12px;font-weight:600;color:#b45309">Nombre titular ⚠️<input id="np-titular-nombre" placeholder="Nombre completo del titular" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ffe082;border-radius:6px;font-size:13px"/></label>
+      <label style="font-size:12px;font-weight:600;color:#b45309">Cédula / NIT titular ⚠️<input id="np-titular-id" placeholder="Número de identificación" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ffe082;border-radius:6px;font-size:13px"/></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label style="font-size:12px;font-weight:600">Descuento Cacharro %<input id="np-dcach" type="number" min="0" max="100" step="0.1" value="0" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+        <label style="font-size:12px;font-weight:600">Descuento Joyería %<input id="np-djoy" type="number" min="0" max="100" step="0.1" placeholder="Opcional" style="display:block;width:100%;margin-top:3px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px"/></label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarNuevoProveedor(this.closest('div[style*=fixed]'))">💾 Crear Proveedor</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function guardarNuevoProveedor(modal) {
+  const nit    = document.getElementById('np-nit').value.trim();
+  const nombre = document.getElementById('np-nombre').value.trim();
+  if (!nit || !nombre) { alert('Nombre y NIT son obligatorios'); return; }
+  const dCach   = parseFloat(document.getElementById('np-dcach').value||0)/100;
+  const dJoyVal = document.getElementById('np-djoy').value.trim();
+  const dJoy    = dJoyVal !== '' ? parseFloat(dJoyVal)/100 : null;
+  const body = {
+    nit, nombre,
+    telefono:       document.getElementById('np-tel').value.trim()||null,
+    ciudad:         document.getElementById('np-ciudad').value.trim()||null,
+    banco:          document.getElementById('np-banco').value.trim(),
+    cuenta:         document.getElementById('np-cuenta').value.trim(),
+    tipo_cuenta:    document.getElementById('np-tipo').value,
+    titular_nombre: document.getElementById('np-titular-nombre').value.trim()||null,
+    titular_id:     document.getElementById('np-titular-id').value.trim()||null,
+    descuento_cacharro: dCach,
+    descuento_joyeria:  dJoy,
+    descuento_activo:   'cacharro',
+  };
+  const r = await fetch(api('/proveedores'), {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
   }).then(r=>r.json());
   if (r.error) { alert('Error: '+r.error); return; }
   modal.remove();
@@ -1102,7 +1699,7 @@ async function guardarProveedor(nit, modal) {
 async function loadFacturas() {
   const desde = document.getElementById('filtroDesde').value;
   const hasta = document.getElementById('filtroHasta').value;
-  let url = '/facturas?estado=pendiente';
+  let url = api('/facturas?estado=pendiente');
   if (desde) url += `&vencimiento_desde=${desde}`;
   if (hasta) url += `&vencimiento_hasta=${hasta}`;
   const r = await fetch(url).then(r=>r.json());
@@ -1119,7 +1716,7 @@ async function loadFacturas() {
       <td>${cop(f.valor_factura)}</td>
       <td style="color:#10b981">-${cop(f.descuento_pronto_pago)}</td>
       <td>+${cop(f.flete)}</td>
-      <td style="font-weight:700;color:#9333ea">${cop(f.valor_final)}</td>
+      <td style="font-weight:700;color:#1e6fb5">${cop(f.valor_final)}</td>
       <td style="white-space:nowrap">${f.fecha_vencimiento||'—'}</td>
       <td><span class="badge ${badge}">${origen}</span></td>
     </tr>`;
@@ -1135,10 +1732,12 @@ function clearFiltros() {
 }
 
 // ==================== SELECTOR DE PROVEEDORES ====================
+let _msgVencHasta = null;
 async function loadSelectorProveedores() {
   const hasta = document.getElementById('filtroMsgHasta').value;
+  _msgVencHasta = hasta || null;
   // Solo muestra proveedores con facturas marcadas para pago (incluir_pago=1)
-  let url = '/facturas/agrupadas?estado=pendiente&solo_incluir=1';
+  let url = api('/facturas/agrupadas?estado=pendiente&solo_incluir=1');
   if (hasta) url += `&vencimiento_hasta=${hasta}`;
   const r = await fetch(url).then(r=>r.json());
   const ag = r.agrupadas || [];
@@ -1150,7 +1749,7 @@ async function loadSelectorProveedores() {
   }
 
   // Obtener teléfonos
-  const provR = await fetch('/proveedores').then(r=>r.json());
+  const provR = await fetch(api('/proveedores')).then(r=>r.json());
   const telMap = {};
   (provR.proveedores||[]).forEach(p=>{ telMap[p.nit]=p.telefono; });
 
@@ -1210,10 +1809,11 @@ async function generarMensajes() {
     fecha_pago: document.getElementById('fechaPagoMsg').value || null,
     solo_generar: document.getElementById('modoMsg').value === 'true',
     nits_seleccionados: nits,
+    vencimiento_hasta: _msgVencHasta,
   };
 
   try {
-    const r = await fetch('/mensajes/generar', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const r = await fetch(api('/mensajes/generar'), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
     const d = await r.json();
     if (d.error) { showResult('rMensajes','error','❌ '+d.error); return; }
 
@@ -1243,12 +1843,102 @@ async function generarMensajes() {
 
 // ==================== BOT CHAT ====================
 async function loadChatProvSelect() {
-  const r = await fetch('/facturas/agrupadas?estado=pendiente').then(r=>r.json());
-  const sel = document.getElementById('chatProv');
-  sel.innerHTML = '<option value="">— Selecciona un proveedor —</option>';
-  (r.agrupadas||[]).sort((a,b)=>(a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||'')).forEach(p=>{
-    sel.innerHTML += `<option value="${p.proveedor_nit}">${p.proveedor_nombre||p.proveedor_nit} (${p.proveedor_nit})</option>`;
-  });
+  try {
+    // Cargar todos los proveedores que tienen conversaciones registradas
+    const [provR, convR] = await Promise.all([
+      fetch(api('/proveedores')).then(r=>r.json()),
+      fetch(api('/mensajes/historial')).then(r=>r.json()),
+    ]);
+    const provs = provR.proveedores || [];
+    const convs = convR.conversaciones || [];
+    // Obtener NITs con conversaciones (más recientes primero)
+    const nitsConConv = [...new Set(convs.map(c=>c.proveedor_nit))];
+    // Construir mapa nombre por nit
+    const nitNombre = {};
+    provs.forEach(p => { nitNombre[p.nit] = p.nombre; });
+    const sel = document.getElementById('chatProv');
+    sel.innerHTML = '<option value="">— Selecciona un proveedor —</option>';
+    // Primero los que tienen conversaciones (orden más reciente)
+    nitsConConv.forEach(nit => {
+      const nombre = nitNombre[nit] || nit;
+      sel.innerHTML += `<option value="${nit}">💬 ${nombre}</option>`;
+    });
+    // Separador
+    if (nitsConConv.length > 0 && provs.length > nitsConConv.length) {
+      sel.innerHTML += `<option disabled>──────────────────</option>`;
+    }
+    // Resto de proveedores sin conversaciones
+    provs.filter(p => !nitsConConv.includes(p.nit))
+      .sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+      .forEach(p => {
+        sel.innerHTML += `<option value="${p.nit}">${p.nombre}</option>`;
+      });
+  } catch(e) { console.error('Error cargando proveedores chat:', e); }
+}
+
+async function cargarHistorialChat() {
+  const nit = document.getElementById('chatProv').value;
+  const area = document.getElementById('chatArea');
+  if (!nit) {
+    area.innerHTML = '<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0">Selecciona un proveedor para ver el historial</div>';
+    return;
+  }
+  area.innerHTML = '<div style="text-align:center;color:#aaa;font-size:12px;padding:20px">Cargando...</div>';
+  try {
+    const r = await fetch(api(`/mensajes/historial?nit=${nit}`)).then(r=>r.json());
+    const convs = (r.conversaciones || []).slice(-50); // últimas 50
+    if (convs.length === 0) {
+      area.innerHTML = '<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0">Sin mensajes registrados para este proveedor</div>';
+      return;
+    }
+    area.innerHTML = '';
+    convs.forEach(c => {
+      // Mensaje enviado por el bot
+      if (c.mensaje_enviado && !c.mensaje_enviado.startsWith('[WA]:') && !c.mensaje_enviado.startsWith('[RECORDATORIO') && !c.mensaje_enviado.startsWith('[DOCUMENTO') && !c.mensaje_enviado.startsWith('[MANUAL')) {
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '10px';
+        const lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:10px;color:#1e6fb5;font-weight:700;margin-bottom:3px';
+        lbl.textContent = '🤖 LUMINA';
+        const bubble = document.createElement('div');
+        bubble.style.cssText = 'background:#f3e8ff;border:1px solid #e9d5ff;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:12px;white-space:pre-wrap;max-width:85%';
+        bubble.textContent = c.mensaje_enviado;
+        const ts = document.createElement('div');
+        ts.style.cssText = 'font-size:10px;color:#9ca3af;margin-top:3px';
+        ts.textContent = new Date(c.created_at).toLocaleString('es-CO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+        wrapper.appendChild(lbl); wrapper.appendChild(bubble); wrapper.appendChild(ts);
+        area.appendChild(wrapper);
+      }
+      // Respuesta del proveedor (viene en mensaje_enviado con prefijo [WA]:)
+      if (c.mensaje_enviado && c.mensaje_enviado.startsWith('[WA]:')) {
+        const texto = c.mensaje_enviado.replace('[WA]:', '').trim();
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'margin-bottom:10px;display:flex;flex-direction:column;align-items:flex-end';
+        const lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:10px;color:#059669;font-weight:700;margin-bottom:3px';
+        lbl.textContent = '🏢 Proveedor';
+        const bubble = document.createElement('div');
+        bubble.style.cssText = 'background:#d1fae5;border:1px solid #a7f3d0;border-radius:12px 12px 2px 12px;padding:10px 14px;font-size:12px;white-space:pre-wrap;max-width:85%';
+        bubble.textContent = texto;
+        wrapper.appendChild(lbl); wrapper.appendChild(bubble);
+        area.appendChild(wrapper);
+      }
+      // Respuesta del bot a la respuesta del proveedor
+      if (c.respuesta && c.respuesta.trim() && !c.respuesta.startsWith('NOTA ')) {
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '10px';
+        const lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:10px;color:#1e6fb5;font-weight:700;margin-bottom:3px';
+        lbl.textContent = '🤖 LUMINA';
+        const bubble = document.createElement('div');
+        bubble.style.cssText = 'background:#f3e8ff;border:1px solid #e9d5ff;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:12px;white-space:pre-wrap;max-width:85%';
+        bubble.textContent = c.respuesta;
+        wrapper.appendChild(lbl); wrapper.appendChild(bubble);
+        area.appendChild(wrapper);
+      }
+    });
+    area.scrollTop = area.scrollHeight;
+  } catch(e) { area.innerHTML = '<div style="color:red;padding:20px">Error cargando historial: '+e.message+'</div>'; }
 }
 
 async function enviarRespuesta() {
@@ -1263,7 +1953,7 @@ async function enviarRespuesta() {
   btn.disabled=true; btn.textContent='...';
 
   try {
-    const r = await fetch('/mensajes/responder', {
+    const r = await fetch(api('/mensajes/responder'), {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({proveedor_nit: nit, respuesta_proveedor: txt})
     });
@@ -1293,7 +1983,7 @@ function addChatMsg(who, text) {
   const wrapper = document.createElement('div');
   const lbl = document.createElement('div');
   lbl.className = 'chat-label';
-  lbl.textContent = who === 'bot' ? '🤖 MAKABOT' : '🏢 Proveedor';
+  lbl.textContent = who === 'bot' ? '🤖 LUMINA' : '🏢 Proveedor';
   const bubble = document.createElement('div');
   bubble.className = 'chat-msg ' + who;
   bubble.textContent = text;
@@ -1305,7 +1995,7 @@ function addChatMsg(who, text) {
 
 // ==================== IMÁGENES IA ====================
 async function loadImgProvSelect() {
-  const r = await fetch('/facturas/agrupadas?estado=pendiente').then(r=>r.json());
+  const r = await fetch(api('/facturas/agrupadas?estado=pendiente')).then(r=>r.json());
   const sel = document.getElementById('imgProv');
   sel.innerHTML = '<option value="">— Sin asignar —</option>';
   (r.agrupadas||[]).sort((a,b)=>(a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||'')).forEach(p=>{
@@ -1338,50 +2028,132 @@ async function analizarImagen(aplicar) {
 
   const fd = new FormData();
   fd.append('imagen', file);
-  const nit = document.getElementById('imgProv').value;
-  if (nit) { fd.append('nit_proveedor', nit); fd.append('aplicar_automatico', aplicar ? 'true' : 'false'); }
 
   try {
-    const r = await fetch('/facturas/analizar-imagen', {method:'POST', body:fd});
+    const r = await fetch(api('/facturas/analizar-imagen'), {method:'POST', body:fd});
     const d = await r.json();
     if (d.error) { showResult('rImg','error','❌ '+d.error); return; }
 
     showResult('rImg','success','✅ Análisis completado');
-
-    // Mostrar resultado
     const analisis = d.analisis;
+    const sugerido = d.proveedor_sugerido;
+    const token = d.token_imagen;
+
+    // Facturas detectadas
     let h = '';
     if (analisis.facturas_encontradas?.length) {
       analisis.facturas_encontradas.forEach((f,i)=>{
-        h+=`<div style="margin-bottom:14px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">
-          <div style="font-weight:700;margin-bottom:8px;font-size:13px">📄 Factura ${f.numero_factura||'#'+(i+1)}</div>
-          <div class="analisis-row"><span>Valor factura</span><span>${f.valor_factura!=null?cop(f.valor_factura):'—'}</span></div>
+        h+=`<div style="margin-bottom:10px;padding:10px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">📄 Factura ${f.numero_factura||'#'+(i+1)}</div>
+          <div class="analisis-row"><span>Valor</span><span>${f.valor_factura!=null?cop(f.valor_factura):'—'}</span></div>
           <div class="analisis-row"><span>Descuento</span><span style="color:#10b981">${f.descuento!=null?'-'+cop(f.descuento):'—'}</span></div>
           <div class="analisis-row"><span>Flete</span><span>${f.flete!=null?cop(f.flete):'—'}</span></div>
-          <div class="analisis-row"><span>Valor neto</span><span>${f.valor_neto!=null?cop(f.valor_neto):'—'}</span></div>
+          <div class="analisis-row"><span>Neto</span><span style="font-weight:700">${f.valor_neto!=null?cop(f.valor_neto):'—'}</span></div>
         </div>`;
       });
     }
-    if (analisis.total_imagen) {
-      h+=`<div style="font-weight:700;font-size:14px;color:#9333ea;padding:8px 0">💰 Total imagen: ${cop(analisis.total_imagen)}</div>`;
-    }
-    if (analisis.notas) {
-      h+=`<div style="font-size:12px;color:#666;padding:8px;background:#f0f0f0;border-radius:6px;margin-top:8px">📝 ${analisis.notas}</div>`;
-    }
-    if (d.actualizaciones?.length) {
-      h+=`<div style="margin-top:14px"><strong style="font-size:13px">✅ Facturas actualizadas (${d.actualizaciones.length}):</strong>`;
-      d.actualizaciones.forEach(a=>{
-        h+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #eee">
-          Factura ${a.numero_factura}: ${cop(a.valor_final_anterior)} → <strong style="color:#10b981">${cop(a.valor_final_nuevo)}</strong>
+    if (analisis.total_imagen) h+=`<div style="font-weight:700;font-size:14px;color:#1e6fb5;padding:6px 0">💰 Total: ${cop(analisis.total_imagen)}</div>`;
+    if (analisis.notas) h+=`<div style="font-size:12px;color:#666;padding:8px;background:#f0f0f0;border-radius:6px;margin-top:6px">📝 ${analisis.notas}</div>`;
+
+    // Panel de confirmación de soporte
+    if (token) {
+      // Combinar proveedores SQLite + ERP para tener lista completa
+      const [provSQLite, resumen] = await Promise.all([
+        fetch(api('/proveedores')).then(r=>r.json()).then(r=>r.proveedores||[]),
+        fetch(api('/facturas/agrupadas')).then(r=>r.json()).then(r=>r.agrupadas||[]),
+      ]);
+      const nitsSQLite = new Set(provSQLite.map(p=>p.nit));
+      // Agregar los del ERP que no estén en SQLite
+      const provERP = resumen
+        .filter(a => !nitsSQLite.has(a.proveedor_nit))
+        .map(a => ({ nit: a.proveedor_nit, nombre: a.proveedor_nombre }));
+      const provList = [...provSQLite, ...provERP].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+      const provOpts = '<option value="">— Seleccionar proveedor —</option>' +
+        provList.map(p=>`<option value="${p.nit}" ${sugerido&&p.nit===sugerido.nit?'selected':''}>${p.nombre}</option>`).join('');
+      const facturasStr = (analisis.facturas_encontradas||[]).map(f=>f.numero_factura).filter(Boolean).join(', ');
+      const totalVal = analisis.total_imagen || (analisis.facturas_encontradas||[]).reduce((s,f)=>s+(f.valor_neto||f.valor_factura||0),0);
+      const fechaPago = analisis.fecha_pago || new Date().toISOString().slice(0,10);
+      const tipoLabel = analisis.tipo_imagen === 'comprobante_pago' ? '🏦 Comprobante de Pago' : analisis.tipo_imagen === 'liquidacion' ? '📋 Liquidación' : '📄 Imagen';
+      const confianzaBadge = sugerido ? `<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">✅ Identificado automáticamente</span>` : `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">⚠️ Selecciona manualmente</span>`;
+
+      // Mostrar facturas ERP del proveedor sugerido para comparación
+      let erpComparacion = '';
+      if (sugerido?.facturas_erp?.length) {
+        const facNumsImg = new Set((analisis.facturas_encontradas||[]).map(f=>(f.numero_factura||'').replace(/\D/g,'')).filter(Boolean));
+        erpComparacion = `<div style="margin-bottom:10px;padding:10px;background:#fffbeb;border:1px solid #f59e0b;border-radius:8px">
+          <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">📋 Facturas en ERP para ${sugerido.nombre}</div>
+          ${sugerido.facturas_erp.map(f=>{
+            const digits = (f.numero_factura||'').replace(/\D/g,'');
+            const coincide = facNumsImg.has(digits) || [...facNumsImg].some(n=>digits.endsWith(n)||n.endsWith(digits));
+            return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid #fde68a;${coincide?'font-weight:700;color:#15803d':''}">
+              <span>${coincide?'✅ ':''}${f.numero_factura}</span>
+              <span>${cop(f.saldo)}</span>
+            </div>`;
+          }).join('')}
+          ${totalVal ? `<div style="font-size:11px;color:#92400e;margin-top:6px">💳 Valor pagado en comprobante: <strong>${cop(totalVal)}</strong>${totalVal !== sugerido.facturas_erp.find(f=>f.numero_factura)?.saldo ? ' <span style="color:#6b7280">(diferencia por descuentos aplicados)</span>' : ''}</div>` : ''}
         </div>`;
-      });
-      h+='</div>';
-      loadDashboard();
+      }
+
+      h += `<div style="margin-top:16px;padding:14px;background:#f0fdf4;border:2px solid #22c55e;border-radius:10px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#15803d">📁 ${tipoLabel} — Guardar como Soporte ${confianzaBadge}</div>
+        ${erpComparacion}
+        <div style="margin-bottom:8px">
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Proveedor</label>
+          <select id="soporteNit" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">${provOpts}</select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Facturas</label>
+            <input id="soporteFacturas" type="text" value="${facturasStr}" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;box-sizing:border-box"/>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Valor pagado</label>
+            <input id="soporteValor" type="number" value="${totalVal||''}" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;box-sizing:border-box"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Fecha pago</label>
+            <input id="soporteFecha" type="date" value="${fechaPago}" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;box-sizing:border-box"/>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Notas</label>
+            <input id="soporteNotas" type="text" placeholder="Opcional" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;box-sizing:border-box"/>
+          </div>
+        </div>
+        <button onclick="confirmarSoporte('${token}')" style="width:100%;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">
+          ✅ Confirmar y Guardar Soporte
+        </button>
+        <p style="font-size:11px;color:#6b7280;margin:6px 0 0">El soporte se guardará aunque el valor pagado difiera del saldo ERP (descuentos). Al confirmar se notificará al proveedor por WhatsApp.</p>
+      </div>`;
     }
+
     document.getElementById('analisisContent').innerHTML = h || '<div class="empty"><div class="icon">🔍</div>No se encontraron datos claros en la imagen</div>';
     document.getElementById('analisisCard').style.display = 'block';
   } catch(e) { showResult('rImg','error','❌ '+e.message); }
   finally { btn.disabled=false; btn.innerHTML = aplicar ? '✅ Analizar y Aplicar' : '🤖 Analizar con IA'; }
+}
+
+async function confirmarSoporte(token) {
+  const nit    = document.getElementById('soporteNit').value;
+  const facturas = document.getElementById('soporteFacturas').value;
+  const valor  = document.getElementById('soporteValor').value;
+  const fecha  = document.getElementById('soporteFecha').value;
+  const notas  = document.getElementById('soporteNotas').value;
+  if (!nit) { alert('Selecciona el proveedor'); return; }
+
+  const btn = event.target;
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando...';
+  try {
+    const r = await fetch(api('/facturas/confirmar-soporte'), {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token_imagen: token, proveedor_nit: nit, proveedor_nombre_erp: document.getElementById('soporteNit').selectedOptions[0]?.text, facturas, valor, fecha_pago: fecha, notas }),
+    });
+    const d = await r.json();
+    if (d.error) { alert('❌ ' + d.error); btn.disabled=false; btn.innerHTML='✅ Confirmar y Guardar Soporte'; return; }
+    btn.closest('div[style*="background:#f0fdf4"]').innerHTML = `<div style="text-align:center;padding:16px;color:#15803d;font-weight:700;font-size:15px">✅ Soporte guardado para ${d.proveedor_nombre}<br><span style="font-size:12px;font-weight:400">Proveedor notificado por WhatsApp</span></div>`;
+  } catch(e) { alert('❌ ' + e.message); btn.disabled=false; btn.innerHTML='✅ Confirmar y Guardar Soporte'; }
 }
 
 // ==================== PAGOS ====================
@@ -1389,14 +2161,13 @@ async function generarPagos() {
   const btn = document.getElementById('btnPagos');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generando...';
   showResult('rPagos','info','⏳ Generando archivo...');
-  const fecha = document.getElementById('fechaPagoXls').value;
-  const url = '/pagos/generar'+(fecha?`?fecha_pago=${fecha}`:'');
   try {
-    const d = await fetch(url).then(r=>r.json());
+    const d = await fetch(api('/pagos/generar')).then(r=>r.json());
     if (d.error) { showResult('rPagos','error','❌ '+d.error); return; }
+    const sinBanco = d.sin_banco || 0;
     const el = document.getElementById('rPagos');
     el.className='result-box show success';
-    el.innerHTML=`<pre>✅ ${d.mensaje}\n📊 ${d.total_proveedores} proveedores | ${d.total_facturas} facturas | 💰 ${cop(d.total_pagar)}</pre>
+    el.innerHTML=`<pre>✅ ${d.mensaje}\n📊 ${d.total_proveedores} proveedores | ${d.total_facturas} facturas | 💰 ${cop(d.total_pagar)}${sinBanco>0?'\n⚠️ '+sinBanco+' proveedor(es) sin datos bancarios — marcados en el Excel':''}</pre>
     <a href="${d.descargar}" download><button class="btn btn-success" style="margin-top:10px">⬇ Descargar ${d.archivo}</button></a>`;
     loadPagosHist(); loadDashboard();
   } catch(e) { showResult('rPagos','error','❌ '+e.message); }
@@ -1404,12 +2175,12 @@ async function generarPagos() {
 }
 
 async function loadPagosHist() {
-  const r = await fetch('/pagos/historial').then(r=>r.json());
+  const r = await fetch(api('/pagos/historial')).then(r=>r.json());
   const p = r.pagos || [];
   if (!p.length) { document.getElementById('tPagos').innerHTML='<div class="empty"><div class="icon">💳</div>Sin pagos</div>'; return; }
   let h = '<table><thead><tr><th>Proveedor</th><th>NIT</th><th>Valor</th><th>Banco</th><th>Cuenta</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>';
   p.forEach(x=>{
-    h+=`<tr><td>${x.proveedor_nombre||'—'}</td><td>${x.proveedor_nit}</td><td style="font-weight:700;color:#9333ea">${cop(x.valor_pago)}</td><td>${x.banco||'—'}</td><td>${x.cuenta||'—'}</td><td><span class="badge badge-procesado">${x.estado}</span></td><td style="font-size:11px;color:#888">${x.created_at}</td></tr>`;
+    h+=`<tr><td>${x.proveedor_nombre||'—'}</td><td>${x.proveedor_nit}</td><td style="font-weight:700;color:#1e6fb5">${cop(x.valor_pago)}</td><td>${x.banco||'—'}</td><td>${x.cuenta||'—'}</td><td><span class="badge badge-procesado">${x.estado}</span></td><td style="font-size:11px;color:#888">${x.created_at}</td></tr>`;
   });
   h+='</tbody></table>';
   document.getElementById('tPagos').innerHTML = h;
@@ -1471,7 +2242,7 @@ async function loadVencimientos() {
   const estado = document.getElementById('vFiltEstado')?.value || '';
   const desde  = document.getElementById('vFiltDesde')?.value || '';
   const hasta  = document.getElementById('vFiltHasta')?.value || '';
-  let url = '/facturas/vencimientos?';
+  let url = api('/facturas/vencimientos?');
   if (estado) url += `estado=${estado}&`;
   if (prov)   url += `proveedor_nit=${prov}&`;
   if (desde)  url += `vencimiento_desde=${desde}&`;
@@ -1560,20 +2331,25 @@ function renderVencimientos() {
       <td class="sc1"><input type="checkbox" class="chk-venc chk-pagar" data-id="${f.id}" onchange="onChkVenc()" /></td>
       <td class="sc2" style="text-align:center">
         <button class="${excl?'btn-pagar-off':'btn-pagar-on'}" id="btnpagar-${f.id}"
-          onclick="toggleIncluir(${f.id}, ${excl?true:false}, '${f.numero_factura}')">
+          onclick="toggleIncluir('${f.id}', ${excl?true:false}, '${f.numero_factura}')">
           ${excl ? '➕ PAGAR' : '✅ PAGANDO'}
         </button>
       </td>
       <td class="sc3" title="${sem.label}"><span class="semaforo ${sem.cls}"></span></td>
       <td class="sc4"><strong>${f.numero_factura}</strong></td>
-      <td class="sc5" style="white-space:nowrap" title="${f.proveedor_nombre||''}">${limpiaNombre(f.p_nombre||f.proveedor_nombre)||f.proveedor_nit}</td>
+      <td class="sc5" style="white-space:nowrap" title="${f.proveedor_nombre||''}">
+        ${limpiaNombre(f.p_nombre||f.proveedor_nombre)||f.proveedor_nit}
+        <button onclick="corregirProveedor('${f.id}')" title="Corregir proveedor (ERP incorrecto)"
+          style="margin-left:4px;background:none;border:none;cursor:pointer;font-size:11px;color:#f59e0b;padding:0">✏️</button>
+      </td>
       <td style="font-size:11px;color:#888">${f.proveedor_nit}</td>
+      <td style="font-size:11px;white-space:nowrap;font-weight:600;color:#4f46e5">${f.tienda||f.codalm||'—'}</td>
       <td style="white-space:nowrap;font-size:11px">${fmtFecha(f.fecha_factura)}</td>
       <td style="white-space:nowrap">
         <input type="date" class="notas-inp" value="${f.fecha_vencimiento||''}"
           title="Editar fecha de vencimiento"
           style="width:130px;font-size:11px;font-weight:600"
-          onblur="ajustarFactura(${f.id}, {fecha_vencimiento: this.value})"
+          onblur="ajustarFactura('${f.id}', {fecha_vencimiento: this.value})"
           onkeypress="if(event.key==='Enter'){this.blur()}" />
       </td>
       <td>${diasChip(f.dias_para_vencer, sem.filtro)}</td>
@@ -1581,11 +2357,11 @@ function renderVencimientos() {
       <td style="text-align:right">${cop(f.valor_factura)}</td>
       <td style="text-align:right;color:#10b981">-${cop(f.descuento_pronto_pago)}</td>
       <td style="text-align:right">
-        <input class="notas-inp" type="number" min="0" step="1"
+        <input type="number" min="0" step="1"
           value="${f.flete||0}"
           title="Editar flete (se resta del total)"
-          style="width:80px;text-align:right"
-          onblur="ajustarFactura(${f.id}, {flete: this.value})"
+          style="width:80px;text-align:right;border:1px solid #d1d5db;border-radius:4px;padding:2px 5px;font-size:12px;background:#fff"
+          onblur="ajustarFactura('${f.id}', {flete: this.value})"
           onkeypress="if(event.key==='Enter'){this.blur()}" />
       </td>
       <td style="text-align:right;font-weight:700">${cop(f.valor_final)}</td>
@@ -1598,7 +2374,7 @@ function renderVencimientos() {
       <td>
         <input class="notas-inp" value="${(f.notas||'').replace(/"/g,'&quot;')}"
           placeholder="Agregar nota..."
-          onblur="guardarNota(${f.id}, this.value)"
+          onblur="guardarNota('${f.id}', this.value)"
           onkeypress="if(event.key==='Enter'){this.blur()}" />
       </td>
     </tr>`;
@@ -1627,7 +2403,7 @@ async function toggleIncluir(id, incluir, factura) {
   const row = document.getElementById('vrow-'+id);
   const btn = document.getElementById('btnpagar-'+id);
   try {
-    await fetch(`/facturas/${id}/incluir`, {
+    await fetch(api(`/facturas/${id}/incluir`), {
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ incluir })
@@ -1657,7 +2433,7 @@ async function actualizarResumenFondos() {
   try {
     const desde = document.getElementById('vFiltDesde')?.value || '';
     const hasta  = document.getElementById('vFiltHasta')?.value || '';
-    let url = '/fondos/resumen?';
+    let url = api('/fondos/resumen?');
     if (desde) url += 'vencimiento_desde=' + desde + '&';
     if (hasta)  url += 'vencimiento_hasta=' + hasta + '&';
     const r = await fetch(url).then(r => r.json());
@@ -1669,7 +2445,9 @@ async function actualizarResumenFondos() {
 function actualizarTarjetaFondosVenc(r) {
   // Toma el total a pagar de las facturas actualmente seleccionadas en pantalla
   const totalSelec = vencData.filter(f => f.incluir_pago === 1).reduce((s,f) => s + f.valor_final, 0);
-  const disponible = (r.totalFondos || 0) - (r.totalGastos || 0);
+  const cxcEl = document.getElementById('vf-cxc');
+  const cxcVal = cxcEl ? (parseFloat(cxcEl.dataset.raw || 0)) : 0;
+  const disponible = (r.totalFondos || 0) - (r.totalGastos || 0) + cxcVal;
   const saldoFinal = disponible - totalSelec;
   const ok = saldoFinal >= 0;
 
@@ -1687,29 +2465,49 @@ function actualizarTarjetaFondosVenc(r) {
 }
 
 async function guardarNota(id, nota) {
-  await fetch(`/facturas/${id}/incluir`, {
+  await fetch(api(`/facturas/${id}/incluir`), {
     method:'PATCH',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ incluir: vencData.find(f=>f.id===id)?.incluir_pago !== 0, notas: nota })
+    body: JSON.stringify({ incluir: vencData.find(f=>f.id===String(id))?.incluir_pago !== 0, notas: nota })
   });
-  const idx = vencData.findIndex(f=>f.id===id);
+  const idx = vencData.findIndex(f=>f.id===String(id));
   if (idx >= 0) vencData[idx].notas = nota;
 }
 
 async function recalcularDescuentoProveedor() {
-  const nit = document.getElementById('vFiltProv').value;
-  if (!nit) {
-    alert('Selecciona un proveedor en el filtro para recalcular su descuento.');
-    return;
-  }
-  const nombre = document.getElementById('vFiltProv').selectedOptions[0]?.text || nit;
-  if (!confirm(`¿Recalcular el descuento en todas las facturas PENDIENTES de "${nombre}" con el % actual registrado?`)) return;
+  // Los descuentos se calculan automáticamente desde el % registrado en cada proveedor.
+  // Este botón recarga los datos para reflejar cambios recientes en los porcentajes.
+  await loadVencimientos();
+}
+
+async function corregirProveedor(id) {
+  const factura = vencData.find(f => f.id === id);
+  const actual = factura ? (factura.p_nombre || factura.proveedor_nombre || '') : '';
+  const nuevoNombre = prompt(`Corregir proveedor de factura ${factura?.numero_factura||id}\nNombre actual: "${actual}"\n\nIngrese el nombre correcto del proveedor:`, actual);
+  if (!nuevoNombre || nuevoNombre.trim() === actual.trim()) return;
+
+  // Buscar NIT del proveedor en la lista disponible
+  const provs = vencData.filter(f => f.p_nombre?.toLowerCase() === nuevoNombre.trim().toLowerCase());
+  const nitSugerido = provs.length > 0 ? provs[0].proveedor_nit : (factura?.proveedor_nit || '');
+  const nuevoNit = prompt(`NIT del proveedor correcto (actual: ${nitSugerido}):`, nitSugerido);
+  if (nuevoNit === null) return;
+
   try {
-    const res = await fetch(`/proveedores/${nit}/recalcular-facturas`, { method: 'POST' });
-    const data = await res.json();
-    if (!res.ok) { alert('Error: ' + data.error); return; }
-    alert(data.mensaje);
-    loadVencimientos();
+    const res = await fetch(api(`/facturas/${id}/corregir-proveedor`), {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ proveedor_nit: nuevoNit.trim(), proveedor_nombre: nuevoNombre.trim() })
+    });
+    if (!res.ok) { const e = await res.json(); alert('Error: ' + e.error); return; }
+    // Actualizar en memoria
+    const idx = vencData.findIndex(f => f.id === id);
+    if (idx >= 0) {
+      vencData[idx].proveedor_nit    = nuevoNit.trim();
+      vencData[idx].proveedor_nombre = nuevoNombre.trim();
+      vencData[idx].p_nombre         = nuevoNombre.trim();
+    }
+    renderVencimientos();
+    alert(`✅ Proveedor corregido a: ${nuevoNombre}`);
   } catch(e) {
     alert('Error: ' + e.message);
   }
@@ -1717,16 +2515,31 @@ async function recalcularDescuentoProveedor() {
 
 async function ajustarFactura(id, campos) {
   try {
-    const res = await fetch(`/facturas/${id}/ajustar`, {
+    const res = await fetch(api(`/facturas/${id}/ajustar`), {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(campos)
     });
     if (!res.ok) { const e = await res.json(); alert('Error: ' + e.error); return; }
     const data = await res.json();
-    // Actualizar vencData en memoria
+    // Actualizar vencData en memoria con los campos devueltos
     const idx = vencData.findIndex(f => f.id === id);
-    if (idx >= 0) Object.assign(vencData[idx], data.factura);
+    if (idx >= 0) {
+      if (data.flete       !== undefined) vencData[idx].flete            = data.flete;
+      if (data.fecha_vencimiento !== undefined) {
+        vencData[idx].fecha_vencimiento = data.fecha_vencimiento;
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        vencData[idx].dias_para_vencer = data.fecha_vencimiento
+          ? Math.round((new Date(data.fecha_vencimiento) - hoy) / 86400000)
+          : null;
+      }
+      if (data.flete !== undefined) {
+        const descDto = vencData[idx].descuento_pronto_pago || 0;
+        vencData[idx].valor_final = Math.max(0, (vencData[idx].saldo_pendiente || 0) - data.flete - descDto);
+      }
+      // backwards compat: old endpoint returned factura object
+      if (data.factura) Object.assign(vencData[idx], data.factura);
+    }
     // Re-renderizar tabla y totales
     renderVencimientos();
     renderTotalesPie();
@@ -1767,9 +2580,9 @@ function selAllVenc(checked) {
 }
 
 async function bulkIncluir(incluir) {
-  const ids = Array.from(document.querySelectorAll('.chk-venc:checked')).map(c=>parseInt(c.dataset.id));
+  const ids = Array.from(document.querySelectorAll('.chk-venc:checked')).map(c=>c.dataset.id);
   if (!ids.length) return;
-  await fetch('/facturas/incluir-lote', {
+  await fetch(api('/facturas/incluir-lote'), {
     method:'PATCH', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ ids, incluir })
   });
@@ -1785,8 +2598,8 @@ function exportarSeleccionadas() {
   const incluidas = vencData.filter(f => f.incluir_pago !== 0);
   if (!incluidas.length) { alert('No hay facturas marcadas para pago'); return; }
   // Generar CSV simple
-  const cols = ['numero_factura','proveedor_nombre','proveedor_nit','fecha_factura','fecha_vencimiento','dias_para_vencer','dias_sistema','valor_factura','descuento_pronto_pago','flete','valor_final','banco','cuenta','tipo_cuenta','estado','notas'];
-  const header = ['Factura','Proveedor','NIT','F.Factura','F.Vencimiento','Días para vencer','Días en sistema','Valor','Descuento','Flete','Total Final','Banco','Cuenta','Tipo','Estado','Notas'];
+  const cols = ['numero_factura','proveedor_nombre','proveedor_nit','tienda','fecha_factura','fecha_vencimiento','dias_para_vencer','dias_sistema','valor_factura','descuento_pronto_pago','flete','valor_final','banco','cuenta','tipo_cuenta','estado','notas'];
+  const header = ['Factura','Proveedor','NIT','Tienda','F.Factura','F.Vencimiento','Días para vencer','Días en sistema','Valor','Descuento','Flete','Total Final','Banco','Cuenta','Tipo','Estado','Notas'];
   let csv = header.join(';') + '\n';
   const fechaCols = new Set(['fecha_factura','fecha_vencimiento']);
   incluidas.forEach(f => {
@@ -1803,7 +2616,7 @@ function exportarSeleccionadas() {
 }
 
 async function initVencProvSelect() {
-  const r = await fetch('/facturas/agrupadas').then(r=>r.json());
+  const r = await fetch(api('/facturas/agrupadas')).then(r=>r.json());
   const sel = document.getElementById('vFiltProv');
   if (!sel) return;
   sel.innerHTML = '<option value="">— Todos —</option>';
@@ -1818,7 +2631,7 @@ const CATEGORIAS_GASTO = ['Servicios','Arriendos','Salarios','Jornales','Reparac
 async function fondosResumenUrl() {
   const desde = document.getElementById('vFiltDesde')?.value || '';
   const hasta  = document.getElementById('vFiltHasta')?.value || '';
-  let url = '/fondos/resumen?';
+  let url = api('/fondos/resumen?');
   if (desde) url += 'vencimiento_desde=' + desde + '&';
   if (hasta)  url += 'vencimiento_hasta=' + hasta + '&';
   return url;
@@ -1829,6 +2642,7 @@ async function loadFondos() {
   renderCuentas(r.cuentas || []);
   renderGastos(r.gastos || []);
   actualizarResumen(r);
+  loadFondosCxC();
 }
 
 function renderCuentas(cuentas) {
@@ -1932,7 +2746,7 @@ function actualizarResumen(r) {
 }
 
 async function guardarCuenta(id, valor) {
-  await fetch(`/fondos/cuentas/${id}`, {
+  await fetch(api(`/fondos/cuentas/${id}`), {
     method: 'PUT',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ saldo: parseFloat(valor) || 0 })
@@ -1943,7 +2757,7 @@ async function guardarCuenta(id, valor) {
 }
 
 async function addGasto() {
-  const r = await fetch('/fondos/gastos', {
+  const r = await fetch(api('/fondos/gastos'), {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ categoria: 'Servicios', descripcion: '', valor: 0 })
@@ -1957,7 +2771,7 @@ async function actualizarGasto(id) {
   const cat = row.querySelector('select').value;
   const desc = row.querySelectorAll('input')[0].value;
   const val = parseFloat(row.querySelectorAll('input[type=number]')[0].value) || 0;
-  await fetch(`/fondos/gastos/${id}`, {
+  await fetch(api(`/fondos/gastos/${id}`), {
     method: 'PUT',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ categoria: cat, descripcion: desc, valor: val })
@@ -1967,7 +2781,7 @@ async function actualizarGasto(id) {
 }
 
 async function eliminarGasto(id) {
-  await fetch(`/fondos/gastos/${id}`, { method: 'DELETE' });
+  await fetch(api(`/fondos/gastos/${id}`), { method: 'DELETE' });
   await loadFondos();
 }
 
@@ -2035,10 +2849,10 @@ async function loadCxP(soloVencidas = false) {
   const cont = document.getElementById('tCxP');
   cont.innerHTML = '<div class="empty"><div class="icon">⏳</div>Consultando ERP...</div>';
   try {
-    const url = soloVencidas ? '/cxp?vencidas=1' : '/cxp';
+    const url = soloVencidas ? api('/cxp?vencidas=1') : api('/cxp');
     const [dataFact, dataRes] = await Promise.all([
       fetch(url).then(r=>r.json()),
-      fetch('/cxp/resumen').then(r=>r.json())
+      fetch(api('/cxp/resumen')).then(r=>r.json())
     ]);
     renderCxPStats(dataRes);
     renderCxPTabla(dataFact.facturas || []);
@@ -2091,7 +2905,7 @@ async function buscarCxP(q) {
   if (!q.trim()) { loadCxP(); return; }
   cxpTimer = setTimeout(async () => {
     try {
-      const data = await fetch(`/cxp/buscar?q=${encodeURIComponent(q)}`).then(r=>r.json());
+      const data = await fetch(api(`/cxp/buscar?q=${encodeURIComponent(q)}`)).then(r=>r.json());
       renderCxPTabla(data.facturas || []);
     } catch(e) {}
   }, 400);
@@ -2109,7 +2923,7 @@ async function loadSoportesProvSelect() {
   const sel = document.getElementById('sNit');
   const fsel = document.getElementById('sFilterNit');
   if (sel.options.length > 1) return;
-  const data = await fetch('/proveedores').then(r=>r.json()).catch(()=>({proveedores:[]}));
+  const data = await fetch(api('/proveedores')).then(r=>r.json()).catch(()=>({proveedores:[]}));
   (data.proveedores||[]).forEach(p => {
     const o1 = new Option(`${p.nombre} (${p.nit})`, p.nit);
     const o2 = new Option(`${p.nombre} (${p.nit})`, p.nit);
@@ -2121,6 +2935,69 @@ async function loadSoportesProvSelect() {
 function onSFileChange(input) {
   const label = document.getElementById('sFileLabel');
   if (input.files[0]) label.textContent = '✅ ' + input.files[0].name;
+}
+
+let _sAnalisisDatos = null;
+
+async function analizarComprobante(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const box = document.getElementById('sAnalisisBox');
+  const content = document.getElementById('sAnalisisContent');
+  box.style.display = 'none';
+  _sAnalisisDatos = null;
+
+  // Convertir a base64
+  const b64 = await new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+
+  try {
+    const r = await fetch(api('/soportes/analizar-ia'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: b64, mimeType: file.type })
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || (!d.proveedor_nombre && !d.valor && (!d.facturas_encontradas || d.facturas_encontradas.length === 0))) return;
+
+    _sAnalisisDatos = d;
+    let html = '';
+    if (d.proveedor_nombre) html += `🏢 <b>Proveedor:</b> ${d.proveedor_nombre}<br>`;
+    if (d.total_imagen) html += `💰 <b>Valor:</b> $${Number(d.total_imagen).toLocaleString('es-CO')}<br>`;
+    if (d.fecha_pago) html += `📅 <b>Fecha:</b> ${d.fecha_pago}<br>`;
+    if (d.facturas_encontradas?.length > 0) {
+      html += `📄 <b>Facturas:</b> ${d.facturas_encontradas.map(f => f.numero_factura).filter(Boolean).join(', ')}<br>`;
+    }
+    content.innerHTML = html;
+    box.style.display = 'block';
+  } catch(e) { /* silencioso */ }
+}
+
+function aplicarAnalisis() {
+  if (!_sAnalisisDatos) return;
+  const d = _sAnalisisDatos;
+  if (d.total_imagen) document.getElementById('sValor').value = d.total_imagen;
+  if (d.fecha_pago)   document.getElementById('sFecha').value = d.fecha_pago;
+  if (d.facturas_encontradas?.length > 0) {
+    const nums = d.facturas_encontradas.map(f => f.numero_factura).filter(Boolean).join(', ');
+    if (nums) document.getElementById('sFacturas').value = nums;
+  }
+  // Intentar seleccionar el proveedor por nombre
+  if (d.proveedor_nombre) {
+    const sel = document.getElementById('sNit');
+    const nombre = d.proveedor_nombre.toLowerCase();
+    for (const opt of sel.options) {
+      if (opt.text.toLowerCase().includes(nombre.split(' ')[0])) {
+        sel.value = opt.value;
+        break;
+      }
+    }
+  }
+  document.getElementById('sAnalisisBox').style.display = 'none';
 }
 
 function handleSDrop(e) {
@@ -2161,7 +3038,7 @@ async function subirSoporte() {
   if (notas)    fd.append('notas', notas);
 
   try {
-    const r = await fetch('/soportes/upload', { method:'POST', body: fd });
+    const r = await fetch(api('/soportes/upload'), { method:'POST', body: fd });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Error al subir');
     res.innerHTML = `<div class="alert alert-success">✅ Soporte guardado. Proveedor <b>${d.proveedor_nombre}</b> notificado por WhatsApp.</div>`;
@@ -2184,7 +3061,7 @@ async function subirSoporte() {
 
 async function loadSoportes() {
   const nit = document.getElementById('sFilterNit')?.value || '';
-  const url = nit ? `/soportes/proveedor/${nit}` : '/soportes';
+  const url = nit ? api(`/soportes/proveedor/${nit}`) : api('/soportes');
   const data = await fetch(url).then(r=>r.json()).catch(()=>({soportes:[]}));
   const soportes = data.soportes || [];
   const cont = document.getElementById('tSoportes');
@@ -2194,19 +3071,1433 @@ async function loadSoportes() {
   }
   cont.innerHTML = `<table>
     <thead><tr>
-      <th>Fecha</th><th>Proveedor</th><th>Facturas</th><th>Valor</th><th>Fecha Pago</th><th>Notificado</th><th>Soporte</th>
+      <th>Fecha</th><th>Proveedor</th><th>Facturas</th><th>Valor</th><th>Fecha Pago</th><th>Notificado</th><th>Acciones</th>
     </tr></thead>
-    <tbody>${soportes.map(s => `<tr>
+    <tbody>${soportes.map(s => `<tr id="srow-${s.id}">
       <td>${new Date(s.created_at).toLocaleDateString('es-CO')}</td>
       <td><b>${s.proveedor_nombre||s.proveedor_nit}</b></td>
-      <td>${s.facturas||'—'}</td>
-      <td>${s.valor ? '$'+Number(s.valor).toLocaleString('es-CO') : '—'}</td>
-      <td>${s.fecha_pago||'—'}</td>
+      <td id="sfact-${s.id}">${s.facturas||'—'}</td>
+      <td id="sval-${s.id}">${s.valor ? '$'+Number(s.valor).toLocaleString('es-CO') : '—'}</td>
+      <td id="sfecha-${s.id}">${s.fecha_pago||'—'}</td>
       <td style="text-align:center">${s.notificado ? '✅' : '⏳'}</td>
-      <td><a href="/soportes/ver/${s.archivo_nombre}" target="_blank" class="btn btn-info" style="padding:5px 10px;font-size:11px">👁️ Ver</a></td>
+      <td style="display:flex;gap:4px;align-items:center">
+        <a href="${API_BASE}/soportes/ver/${s.archivo_nombre}" target="_blank" class="btn btn-info" style="padding:5px 10px;font-size:11px">👁️ Ver</a>
+        <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px" onclick="editSoporte(${s.id},'${(s.facturas||'').replace(/'/g,"\\'")}',${s.valor||'null'},'${s.fecha_pago||''}','${(s.notas||'').replace(/'/g,"\\'")}')">✏️ Editar</button>
+        <button class="btn" style="padding:5px 10px;font-size:11px;background:#0ea5e9;color:#fff" title="Enviado originalmente el ${new Date(s.created_at).toLocaleDateString('es-CO')}" onclick="reenviarSoporte(${s.id},'${s.proveedor_nombre||s.proveedor_nit}','${new Date(s.created_at).toLocaleDateString('es-CO')}')">🔁 Reenviar</button>
+        ${(!s.facturas || !s.valor) ? `<button class="btn" style="padding:5px 10px;font-size:11px;background:#1a5f9e;color:#fff" onclick="analizarSoporteIA(${s.id})">🤖 IA</button>` : ''}
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>
+
+  <!-- Modal editar soporte -->
+  <div id="editSoporteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:420px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="margin:0 0 16px">✏️ Editar Soporte</h3>
+      <input type="hidden" id="editSoporteId"/>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Facturas (separadas por coma)</label>
+        <input id="editSoporteFacturas" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Valor pagado</label>
+          <input id="editSoporteValor" type="number" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Fecha pago</label>
+          <input id="editSoporteFecha" type="date" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box"/>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px">Notas</label>
+        <input id="editSoporteNotas" type="text" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box"/>
+      </div>
+      <div id="editSoporteMsg" style="margin-bottom:10px;font-size:12px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="document.getElementById('editSoporteModal').style.display='none'">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarEditSoporte()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function editSoporte(id, facturas, valor, fecha, notas) {
+  document.getElementById('editSoporteId').value = id;
+  document.getElementById('editSoporteFacturas').value = facturas || '';
+  document.getElementById('editSoporteValor').value = valor != null ? valor : '';
+  document.getElementById('editSoporteFecha').value = fecha || '';
+  document.getElementById('editSoporteNotas').value = notas || '';
+  document.getElementById('editSoporteMsg').textContent = '';
+  document.getElementById('editSoporteModal').style.display = 'flex';
+}
+
+async function guardarEditSoporte() {
+  const id       = document.getElementById('editSoporteId').value;
+  const facturas = document.getElementById('editSoporteFacturas').value.trim();
+  const valor    = document.getElementById('editSoporteValor').value;
+  const fecha    = document.getElementById('editSoporteFecha').value;
+  const notas    = document.getElementById('editSoporteNotas').value.trim();
+  const msg      = document.getElementById('editSoporteMsg');
+  msg.textContent = 'Guardando...';
+  msg.style.color = '#333';
+  try {
+    const r = await fetch(api(`/soportes/${id}`), {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ facturas, valor: valor ? parseFloat(valor) : null, fecha_pago: fecha, notas })
+    });
+    if (!r.ok) throw new Error((await r.json()).error);
+    document.getElementById('editSoporteModal').style.display = 'none';
+    loadSoportes();
+  } catch(e) {
+    msg.textContent = '❌ ' + e.message;
+    msg.style.color = 'red';
+  }
+}
+
+async function reenviarSoporte(id, proveedorNombre, fechaOriginal) {
+  if (!confirm(`¿Reenviar el soporte de ${proveedorNombre} por WhatsApp?\n\n📅 Enviado originalmente el ${fechaOriginal}\n\nEl mensaje indicará que es un reenvío con la fecha original.`)) return;
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.textContent = '⏳...';
+  btn.disabled = true;
+  try {
+    const r = await fetch(api(`/soportes/${id}/reenviar`), { method: 'POST' });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+    alert(`✅ Soporte reenviado a ${proveedorNombre}\n📅 Fecha original: ${data.fecha_original}`);
+    btn.textContent = '✅ Enviado';
+    setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 3000);
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+async function analizarSoporteIA(id) {
+  const msg = document.getElementById('editSoporteMsg');
+  // Abrir modal en modo cargando
+  document.getElementById('editSoporteId').value = id;
+  document.getElementById('editSoporteFacturas').value = '';
+  document.getElementById('editSoporteValor').value = '';
+  document.getElementById('editSoporteFecha').value = '';
+  document.getElementById('editSoporteNotas').value = '';
+  document.getElementById('editSoporteMsg').textContent = '🤖 Analizando imagen con IA...';
+  document.getElementById('editSoporteMsg').style.color = '#1a5f9e';
+  document.getElementById('editSoporteModal').style.display = 'flex';
+  try {
+    const r = await fetch(api(`/soportes/analizar-archivo/${id}`), { method: 'POST' });
+    if (!r.ok) throw new Error((await r.json()).error);
+    const d = await r.json();
+    document.getElementById('editSoporteFacturas').value = d.facturas || '';
+    document.getElementById('editSoporteValor').value    = d.valor    || '';
+    document.getElementById('editSoporteFecha').value    = d.fecha_pago || '';
+    document.getElementById('editSoporteNotas').value    = d.notas   || '';
+    document.getElementById('editSoporteMsg').textContent = '✅ IA extrajo los datos. Verifica y guarda.';
+    document.getElementById('editSoporteMsg').style.color = 'green';
+  } catch(e) {
+    document.getElementById('editSoporteMsg').textContent = '❌ ' + e.message;
+    document.getElementById('editSoporteMsg').style.color = 'red';
+  }
+}
+
+// ==================== INVENTARIO ====================
+function sortInventario(col) {
+  if (invSort.col === col) {
+    invSort.dir *= -1;
+  } else {
+    invSort.col = col;
+    invSort.dir = 1; // primera vez: mayor a menor
+  }
+  const prov = document.getElementById('invProveedor').value;
+  const base = prov ? invDataCache.filter(r => r.proveedor === prov) : invDataCache;
+  const sorted = [...base].sort((a, b) => (Number(b[col]) - Number(a[col])) * invSort.dir);
+  renderInventario(sorted, true); // true = no reordenar internamente
+}
+
+function poblarFiltroProveedor(data) {
+  const sel = document.getElementById('invProveedor');
+  const actual = sel.value;
+  const proveedores = [...new Set(data.map(r => r.proveedor).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todos los proveedores</option>' +
+    proveedores.map(p => `<option value="${p}"${p===actual?' selected':''}>${p}</option>`).join('');
+}
+
+function filtrarInventario() {
+  const prov = document.getElementById('invProveedor').value;
+  const filtrado = prov ? invDataCache.filter(r => r.proveedor === prov) : invDataCache;
+  renderInventario(filtrado);
+}
+
+async function loadInventario() {
+  const codalm = document.getElementById('invTienda').value;
+  const dias   = document.getElementById('invDias').value;
+  const cont   = document.getElementById('tInventario');
+  cont.innerHTML = '<div class="empty"><div class="icon">⏳</div>Consultando ERP... puede tardar unos segundos</div>';
+  try {
+    const params = new URLSearchParams({ dias });
+    if (codalm) params.set('codalm', codalm);
+    const res  = await fetch(api('/inventario?') + params);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    invDataCache = json.data;
+    poblarFiltroProveedor(json.data);
+    renderInventario(json.data);
+  } catch(e) {
+    cont.innerHTML = `<div class="empty" style="color:#ef4444"><div class="icon">❌</div>${e.message}</div>`;
+  }
+}
+
+function pctBg(p)   { return p>=70?'#fee2e2':p>=30?'#fef9c3':'#dcfce7'; }
+function pctFg(p)   { return p>=70?'#dc2626':p>=30?'#ca8a04':'#16a34a'; }
+function pctBadge(p){ return `<span style="display:inline-block;min-width:36px;text-align:center;padding:2px 5px;border-radius:8px;font-size:11px;font-weight:700;background:${pctBg(p)};color:${pctFg(p)}">${p}%</span>`; }
+
+function renderInventario(data, preSorted = false) {
+  const cont = document.getElementById('tInventario');
+  if (!data || !data.length) {
+    cont.innerHTML = '<div class="empty"><div class="icon">📦</div>Sin movimientos en este período</div>';
+    return;
+  }
+  const grupos = {};
+  data.forEach(r => {
+    if (!grupos[r.codalm]) grupos[r.codalm] = { tienda: r.tienda, items: [] };
+    grupos[r.codalm].items.push(r);
+  });
+  // Ordenar items dentro de cada grupo si hay columna activa
+  if (!preSorted && invSort.col) {
+    for (const g of Object.values(grupos)) {
+      g.items.sort((a, b) => (Number(b[invSort.col]) - Number(a[invSort.col])) * invSort.dir);
+    }
+  }
+
+  let html = '';
+  for (const cod of Object.keys(grupos)) {
+    const g = grupos[cod];
+    html += `
+    <div style="margin-bottom:28px">
+      <div style="padding:8px 14px;background:#1e40af;color:#fff;border-radius:6px 6px 0 0;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center">
+        <span>🏪 ${g.tienda} &nbsp;<span style="font-weight:400;opacity:.8">(${cod}) — ${g.items.length} ítems</span></span>
+        <span style="font-size:11px;opacity:.7">Haz clic en una fila para ver detalle</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #bfdbfe;border-top:none">
+        <thead>
+          <tr style="background:#dbeafe">
+            <th style="padding:6px 8px;text-align:left;white-space:nowrap">Código</th>
+            <th style="padding:6px 8px;text-align:left">Producto</th>
+            <th style="padding:6px 8px;text-align:left">Proveedor</th>
+            <th style="padding:6px 8px;text-align:center;white-space:nowrap">Tipo</th>
+            <th style="padding:6px 8px;text-align:center;white-space:nowrap">Fecha Entrada</th>
+            <th style="padding:6px 8px;text-align:right;white-space:nowrap">Entradas</th>
+            <th style="padding:6px 8px;text-align:right;white-space:nowrap">Facturado</th>
+            <th style="padding:6px 8px;text-align:right;white-space:nowrap;background:#f0fdf4">Saldo</th>
+            ${['pct_d5','pct_d10','pct_d15','pct_d20','pct_d25','pct_d30'].map((col,i)=>{
+              const label = [5,10,15,20,25,30][i]+'d';
+              const active = invSort.col === col;
+              const arrow = active ? (invSort.dir===1?' ▼':' ▲') : ' ↕';
+              return `<th onclick="sortInventario('${col}')" style="padding:6px 8px;text-align:center;white-space:nowrap;cursor:pointer;user-select:none;${active?'background:#bfdbfe;color:#1e40af':''}" title="Ordenar por ${label}">${label}<span style="font-size:9px;opacity:.6">${arrow}</span></th>`;
+            }).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${g.items.map((r, i) => {
+            const saldo = Number(r.saldo ?? (r.cant_entrada - r.ventas_total));
+            const saldoBg = saldo <= 0 ? '#fee2e2' : saldo <= 5 ? '#fef9c3' : (i%2===0?'#fff':'#f8fafc');
+            return `<tr style="background:${i%2===0?'#fff':'#f8fafc'};cursor:pointer" onclick="verDetalleArticulo('${r.codalm}','${r.codigo}','${(r.nombre_producto||r.codigo).replace(/'/g,"\\'")}','${(r.proveedor||'').replace(/'/g,"\\'")}','${r.tienda}')" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='${i%2===0?'#fff':'#f8fafc'}'">
+              <td style="padding:5px 8px;font-family:monospace;color:#6b7280">${r.codigo}</td>
+              <td style="padding:5px 8px;min-width:180px"><b>${r.nombre_producto||r.codigo}</b></td>
+              <td style="padding:5px 8px;color:#6b7280;white-space:nowrap">${r.proveedor||'—'}</td>
+              <td style="padding:5px 8px;text-align:center">
+                <span style="padding:2px 6px;border-radius:8px;font-size:10px;background:${r.tipo_entrada==='Traslado'?'#dbeafe':'#dcfce7'};color:${r.tipo_entrada==='Traslado'?'#1d4ed8':'#15803d'}">${r.tipo_entrada}</span>
+              </td>
+              <td style="padding:5px 8px;text-align:center;white-space:nowrap">${new Date(r.fecha_entrada).toLocaleDateString('es-CO')}</td>
+              <td style="padding:5px 8px;text-align:right;font-weight:600">${Number(r.cant_entrada).toLocaleString('es-CO')}</td>
+              <td style="padding:5px 8px;text-align:right;color:#dc2626;font-weight:600">${Number(r.ventas_total).toLocaleString('es-CO')}</td>
+              <td style="padding:5px 8px;text-align:right;font-weight:700;background:${saldoBg};color:${saldo<=0?'#dc2626':saldo<=5?'#ca8a04':'#15803d'}">${saldo.toLocaleString('es-CO')}</td>
+              <td style="padding:5px 8px;text-align:center">${pctBadge(r.pct_d5)}</td>
+              <td style="padding:5px 8px;text-align:center">${pctBadge(r.pct_d10)}</td>
+              <td style="padding:5px 8px;text-align:center">${pctBadge(r.pct_d15)}</td>
+              <td style="padding:5px 8px;text-align:center">${pctBadge(r.pct_d20)}</td>
+              <td style="padding:5px 8px;text-align:center">${pctBadge(r.pct_d25)}</td>
+              <td style="padding:5px 8px;text-align:center">${pctBadge(r.pct_d30)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>`;
+  }
+  cont.innerHTML = html;
+}
+
+async function verDetalleArticulo(codalm, codins, nombre, proveedor, tienda) {
+  const modal  = document.getElementById('invModal');
+  const title  = document.getElementById('invModalTitle');
+  const sub    = document.getElementById('invModalSub');
+  const body   = document.getElementById('invModalBody');
+  const dias   = document.getElementById('invDias').value;
+  title.textContent = nombre;
+  sub.textContent   = `${tienda} · ${proveedor} · Cód: ${codins}`;
+  body.innerHTML    = '<div style="padding:30px;text-align:center;color:#6b7280">⏳ Cargando movimientos...</div>';
+  modal.style.display = 'block';
+
+  try {
+    const res  = await fetch(api(`/inventario/detalle?codalm=${codalm}&codins=${encodeURIComponent(codins)}&dias=${dias}`));
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    renderDetalleModal(json.data, nombre, proveedor, tienda, codins, dias);
+  } catch(e) {
+    body.innerHTML = `<div style="color:#dc2626;padding:20px">❌ ${e.message}</div>`;
+  }
+}
+
+function renderDetalleModal(movs, nombre, proveedor, tienda, codins, dias) {
+  const body = document.getElementById('invModalBody');
+  const entradas = movs.filter(m => ['Traslado Entrada','Compra/Contado'].includes(m.tipo_movimiento));
+  const ventas   = movs.filter(m => m.tipo_movimiento === 'Venta');
+  const otros    = movs.filter(m => !['Traslado Entrada','Compra/Contado','Venta'].includes(m.tipo_movimiento));
+  const totEnt   = entradas.reduce((s,m)=>s+Number(m.cantidad),0);
+  const totVen   = ventas.reduce((s,m)=>s+Number(m.cantidad),0);
+
+  body.innerHTML = `
+    <div id="reporteContenido">
+      <!-- Encabezado reporte -->
+      <div style="border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;margin-bottom:16px;background:#f8fafc">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${nombre}</div>
+            <div style="font-size:11px;color:#64748b">Código: ${codins} · Proveedor: ${proveedor}</div>
+            <div style="font-size:11px;color:#64748b">Tienda: ${tienda} · Período: últimos ${dias} días</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:#64748b">Fecha reporte: ${new Date().toLocaleDateString('es-CO')}</div>
+            <div style="font-size:11px;color:#64748b">LUMINA GESTIÓN INTEGRAL</div>
+          </div>
+        </div>
+        <!-- Resumen -->
+        <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap">
+          <div style="background:#dbeafe;border-radius:8px;padding:8px 16px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#1d4ed8">${totEnt.toLocaleString('es-CO')}</div>
+            <div style="font-size:10px;color:#3b82f6">Total Entradas</div>
+          </div>
+          <div style="background:#fee2e2;border-radius:8px;padding:8px 16px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#dc2626">${totVen.toLocaleString('es-CO')}</div>
+            <div style="font-size:10px;color:#ef4444">Total Facturado</div>
+          </div>
+          <div style="background:#dcfce7;border-radius:8px;padding:8px 16px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#16a34a">${(totEnt-totVen).toLocaleString('es-CO')}</div>
+            <div style="font-size:10px;color:#22c55e">Saldo Calculado</div>
+          </div>
+          <div style="background:#f0fdf4;border-radius:8px;padding:8px 16px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#15803d">${totEnt>0?Math.round((totVen/totEnt)*100):0}%</div>
+            <div style="font-size:10px;color:#16a34a">% Agotado</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla movimientos -->
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="background:#1e40af;color:#fff">
+            <th style="padding:7px 10px;text-align:left">Fecha</th>
+            <th style="padding:7px 10px;text-align:left">Tipo Movimiento</th>
+            <th style="padding:7px 10px;text-align:right">Cantidad</th>
+            <th style="padding:7px 10px;text-align:left">Documento</th>
+            <th style="padding:7px 10px;text-align:left">Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${movs.map((m, i) => {
+            const esVenta  = m.tipo_movimiento === 'Venta';
+            const esEntrada = ['Traslado Entrada','Compra/Contado'].includes(m.tipo_movimiento);
+            const bg = esVenta ? '#fff5f5' : esEntrada ? '#f0fdf4' : (i%2===0?'#fff':'#f8fafc');
+            const color = esVenta ? '#dc2626' : esEntrada ? '#15803d' : '#374151';
+            return `<tr style="background:${bg}">
+              <td style="padding:5px 10px;white-space:nowrap">${new Date(m.fecha).toLocaleDateString('es-CO')}</td>
+              <td style="padding:5px 10px;color:${color};font-weight:600">${m.tipo_movimiento}</td>
+              <td style="padding:5px 10px;text-align:right;font-weight:700;color:${color}">${Number(m.cantidad).toLocaleString('es-CO')}</td>
+              <td style="padding:5px 10px;font-family:monospace;color:#6b7280">${m.documento||'—'}</td>
+              <td style="padding:5px 10px;color:#6b7280">${m.observacion||'—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function imprimirReporte() {
+  const contenido = document.getElementById('reporteContenido').innerHTML;
+  const titulo    = document.getElementById('invModalTitle').textContent;
+  const sub       = document.getElementById('invModalSub').textContent;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Reporte: ${titulo}</title>
+  <style>body{font-family:Arial,sans-serif;margin:20px;color:#1e293b}table{width:100%;border-collapse:collapse}th,td{padding:6px 10px;border:1px solid #e2e8f0}th{background:#1e40af;color:#fff}@media print{button{display:none}}</style>
+  </head><body>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:2px solid #1e40af;padding-bottom:10px">
+    <div><h2 style="margin:0;color:#1e40af">LUMINA GESTIÓN INTEGRAL</h2><div style="font-size:12px;color:#64748b">Reporte de Movimientos de Inventario</div></div>
+    <div style="font-size:11px;color:#64748b;text-align:right">${new Date().toLocaleDateString('es-CO')}</div>
+  </div>
+  ${contenido}
+  <script>window.onload=()=>window.print();<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+function exportarInventarioExcel() {
+  if (!invDataCache.length) { alert('Primero carga los datos del inventario'); return; }
+
+  const WB = XLSX.utils.book_new();
+  const tiendas = [...new Set(invDataCache.map(r => r.tienda || r.codalm))].sort();
+
+  const RANGO_COLOR = {
+    '>100%': 'FF7F0000', '80-100%': 'FFDC2626', '60-80%': 'FFCA8A04',
+    '40-60%': 'FF16A34A', '<40%':    'FF15803D', 'Sin rotaci\u00F3n': 'FF6B7280',
+  };
+  const RANGO_FONT = { '>100%':'FFFFFFFF','80-100%':'FFFFFFFF','60-80%':'FFFFFFFF','40-60%':'FFFFFFFF','<40%':'FFFFFFFF','Sin rotaci\u00F3n':'FFFFFFFF' };
+
+  function getRango(r) {
+    const p = Number(r.pct_d30) || 0;
+    const vendido = Number(r.ventas_total) || 0;
+    if (vendido === 0) return 'Sin rotaci\u00F3n';
+    if (p > 100) return '>100%';
+    if (p >= 80)  return '80-100%';
+    if (p >= 60)  return '60-80%';
+    if (p >= 40)  return '40-60%';
+    return '<40%';
+  }
+
+  const HDR = ['TIENDA','C\u00D3DIGO','NOMBRE DEL PRODUCTO','PROVEEDOR','TIPO ENTRADA','FECHA ENTRADA','ENTRADAS','FACTURACI\u00D3N','SALDO','STOCK ACTUAL','5d%','10d%','15d%','20d%','25d%','30d%','RANGO'];
+  const COLS_DATA = ['tienda','codigo','nombre_producto','proveedor','tipo_entrada','fecha_entrada','cant_entrada','ventas_total','saldo','stock_actual','pct_d5','pct_d10','pct_d15','pct_d20','pct_d25','pct_d30'];
+
+  const hdrStyle = {
+    font: { bold: true, color: { rgb: 'FFFFFFFF' }, sz: 11 },
+    fill: { fgColor: { rgb: 'FF1E40AF' } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border: { bottom: { style: 'thin', color: { rgb: 'FF93C5FD' } } }
+  };
+
+  const numStyle = { alignment: { horizontal: 'right' } };
+  const pctStyle = { alignment: { horizontal: 'center' }, numFmt: '0.0"%"' };
+
+  function buildSheet(rows) {
+    const wsData = [HDR];
+    const rangoCol = HDR.length - 1;
+
+    for (const r of rows) {
+      const fila = [...COLS_DATA.map(c => {
+        const v = r[c];
+        if (v === null || v === undefined || v === '') return '';
+        return v;
+      }), getRango(r)];
+      wsData.push(fila);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    ws['!cols'] = [
+      {wch:18},{wch:14},{wch:50},{wch:22},{wch:14},{wch:18},
+      {wch:11},{wch:13},{wch:9},{wch:13},
+      {wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:13}
+    ];
+    ws['!rows'] = [{ hpt: 36 }];
+
+    const range = XLSX.utils.decode_range(ws['!ref']);
+
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (!ws[addr]) continue;
+      ws[addr].s = hdrStyle;
+    }
+
+    for (let R = 1; R <= range.e.r; R++) {
+      const rango = wsData[R][rangoCol];
+      const bgFill = RANGO_COLOR[rango] ? { fgColor: { rgb: RANGO_COLOR[rango] } } : undefined;
+      const fontClr = RANGO_FONT[rango] ? { color: { rgb: RANGO_FONT[rango] } } : undefined;
+
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[addr]) ws[addr] = { t: 'z', v: '' };
+
+        const isNum = C >= 6 && C <= 9;
+        const isPct = C >= 10 && C <= 15;
+        const isRango = C === rangoCol;
+
+        ws[addr].s = {
+          ...(isNum ? numStyle : isPct ? pctStyle : { alignment: { vertical: 'center' } }),
+          fill: isRango && bgFill ? bgFill : (R % 2 === 0 ? { fgColor: { rgb: 'FFF8FAFC' } } : {}),
+          font: isRango && fontClr ? { ...fontClr, bold: true, sz: 10 } : { sz: 10 },
+          border: {
+            bottom: { style: 'thin', color: { rgb: 'FFE2E8F0' } },
+            right:  { style: 'thin', color: { rgb: 'FFE2E8F0' } },
+          }
+        };
+
+        if (isPct && ws[addr].t === 's') {
+          const n = parseFloat(ws[addr].v);
+          if (!isNaN(n)) { ws[addr].t = 'n'; ws[addr].v = n; }
+        }
+      }
+    }
+
+    return ws;
+  }
+
+  XLSX.utils.book_append_sheet(WB, buildSheet(invDataCache), 'TODAS LAS TIENDAS');
+  for (const tienda of tiendas) {
+    const rows = invDataCache.filter(r => (r.tienda || r.codalm) === tienda);
+    XLSX.utils.book_append_sheet(WB, buildSheet(rows), tienda.slice(0, 31));
+  }
+
+  const fecha = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(WB, `Inventario_Rotacion_${fecha}.xlsx`, { cellStyles: true });
+}
+</script>
+
+<script>
+// ==================== VENTAS ====================
+const TIENDAS_VNT = {'002':'ARRE','009':'LA30','010':'PLAZA'};
+let ventasData = [];
+
+(function initVntDates() {
+  const hoy = new Date();
+  const y = hoy.getFullYear(), m = String(hoy.getMonth()+1).padStart(2,'0');
+  document.getElementById('vntDesde').value = `${y}-${m}-01`;
+  document.getElementById('vntHasta').value = `${y}-${m}-${String(new Date(y,hoy.getMonth()+1,0).getDate()).padStart(2,'0')}`;
+  document.getElementById('pMes').value = hoy.getMonth()+1;
+})();
+
+// ==================== SUB-TABS VENTAS ====================
+function switchSubTabVentas(sub) {
+  const showVentas = sub === 'ventas';
+  document.getElementById('subVentas').style.display = showVentas ? '' : 'none';
+  document.getElementById('subPyG').style.display    = showVentas ? 'none' : '';
+  const btnV = document.getElementById('subTabVentasBtn');
+  const btnP = document.getElementById('subTabPyGBtn');
+  btnV.style.color = showVentas ? '#4f46e5' : '#6b7280';
+  btnV.style.borderBottom = showVentas ? '3px solid #4f46e5' : '3px solid transparent';
+  btnP.style.color = showVentas ? '#6b7280' : '#4f46e5';
+  btnP.style.borderBottom = showVentas ? '3px solid transparent' : '3px solid #4f46e5';
+  if (!showVentas && !document.getElementById('pygDesde').value) {
+    pygPreset('mes');
+  }
+}
+
+function pygPreset(tipo) {
+  const hoy = new Date();
+  const y = hoy.getFullYear(), m = hoy.getMonth();
+  if (tipo === 'mes') {
+    const ultimo = new Date(y, m+1, 0).getDate();
+    document.getElementById('pygDesde').value = `${y}-${String(m+1).padStart(2,'0')}-01`;
+    document.getElementById('pygHasta').value = `${y}-${String(m+1).padStart(2,'0')}-${String(ultimo).padStart(2,'0')}`;
+  } else {
+    document.getElementById('pygDesde').value = `${y}-01-01`;
+    document.getElementById('pygHasta').value = `${y}-12-31`;
+  }
+  loadPyG();
+}
+
+async function loadPyG() {
+  const desde = document.getElementById('pygDesde').value;
+  const hasta  = document.getElementById('pygHasta').value;
+  if (!desde || !hasta) return;
+  const cont = document.getElementById('tPyG');
+  cont.innerHTML = '<div class="empty"><div class="icon">⏳</div>Consultando ERP...</div>';
+  try {
+    const d = await fetch(api(`/ventas/pyg?desde=${desde}&hasta=${hasta}`)).then(r=>r.json());
+    renderPyG(d, desde, hasta);
+  } catch(e) {
+    cont.innerHTML = `<div class="empty" style="color:#dc2626">Error: ${e.message}</div>`;
+  }
+}
+
+function renderPyG(d, desde, hasta) {
+  if (!d || !d.entidades) {
+    document.getElementById('tPyG').innerHTML = '<div class="empty">Sin datos</div>';
+    return;
+  }
+  const ORDER = ['adm_arre','pto_arre','adm_la30','pto_la30','adm_plaza','pto_plaza','corp','cons'];
+  const HDR_COLORS = {
+    adm_arre:'#7c3aed', pto_arre:'#059669',
+    adm_la30:'#0369a1', pto_la30:'#0891b2',
+    adm_plaza:'#b45309', pto_plaza:'#d97706',
+    corp:'#dc2626',     cons:'#1e293b'
+  };
+  const ents  = ORDER.map(k => ({ ...d.entidades[k], _key: k })).filter(e => e.label);
+  const grupos = d.grupos || [];
+  const $  = v => cop(v);
+  const pct = v => (v === null || v === undefined) ? '—' : v + '%';
+  const clrU   = v => (typeof v === 'number' && v < 0) ? '#dc2626' : '#10b981';
+  const clrPct = v => v === null ? '#6b7280' : v >= 20 ? '#10b981' : v >= 0 ? '#f59e0b' : '#dc2626';
+  const ID_FIN = 'gastos_fin';
+  const gruposOper = grupos.filter(g => g.id !== ID_FIN);
+  const grupoFin   = grupos.find(g => g.id === ID_FIN);
+
+  function hdrCols() {
+    return ents.map(e => {
+      const c = HDR_COLORS[e._key] || '#374151';
+      return `<th style="text-align:right;padding:10px 14px;background:${c}15;color:${c};border-bottom:3px solid ${c};min-width:130px;white-space:nowrap;font-size:12px">${e.label}</th>`;
+    }).join('');
+  }
+  function filaSeccion(label, bg='#f8fafc') {
+    return `<tr style="background:${bg}"><td colspan="${ents.length+1}" style="padding:7px 14px;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#374151;border-top:2px solid #e2e8f0">${label}</td></tr>`;
+  }
+  function fila(label, vals, bold=false, bg='#fff', color='#374151', indent=0) {
+    const fs  = bold ? 'font-weight:700' : '';
+    const pad = indent > 0 ? `padding-left:${14+indent*14}px` : 'padding-left:14px';
+    return `<tr style="background:${bg}"><td style="padding:6px 14px;${fs};${pad};color:${color};font-size:12px">${label}</td>${vals.map(v=>{const col=(typeof v==='number'&&v<0)?'#dc2626':color;return `<td style="padding:6px 14px;text-align:right;${fs};color:${col};font-size:12px">${$(v)}</td>`;}).join('')}</tr>`;
+  }
+  function filaBorde(label, vals, bg, color, sz='14px') {
+    return `<tr style="background:${bg};border-top:3px solid #334155"><td style="padding:11px 14px;font-weight:800;font-size:${sz};color:${color}">${label}</td>${vals.map(v=>`<td style="padding:11px 14px;text-align:right;font-weight:800;font-size:${sz};color:${clrU(v)}">${$(v)}</td>`).join('')}</tr>`;
+  }
+  function filaInfo(label, vals, colors, bg='#f8fafc') {
+    return `<tr style="background:${bg}"><td style="padding:4px 14px 4px 24px;font-size:11px;color:#6b7280;font-style:italic">${label}</td>${vals.map((v,i)=>`<td style="padding:4px 14px;text-align:right;font-size:11px;font-weight:700;color:${colors[i]}">${v}</td>`).join('')}</tr>`;
+  }
+
+  let h = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>
+    <th style="text-align:left;padding:10px 14px;background:#f8fafc;color:#374151;border-bottom:2px solid #e2e8f0;min-width:210px">CONCEPTO</th>
+    ${hdrCols()}</tr></thead><tbody>`;
+
+  h += filaSeccion('Ingresos', '#f0fdf4');
+  h += fila('Ventas Netas', ents.map(e=>e.ingresos), true, '#f0fdf4', '#059669');
+  h += filaSeccion('Costo de Ventas', '#fef2f2');
+  h += fila('Costo Mercancía (61350501)', ents.map(e=>e.costo_merc), false, '#fef2f2', '#dc2626', 1);
+  h += filaBorde('UTILIDAD BRUTA', ents.map(e=>e.util_bruta), '#e0f2fe', '#0369a1');
+  h += filaInfo('% Margen bruto', ents.map(e=>pct(e.mg_bruto)), ents.map(e=>clrPct(e.mg_bruto)), '#f0f9ff');
+
+  const gruposAdm = gruposOper.filter(g=>['arrendamientos','personal','aseo','energia','internet','agua','transporte'].includes(g.id));
+  if (gruposAdm.length) {
+    h += filaSeccion('Costos de Administración', '#fff7ed');
+    for (const g of gruposAdm) h += fila(g.label, ents.map(e=>e.grupos[g.id]||0), false, '#fff7ed', '#92400e', 1);
+  }
+  const gruposGAdm = gruposOper.filter(g=>['honorarios','personal_adm','gastos_leg','gastos_div'].includes(g.id));
+  if (gruposGAdm.length) {
+    h += filaSeccion('Gastos de Administración', '#fdf4ff');
+    for (const g of gruposGAdm) h += fila(g.label, ents.map(e=>e.grupos[g.id]||0), false, '#fdf4ff', '#7c3aed', 1);
+  }
+  h += fila('Total Gastos Operativos', ents.map(e=>e.total_gastos), true, '#fef9c3', '#b45309');
+
+  const util_oper = ents.map(e => e.util_bruta - e.total_gastos);
+  h += filaBorde('UTILIDAD OPERACIONAL', util_oper, '#dbeafe', '#1d4ed8', '13px');
+  h += filaInfo('% Margen operacional', ents.map(e=>pct(e.mg_neto)), ents.map(e=>clrPct(e.mg_neto)), '#eff6ff');
+
+  if (grupoFin) {
+    h += filaSeccion('Gastos Financieros', '#fff1f2');
+    h += fila(grupoFin.label, ents.map(e=>e.grupos[grupoFin.id]||0), false, '#fff1f2', '#be123c', 1);
+  }
+  h += filaBorde('UTILIDAD NETA', ents.map(e=>e.util_neta), '#1e293b', '#f8fafc');
+  h += `</tbody></table></div>`;
+  h += `<p style="margin:8px 14px;font-size:11px;color:#9ca3af;text-align:right">Período: ${desde} al ${hasta} · Fuente: Cnt_Comprobantes ERP QCUTE</p>`;
+  document.getElementById('tPyG').innerHTML = h;
+}
+
+// ==================== VENTAS (existente) ====================
+function vntPreset(tipo) {
+  const hoy = new Date();
+  const y = hoy.getFullYear(), m = hoy.getMonth();
+  if (tipo === 'mes') {
+    const ultimo = new Date(y, m+1, 0).getDate();
+    document.getElementById('vntDesde').value = `${y}-${String(m+1).padStart(2,'0')}-01`;
+    document.getElementById('vntHasta').value = `${y}-${String(m+1).padStart(2,'0')}-${String(ultimo).padStart(2,'0')}`;
+  } else {
+    document.getElementById('vntDesde').value = `${y}-01-01`;
+    document.getElementById('vntHasta').value = `${y}-12-31`;
+  }
+  loadVentas();
+}
+
+async function loadVentas() {
+  const desde  = document.getElementById('vntDesde').value;
+  const hasta  = document.getElementById('vntHasta').value;
+  const codalm = document.getElementById('vntAlm').value;
+  const grp    = document.getElementById('vntGrp').value;
+  if (!desde || !hasta) return;
+  document.getElementById('tVentas').innerHTML = '<div class="empty"><div class="icon">⏳</div>Cargando...</div>';
+  try {
+    const url = api(`/ventas?desde=${desde}&hasta=${hasta}&agrupacion=${grp}${codalm?'&codalm='+codalm:''}`);
+    const r = await fetch(url).then(r=>r.json());
+    ventasData = r.rows || [];
+    renderVentas();
+    await cargarAvancePresupuesto(desde, hasta, codalm);
+  } catch(e) {
+    document.getElementById('tVentas').innerHTML = `<div class="empty" style="color:#dc2626">Error: ${e.message}</div>`;
+  }
+}
+
+function renderVentas() {
+  const rows = ventasData;
+  document.getElementById('vntCount').textContent = rows.length + ' registros';
+  const totV = rows.reduce((s,r)=>s+(r.ventas||0),0);
+  const totC = rows.reduce((s,r)=>s+(r.costo||0),0);
+  const totM = totV - totC;
+  document.getElementById('vnt-total').textContent  = cop(totV);
+  document.getElementById('vnt-costo').textContent  = cop(totC);
+  document.getElementById('vnt-margen').textContent = cop(totM);
+  document.getElementById('vnt-pct').textContent    = totV>0?Math.round((totM/totV)*100)+'%':'0%';
+
+  if (!rows.length) {
+    document.getElementById('tVentas').innerHTML='<div class="empty"><div class="icon">📈</div>Sin datos en ese período</div>';
+    return;
+  }
+  let h = '<table><thead><tr><th>Tienda</th><th>Período</th><th>Facturas</th><th style="text-align:right">Ventas</th><th style="text-align:right">Costo</th><th style="text-align:right">Margen</th><th style="text-align:right">% Margen</th></tr></thead><tbody>';
+  rows.forEach(r => {
+    const tienda = TIENDAS_VNT[r.codalm] || r.codalm;
+    const pct = r.pct_margen || 0;
+    const color = pct >= 30 ? '#10b981' : pct >= 15 ? '#f59e0b' : '#dc2626';
+    h += `<tr>
+      <td><strong style="color:#4f46e5">${tienda}</strong></td>
+      <td>${r.periodo||'—'}</td>
+      <td style="text-align:center">${r.num_facturas}</td>
+      <td style="text-align:right;font-weight:700">${cop(r.ventas)}</td>
+      <td style="text-align:right;color:#6b7280">${cop(r.costo)}</td>
+      <td style="text-align:right;color:#10b981">${cop(r.margen)}</td>
+      <td style="text-align:right;font-weight:700;color:${color}">${pct}%</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  document.getElementById('tVentas').innerHTML = h;
+}
+
+async function cargarAvancePresupuesto(desde, hasta, codalm) {
+  try {
+    const hoy = new Date();
+    const anio = hoy.getFullYear(), mes = hoy.getMonth()+1;
+    const pr = await fetch(api(`/presupuesto?anio=${anio}&mes=${mes}`)).then(r=>r.json());
+    const presupMap = {};
+    (pr.presupuestos||[]).forEach(p => { presupMap[p.codalm] = p.presupuesto; });
+
+    let totalPresup = 0;
+    const tiendas = codalm ? [codalm] : ['002','009','010'];
+    tiendas.forEach(c => { totalPresup += presupMap[c] || 0; });
+
+    const totV = ventasData.reduce((s,r)=>s+(r.ventas||0),0);
+    const pct = totalPresup > 0 ? Math.min(200, Math.round((totV/totalPresup)*100)) : 0;
+    const color = pct >= 100 ? '#10b981' : pct >= 70 ? '#f59e0b' : '#dc2626';
+
+    document.getElementById('vnt-presup').textContent = cop(totalPresup);
+    document.getElementById('vnt-avance').textContent = pct + '%';
+    document.getElementById('vntBarraAvance').style.width = Math.min(100,pct) + '%';
+    document.getElementById('vntBarraAvance').style.background = color;
+
+    let det = '';
+    tiendas.forEach(c => {
+      const vt  = ventasData.filter(r=>r.codalm===c).reduce((s,r)=>s+(r.ventas||0),0);
+      const pp  = presupMap[c] || 0;
+      const av  = pp > 0 ? Math.round((vt/pp)*100) : 0;
+      const clr = av >= 100 ? '#10b981' : av >= 70 ? '#f59e0b' : '#dc2626';
+      det += `<span style="background:#f3f4f6;padding:4px 10px;border-radius:6px;border-left:3px solid ${clr}">
+        <strong>${TIENDAS_VNT[c]||c}</strong>: ${cop(vt)} / ${cop(pp)} <span style="color:${clr};font-weight:700">(${av}%)</span>
+      </span>`;
+    });
+    document.getElementById('vntPresupDetalle').innerHTML = det;
+  } catch(e) { console.error('presupuesto:', e); }
+}
+
+function mostrarModalPresupuesto() {
+  const hoy = new Date();
+  document.getElementById('pAnio').value = hoy.getFullYear();
+  document.getElementById('pMes').value  = hoy.getMonth()+1;
+  // Pre-cargar valores actuales
+  fetch(api(`/presupuesto?anio=${hoy.getFullYear()}&mes=${hoy.getMonth()+1}`)).then(r=>r.json()).then(d=>{
+    const m = {};
+    (d.presupuestos||[]).forEach(p=>{ m[p.codalm]=p.presupuesto; });
+    document.getElementById('pArre').value  = m['002']||'';
+    document.getElementById('pLa30').value  = m['009']||'';
+    document.getElementById('pPlaza').value = m['010']||'';
+  });
+  document.getElementById('modalPresupuesto').style.display = 'flex';
+}
+
+async function guardarPresupuesto() {
+  const anio = parseInt(document.getElementById('pAnio').value);
+  const mes  = parseInt(document.getElementById('pMes').value);
+  const vals = [
+    { codalm:'002', val: document.getElementById('pArre').value },
+    { codalm:'009', val: document.getElementById('pLa30').value },
+    { codalm:'010', val: document.getElementById('pPlaza').value },
+  ];
+  for (const { codalm, val } of vals) {
+    if (val === '' || val == null) continue;
+    await fetch(api('/presupuesto'), {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ codalm, anio, mes, presupuesto: parseFloat(val)||0 })
+    });
+  }
+  document.getElementById('modalPresupuesto').style.display = 'none';
+  const desde = document.getElementById('vntDesde').value;
+  const hasta = document.getElementById('vntHasta').value;
+  const codalm = document.getElementById('vntAlm').value;
+  await cargarAvancePresupuesto(desde, hasta, codalm);
+  alert('Presupuesto guardado ✅');
+}
+
+function exportarVentasCSV() {
+  if (!ventasData.length) return alert('No hay datos para exportar');
+  const cols = ['codalm','periodo','num_facturas','ventas','costo','margen','pct_margen'];
+  const header = ['Tienda','Período','Facturas','Ventas','Costo','Margen','% Margen'];
+  let csv = header.join(';')+'\n';
+  ventasData.forEach(r => {
+    csv += [TIENDAS_VNT[r.codalm]||r.codalm, r.periodo, r.num_facturas,
+      (r.ventas||0).toFixed(0),(r.costo||0).toFixed(0),(r.margen||0).toFixed(0),r.pct_margen].join(';')+'\n';
+  });
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ventas_${document.getElementById('vntDesde').value}_${document.getElementById('vntHasta').value}.csv`;
+  a.click();
+}
+
+
+// ==================== WHATSAPP ====================
+let _waStatusInterval = null;
+
+async function loadWhatsapp() {
+  clearInterval(_waStatusInterval);
+  await refreshWAStatus();
+  _waStatusInterval = setInterval(refreshWAStatus, 4000);
+}
+
+async function refreshWAStatus() {
+  try {
+    const d = await fetch(api('/webhook/whatsapp/qr')).then(r=>r.json());
+    const qrBox = document.getElementById('waQRBox');
+    const badge = document.getElementById('waStatusBadge');
+    if (!qrBox) return;
+
+    if (d.status === 'connected') {
+      badge.textContent = '🟢 Conectado';
+      badge.style.background = '#d1fae5'; badge.style.color = '#065f46';
+      qrBox.innerHTML = '<div style="text-align:center;padding:30px;color:#15803d;font-size:18px;font-weight:700">✅ WhatsApp conectado y activo</div>';
+      clearInterval(_waStatusInterval);
+    } else if (d.status === 'qr_ready' && d.qr) {
+      badge.textContent = '📱 Escanear QR';
+      badge.style.background = '#fef3c7'; badge.style.color = '#92400e';
+      qrBox.innerHTML = `<div style="text-align:center;padding:10px">
+        <p style="font-weight:700;margin-bottom:10px">Abre WhatsApp → Dispositivos vinculados → Vincular dispositivo</p>
+        <img src="${d.qr}" style="max-width:280px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15)"/>
+        <p style="font-size:12px;color:#6b7280;margin-top:8px">El QR se actualiza automáticamente</p>
+      </div>`;
+    } else if (d.status === 'authenticated') {
+      badge.textContent = '🔐 Autenticando...';
+      badge.style.background = '#e0f2fe'; badge.style.color = '#0369a1';
+      qrBox.innerHTML = '<div style="text-align:center;padding:30px;color:#0369a1">🔐 Autenticando... espera un momento</div>';
+    } else {
+      badge.textContent = '🔴 Desconectado';
+      badge.style.background = '#fee2e2'; badge.style.color = '#991b1b';
+      qrBox.innerHTML = '<div style="text-align:center;padding:30px;color:#991b1b">⏳ Iniciando cliente WhatsApp...<br><small>El QR aparecerá en unos segundos</small></div>';
+    }
+  } catch(e) { console.error('WA status error:', e.message); }
+}
+</script>
+
+<script>
+// ==================== CxC — CUENTAS POR COBRAR ====================
+let cxcTimer = null;
+
+async function loadCxC(filtro = '') {
+  await loadCxCCartera();
+  await loadCxCTabla(filtro);
+  await loadCxCClientes();
+  await poblarSelectClientes();
+}
+
+async function loadCxCStats() {
+  try {
+    const d = await fetch(api('/cxc/resumen')).then(r=>r.json());
+    document.getElementById('cxcTotal').textContent    = cop(d.total);
+    document.getElementById('cxcVencidas').textContent = cop(d.vencidas);
+    document.getElementById('cxcProximas').textContent = cop(d.proximas);
+    document.getElementById('cxcClientes').textContent = d.clientes;
+  } catch(e) {}
+}
+
+async function loadCxCTabla(filtro = '') {
+  const cont = document.getElementById('tCxC');
+  const clienteNit = document.getElementById('cxcFiltroCliente')?.value || '';
+  let url = api('/cxc/facturas?');
+  if (clienteNit) url += `cliente_nit=${clienteNit}&`;
+  if (filtro === 'vencidas') url += 'vencidas=1';
+  const data = await fetch(url).then(r=>r.json()).catch(()=>({facturas:[]}));
+  const facturas = data.facturas || [];
+  if (!facturas.length) { cont.innerHTML = '<div class="empty"><div class="icon">✅</div>Sin facturas pendientes</div>'; return; }
+
+  const fmt = v => cop(v);
+  cont.innerHTML = `<table>
+    <thead><tr>
+      <th>Factura</th><th>Cliente</th><th>F. Factura</th><th>Vencimiento</th>
+      <th>Valor</th><th>Abonado</th><th>Saldo</th><th>Estado</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>${facturas.map(f => {
+      const dias = f.dias_para_vencer;
+      const bg   = dias < 0 ? '#fee2e2' : dias <= 7 ? '#fef9c3' : '#fff';
+      const badge = dias == null ? '' : dias < 0
+        ? `<span style="color:#ef4444;font-weight:700">⚠️ ${Math.abs(dias)}d vencida</span>`
+        : dias === 0 ? `<span style="color:#ef4444;font-weight:700">🔴 HOY</span>`
+        : dias <= 7 ? `<span style="color:#d97706;font-weight:700">⏰ ${dias}d</span>`
+        : `<span style="color:#10b981">${dias}d</span>`;
+      const estadoBadge = f.estado === 'pagada' ? '✅ Pagada' : f.estado === 'vencida' ? '⚠️ Vencida' : '🔵 Pendiente';
+      return `<tr style="background:${bg}">
+        <td><b>${f.numero_factura}</b></td>
+        <td>${f.cliente_nombre||f.cliente_nit}</td>
+        <td style="font-size:11px">${f.fecha_factura||'—'}</td>
+        <td style="font-size:11px">${f.fecha_vencimiento||'—'} ${badge}</td>
+        <td>${fmt(f.valor_factura)}</td>
+        <td style="color:#10b981">${fmt(f.valor_abonado)}</td>
+        <td style="font-weight:700;color:#ef4444">${fmt(f.saldo_pendiente)}</td>
+        <td style="font-size:11px">${estadoBadge}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-success" style="padding:4px 8px;font-size:11px" onclick="abonarFacturaCxC(${f.id},${f.valor_abonado},${f.valor_factura})">💰 Abonar</button>
+          <button class="btn" style="padding:4px 8px;font-size:11px;background:#1e6fb5;color:#fff" onclick="enviarRecordatorio('${f.cliente_nit}','${f.cliente_nombre}')">📲 WA</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+async function loadCxCClientes() {
+  const cont = document.getElementById('tCxCClientes');
+  const data = await fetch(api('/cxc/clientes')).then(r=>r.json()).catch(()=>({clientes:[]}));
+  const clientes = data.clientes || [];
+  if (!clientes.length) { cont.innerHTML = '<div class="empty"><div class="icon">👥</div>Sin clientes registrados</div>'; return; }
+  cont.innerHTML = `<table>
+    <thead><tr><th>Nombre</th><th>NIT</th><th>Teléfono</th><th>Ciudad</th><th>Contacto</th><th>Bot</th><th>Acciones</th></tr></thead>
+    <tbody>${clientes.map(c => `<tr>
+      <td><b>${c.nombre}</b></td>
+      <td style="font-size:11px;color:#888">${c.nit}</td>
+      <td>${c.telefono ? `<a href="https://wa.me/${c.telefono}" target="_blank" style="color:#25d366">📱 ${c.telefono}</a>` : '—'}</td>
+      <td style="font-size:11px">${c.ciudad||'—'}</td>
+      <td style="font-size:11px">${c.contacto||'—'}</td>
+      <td style="text-align:center">${c.bot_pausado ? '⏸️' : '✅'}</td>
+      <td><button class="btn btn-secondary" style="padding:4px 8px;font-size:11px" onclick="toggleBotCliente('${c.nit}',${c.bot_pausado})">${c.bot_pausado ? '▶️ Activar' : '⏸️ Pausar'}</button></td>
     </tr>`).join('')}</tbody>
   </table>`;
 }
+
+async function poblarSelectClientes() {
+  const sel1 = document.getElementById('cxcFiltroCliente');
+  const sel2 = document.getElementById('cxcFacCliente');
+  const data  = await fetch(api('/cxc/clientes')).then(r=>r.json()).catch(()=>({clientes:[]}));
+  const opts  = (data.clientes||[]).map(c => `<option value="${c.nit}">${c.nombre}</option>`).join('');
+  if (sel1 && sel1.options.length <= 1) sel1.innerHTML = '<option value="">Todos los clientes</option>' + opts;
+  if (sel2 && sel2.options.length <= 1) sel2.innerHTML = '<option value="">— Seleccionar —</option>' + opts;
+}
+
+function abrirNuevaFacturaCxC() {
+  poblarSelectClientes();
+  document.getElementById('cxcFacNum').value   = '';
+  document.getElementById('cxcFacValor').value = '';
+  document.getElementById('cxcFacAbono').value = '0';
+  document.getElementById('cxcFacNotas').value = '';
+  document.getElementById('cxcFacFecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('cxcFacVenc').value  = '';
+  document.getElementById('cxcFacMsg').textContent = '';
+  document.getElementById('modalNuevaFacturaCxC').style.display = 'flex';
+}
+
+async function guardarFacturaCxC() {
+  const msg = document.getElementById('cxcFacMsg');
+  const sel = document.getElementById('cxcFacCliente');
+  const clienteNit = sel.value;
+  const clienteNombre = sel.options[sel.selectedIndex]?.text || '';
+  const body = {
+    numero_factura: document.getElementById('cxcFacNum').value.trim(),
+    cliente_nit: clienteNit,
+    cliente_nombre: clienteNombre,
+    valor_factura: parseFloat(document.getElementById('cxcFacValor').value)||0,
+    valor_abonado: parseFloat(document.getElementById('cxcFacAbono').value)||0,
+    fecha_factura: document.getElementById('cxcFacFecha').value,
+    fecha_vencimiento: document.getElementById('cxcFacVenc').value,
+    notas: document.getElementById('cxcFacNotas').value.trim(),
+  };
+  if (!body.numero_factura || !body.cliente_nit || !body.valor_factura) {
+    msg.textContent = '⚠️ Completa: factura, cliente y valor'; msg.style.color='#d97706'; return;
+  }
+  msg.textContent = 'Guardando...'; msg.style.color='#333';
+  try {
+    const r = await fetch(api('/cxc/facturas'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    document.getElementById('modalNuevaFacturaCxC').style.display='none';
+    loadCxC();
+  } catch(e) { msg.textContent = '❌ ' + e.message; msg.style.color='red'; }
+}
+
+async function abonarFacturaCxC(id, abonado, total) {
+  const nuevo = prompt(`Ingresa el total abonado (acumulado):\nValor factura: ${cop(total)}\nAbonado actual: ${cop(abonado)}`);
+  if (nuevo === null) return;
+  const val = parseFloat(nuevo.replace(/[^0-9.]/g,''));
+  if (isNaN(val)) { alert('Valor inválido'); return; }
+  const estado = val >= total ? 'pagada' : 'pendiente';
+  await fetch(api(`/cxc/facturas/${id}`), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ valor_abonado: val, estado }) });
+  loadCxC();
+}
+
+async function enviarRecordatorio(nit, nombre) {
+  if (!confirm(`¿Enviar recordatorio de cobro a ${nombre} por WhatsApp?`)) return;
+  const btn = event.target; btn.textContent='⏳...'; btn.disabled=true;
+  try {
+    const r = await fetch(api(`/cxc/recordatorio/${nit}`), { method:'POST' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    alert(`✅ Recordatorio enviado a ${nombre}`);
+  } catch(e) { alert('❌ ' + e.message); }
+  finally { btn.textContent='📲 WA'; btn.disabled=false; }
+}
+
+async function enviarRecordatoriosMasivo() {
+  const dias = prompt('Enviar recordatorios a clientes con facturas que venzan en los próximos N días (ej: 3):', '3');
+  if (dias === null) return;
+  if (!confirm(`¿Enviar recordatorios a todos los clientes con facturas que vencen en ${dias} días o menos?`)) return;
+  try {
+    const r = await fetch(api('/cxc/recordatorios/masivo'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dias_limite: parseInt(dias) }) });
+    const d = await r.json();
+    alert(`✅ Recordatorios enviados: ${d.enviados} de ${d.total} clientes`);
+    loadCxC();
+  } catch(e) { alert('❌ ' + e.message); }
+}
+
+function abrirNuevoCliente() {
+  ['cliNombre','cliNit','cliTel','cliCiudad','cliContacto'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cliMsg').textContent = '';
+  document.getElementById('modalNuevoCliente').style.display = 'flex';
+}
+
+async function guardarCliente() {
+  const msg = document.getElementById('cliMsg');
+  const body = {
+    nombre: document.getElementById('cliNombre').value.trim(),
+    nit:    document.getElementById('cliNit').value.trim(),
+    telefono: document.getElementById('cliTel').value.trim(),
+    ciudad:   document.getElementById('cliCiudad').value.trim(),
+    contacto: document.getElementById('cliContacto').value.trim(),
+  };
+  if (!body.nombre || !body.nit) { msg.textContent='⚠️ Nombre y NIT son obligatorios'; msg.style.color='#d97706'; return; }
+  msg.textContent='Guardando...'; msg.style.color='#333';
+  try {
+    const r = await fetch(api('/cxc/clientes'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    document.getElementById('modalNuevoCliente').style.display='none';
+    loadCxCClientes(); poblarSelectClientes();
+  } catch(e) { msg.textContent='❌ '+e.message; msg.style.color='red'; }
+}
+
+async function toggleBotCliente(nit, pausado) {
+  await fetch(api(`/cxc/clientes/${nit}`), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ bot_pausado: pausado ? 0 : 1 }) });
+  loadCxCClientes();
+}
+
+function buscarCxC(q) {
+  clearTimeout(cxcTimer);
+  if (!q.trim()) { loadCxCTabla(); return; }
+  cxcTimer = setTimeout(async () => {
+    const data = await fetch(api(`/cxc/facturas`)).then(r=>r.json()).catch(()=>({facturas:[]}));
+    const ql = q.toLowerCase();
+    const filtradas = (data.facturas||[]).filter(f =>
+      (f.numero_factura||'').toLowerCase().includes(ql) ||
+      (f.cliente_nombre||'').toLowerCase().includes(ql)
+    );
+    const cont = document.getElementById('tCxC');
+    if (!filtradas.length) { cont.innerHTML = '<div class="empty"><div class="icon">🔍</div>Sin resultados</div>'; return; }
+    loadCxCTabla();
+  }, 400);
+}
+
+// ==================== CxC CARTERA POR ANTIGÜEDAD ====================
+async function loadCxCCartera() {
+  try {
+    const [resR, cartR] = await Promise.all([
+      fetch(api('/cxc/resumen')).then(r=>r.json()),
+      fetch(api('/cxc/cartera')).then(r=>r.json()),
+    ]);
+    // KPIs
+    document.getElementById('cxcTotal').textContent    = cop(resR.total);
+    document.getElementById('cxcVigente').textContent  = cop(resR.vigente);
+    document.getElementById('cxcVencidas').textContent = cop(resR.vencidas);
+    document.getElementById('cxcProximas').textContent = cop(resR.proximas);
+    document.getElementById('cxcClientes').textContent = resR.clientes;
+
+    // Tabla cartera
+    const rows = cartR.cartera || [];
+    const tbody = document.getElementById('tbodyCxCCartera');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="10" class="empty"><div class="icon">✅</div>Sin cartera pendiente</td></tr>';
+      return;
+    }
+    const clsLabel = { seguro:'🟢 Seguro', dudoso:'🟡 Dudoso', cobro:'🔴 Cobro', '':'' };
+    const clsBg    = { seguro:'#f0fdf4', dudoso:'#fefce8', cobro:'#fef2f2', '':'#fff' };
+    tbody.innerHTML = rows.map(r => `
+      <tr style="background:${clsBg[r.clasificacion||'']}">
+        <td><strong>${r.cliente_nombre||r.cliente_nit}</strong><br><span style="font-size:10px;color:#888">${r.cliente_nit} · ${r.facturas} factura(s)</span></td>
+        <td>
+          <select onchange="cambiarClasificacionCliente('${r.cliente_nit}',this.value)"
+            style="padding:3px 6px;border-radius:6px;border:1px solid #ddd;font-size:12px;background:#fff">
+            <option value="" ${!r.clasificacion?'selected':''}>— Clasificar —</option>
+            <option value="seguro"  ${r.clasificacion==='seguro' ?'selected':''}>🟢 Seguro</option>
+            <option value="dudoso"  ${r.clasificacion==='dudoso' ?'selected':''}>🟡 Dudoso</option>
+            <option value="cobro"   ${r.clasificacion==='cobro'  ?'selected':''}>🔴 Cobro</option>
+          </select>
+        </td>
+        <td style="text-align:right;color:#10b981;font-weight:600">${r.vigente>0?cop(r.vigente):'—'}</td>
+        <td style="text-align:right;color:#f59e0b;font-weight:600">${r.v1_30>0?cop(r.v1_30):'—'}</td>
+        <td style="text-align:right;color:#f97316;font-weight:600">${r.v31_60>0?cop(r.v31_60):'—'}</td>
+        <td style="text-align:right;color:#ef4444;font-weight:600">${r.v61_90>0?cop(r.v61_90):'—'}</td>
+        <td style="text-align:right;color:#991b1b;font-weight:600">${r.v91mas>0?cop(r.v91mas):'—'}</td>
+        <td style="text-align:right;font-weight:800">${cop(r.total)}</td>
+        <td style="text-align:center">
+          <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:700;
+            background:${r.veces_contactado>3?'#fee2e2':r.veces_contactado>0?'#fef3c7':'#f3f4f6'};
+            color:${r.veces_contactado>3?'#991b1b':r.veces_contactado>0?'#92400e':'#6b7280'}">
+            ${r.veces_contactado}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-success" style="padding:4px 8px;font-size:11px" onclick="enviarRecordatorio('${r.cliente_nit}','${(r.cliente_nombre||'').replace(/'/g,"\\'")}')">📲 WA</button>
+        </td>
+      </tr>`).join('');
+
+    // Totales
+    const tot = rows.reduce((s,r)=>({vigente:s.vigente+r.vigente, v1_30:s.v1_30+r.v1_30, v31_60:s.v31_60+r.v31_60, v61_90:s.v61_90+r.v61_90, v91mas:s.v91mas+r.v91mas, total:s.total+r.total}), {vigente:0,v1_30:0,v31_60:0,v61_90:0,v91mas:0,total:0});
+    tbody.innerHTML += `<tr style="background:#f1f5f9;font-weight:700;border-top:2px solid #cbd5e1">
+      <td colspan="2">TOTALES</td>
+      <td style="text-align:right;color:#10b981">${cop(tot.vigente)}</td>
+      <td style="text-align:right;color:#f59e0b">${cop(tot.v1_30)}</td>
+      <td style="text-align:right;color:#f97316">${cop(tot.v31_60)}</td>
+      <td style="text-align:right;color:#ef4444">${cop(tot.v61_90)}</td>
+      <td style="text-align:right;color:#991b1b">${cop(tot.v91mas)}</td>
+      <td style="text-align:right;font-size:15px">${cop(tot.total)}</td>
+      <td colspan="2"></td>
+    </tr>`;
+  } catch(e) { console.error('loadCxCCartera:', e); }
+}
+
+async function cambiarClasificacionCliente(nit, clasificacion) {
+  // Actualizar clasificacion en todas las facturas del cliente
+  const facturas = await fetch(api(`/cxc/facturas?cliente_nit=${nit}`)).then(r=>r.json());
+  for (const f of (facturas.facturas||[])) {
+    await fetch(api(`/cxc/facturas/${f.id}`), {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ clasificacion })
+    });
+  }
+  loadCxCCartera();
+  loadFondosCxC();
+}
+
+// Cargar datos CxC para Fondos
+async function loadFondosCxC() {
+  try {
+    const d = await fetch(api('/cxc/resumen')).then(r=>r.json());
+    const el = id => document.getElementById(id);
+    if (el('rCxCSeguro'))  el('rCxCSeguro').textContent  = cop(d.seguro);
+    if (el('rCxCDudoso'))  el('rCxCDudoso').textContent  = cop(d.dudoso);
+    if (el('rCxCCobro'))   el('rCxCCobro').textContent   = cop(d.cobro);
+    const total = (d.seguro||0) + (d.dudoso||0) + (d.cobro||0);
+    if (el('rCxCTotal'))   el('rCxCTotal').textContent   = cop(total);
+    if (el('rRecaudoCxC')) el('rRecaudoCxC').textContent = cop(total);
+    if (el('vf-cxc'))      { el('vf-cxc').textContent = cop(total); el('vf-cxc').dataset.raw = total; }
+    return total;
+  } catch(e) { return 0; }
+}
+
+// ==================== DASHBOARD CxC ====================
+async function loadDashboardCxC() {
+  try {
+    const [resR, semR] = await Promise.all([
+      fetch(api('/cxc/resumen')).then(r=>r.json()),
+      fetch(api('/cxc/cartera/semanal')).then(r=>r.json()),
+    ]);
+    const el = id => document.getElementById(id);
+    if (el('d-cxc-total'))    el('d-cxc-total').textContent    = cop(resR.total);
+    if (el('d-cxc-vencida'))  el('d-cxc-vencida').textContent  = cop(resR.vencidas);
+    if (el('d-cxc-proximas')) el('d-cxc-proximas').textContent = cop(resR.proximas);
+    if (el('d-cxc-clientes')) el('d-cxc-clientes').textContent = resR.clientes;
+
+    renderDashCxCSemanas(semR.facturas || []);
+    renderDashCxCClientes(semR.facturas || []);
+  } catch(e) { console.error('loadDashboardCxC:', e); }
+}
+
+function renderDashCxCSemanas(facturas) {
+  const cont = document.getElementById('dashCxCSemanas');
+  if (!cont) return;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const lunes = d => { const v=new Date(d); v.setHours(0,0,0,0); const dia=v.getDay(); v.setDate(v.getDate()-(dia===0?6:dia-1)); return v; };
+  const lunesHoy = lunes(hoy);
+  const semanas = Array.from({length:4},(_,i)=>{
+    const ini=new Date(lunesHoy); ini.setDate(ini.getDate()+i*7);
+    const fin=new Date(ini); fin.setDate(fin.getDate()+6);
+    return {ini,fin,total:0,cnt:0};
+  });
+  const vencidas = {total:0,cnt:0};
+  for (const f of facturas) {
+    if (!f.fecha_vencimiento) continue;
+    const fv = new Date(f.fecha_vencimiento+'T00:00:00');
+    if (fv < semanas[0].ini) { vencidas.total+=f.saldo_pendiente||0; vencidas.cnt++; }
+    else for (const s of semanas) { if(fv>=s.ini&&fv<=s.fin){s.total+=f.saldo_pendiente||0;s.cnt++;break;} }
+  }
+  const fmt = d=>d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
+  const etiquetas=['Esta semana','Próxima semana','Semana 3','Semana 4'];
+  const colores=['#10b981','#1e6fb5','#6366f1','#8b5cf6'];
+  let h='<div style="display:flex;flex-direction:column;gap:8px">';
+  if(vencidas.cnt>0) h+=`<div style="display:flex;align-items:center;gap:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px">
+    <span style="font-size:16px">🔴</span>
+    <div style="flex:1"><div style="font-weight:700;color:#dc2626;font-size:12px">VENCIDAS — ${vencidas.cnt} factura(s)</div></div>
+    <div style="font-weight:800;color:#dc2626">${cop(vencidas.total)}</div>
+  </div>`;
+  semanas.forEach((s,i)=>{
+    h+=`<div style="display:flex;align-items:center;gap:10px;background:${s.cnt?'#f0fdf4':'#f9fafb'};border:1px solid ${s.cnt?colores[i]+'55':'#e5e7eb'};border-radius:8px;padding:10px 14px">
+      <div style="width:8px;height:36px;background:${s.cnt?colores[i]:'#e5e7eb'};border-radius:4px;flex-shrink:0"></div>
+      <div style="flex:1"><div style="font-weight:700;color:${s.cnt?colores[i]:'#9ca3af'};font-size:12px">${etiquetas[i]}</div>
+        <div style="font-size:10px;color:#9ca3af">${fmt(s.ini)} – ${fmt(s.fin)} · ${s.cnt} factura(s)</div>
+      </div>
+      <div style="font-weight:800;color:${s.cnt?'#111':'#d1d5db'}">${s.cnt?cop(s.total):'—'}</div>
+    </div>`;
+  });
+  h+='</div>';
+  cont.innerHTML=h;
+}
+
+function renderDashCxCClientes(facturas) {
+  const cont = document.getElementById('dashCxCClientes');
+  if (!cont) return;
+  const mapa = {};
+  for (const f of facturas) {
+    const k = f.cliente_nit;
+    if (!mapa[k]) mapa[k] = { nombre: f.cliente_nombre||f.cliente_nit, total: 0 };
+    mapa[k].total += f.saldo_pendiente || 0;
+  }
+  const lista = Object.values(mapa).sort((a,b)=>b.total-a.total).slice(0,8);
+  if (!lista.length) { cont.innerHTML='<div class="empty"><div class="icon">✅</div>Sin cartera</div>'; return; }
+  const totalGen = lista.reduce((s,r)=>s+r.total,0);
+  let h='<div style="display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto">';
+  lista.forEach((r,i)=>{
+    const pct = totalGen>0?Math.round((r.total/totalGen)*100):0;
+    h+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#f9fafb;border-radius:7px">
+      <span style="font-size:10px;color:#9ca3af;width:16px;text-align:right;flex-shrink:0">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.nombre}</div>
+        <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-top:3px"><div style="height:3px;background:#1e6fb5;border-radius:2px;width:${pct}%"></div></div>
+      </div>
+      <div style="font-weight:700;color:#1e6fb5;font-size:13px;flex-shrink:0">${cop(r.total)}</div>
+    </div>`;
+  });
+  h+='</div>';
+  cont.innerHTML=h;
+}
+
+// ==================== SELECTOR CLIENTES MENSAJES ====================
+let _cxcClientesData = [];
+
+async function loadSelectorClientes() {
+  const hasta = document.getElementById('cxcMsgHasta').value;
+  const cliFilter = document.getElementById('cxcMsgCliente').value;
+  const data = await fetch(api('/cxc/cartera')).then(r=>r.json()).catch(()=>({cartera:[]}));
+  _cxcClientesData = data.cartera || [];
+
+  // Poblar select de filtro
+  const sel = document.getElementById('cxcMsgCliente');
+  const actual = sel.value;
+  if (sel.options.length <= 1) {
+    _cxcClientesData.forEach(c => {
+      sel.innerHTML += `<option value="${c.cliente_nit}">${c.cliente_nombre||c.cliente_nit}</option>`;
+    });
+    sel.value = actual;
+  }
+
+  let lista = _cxcClientesData;
+  if (cliFilter) lista = lista.filter(c=>c.cliente_nit===cliFilter);
+  if (hasta) {
+    const factData = await fetch(api(`/cxc/facturas`)).then(r=>r.json());
+    const nitsConVenc = new Set((factData.facturas||[])
+      .filter(f=>f.fecha_vencimiento&&f.fecha_vencimiento<=hasta)
+      .map(f=>f.cliente_nit));
+    lista = lista.filter(c=>nitsConVenc.has(c.cliente_nit));
+  }
+
+  if (!lista.length) {
+    document.getElementById('clienteSelector').innerHTML='<div class="empty"><div class="icon">👥</div>Sin clientes con facturas en ese período</div>';
+    return;
+  }
+
+  let h = '';
+  lista.forEach(c => {
+    const clsBg = c.clasificacion==='seguro'?'#f0fdf4':c.clasificacion==='dudoso'?'#fefce8':c.clasificacion==='cobro'?'#fef2f2':'#fff';
+    h+=`<div class="prov-row" id="crow-${c.cliente_nit}" onclick="toggleCliente('${c.cliente_nit}')" style="background:${clsBg}">
+      <input type="checkbox" id="cchk-${c.cliente_nit}" value="${c.cliente_nit}" onchange="updateSelCountClientes()" onclick="event.stopPropagation()"/>
+      <div class="prov-info">
+        <div class="prov-name">${c.cliente_nombre||c.cliente_nit}</div>
+        <div class="prov-meta">${c.cliente_nit} · ${c.facturas} factura(s) · Contactado: ${c.veces_contactado}x ${c.clasificacion?'· '+c.clasificacion:''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="prov-total">${cop(c.total)}</div>
+        ${c.v1_30>0||c.v31_60>0||c.v61_90>0||c.v91mas>0?`<div style="font-size:10px;color:#ef4444">Vencida: ${cop(c.v1_30+c.v31_60+c.v61_90+c.v91mas)}</div>`:''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('clienteSelector').innerHTML = h;
+  updateSelCountClientes();
+}
+
+function toggleCliente(nit) {
+  const chk = document.getElementById('cchk-'+nit);
+  const row = document.getElementById('crow-'+nit);
+  chk.checked = !chk.checked;
+  row.classList.toggle('selected', chk.checked);
+  updateSelCountClientes();
+}
+
+function selAllClientes(val) {
+  document.querySelectorAll('#clienteSelector input[type=checkbox]').forEach(c=>{
+    c.checked=val;
+    document.getElementById('crow-'+c.value)?.classList.toggle('selected',val);
+  });
+  updateSelCountClientes();
+}
+
+function updateSelCountClientes() {
+  const n = document.querySelectorAll('#clienteSelector input[type=checkbox]:checked').length;
+  document.getElementById('selCountClientes').textContent = `${n} seleccionado${n!==1?'s':''}`;
+}
+
+function getSelectedNitsCxC() {
+  return Array.from(document.querySelectorAll('#clienteSelector input[type=checkbox]:checked')).map(c=>c.value);
+}
+
+async function previsualizarMensajeCxC() {
+  const nits = getSelectedNitsCxC();
+  if (!nits.length) { alert('Selecciona al menos un cliente'); return; }
+  const cuenta_pago = document.getElementById('cxcCuentaPago').value.trim();
+  const nit = nits[0];
+  const r = await fetch(api(`/cxc/recordatorio/${nit}`), {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ cuenta_pago, _preview: true })
+  });
+  const d = await r.json();
+  const box = document.getElementById('previewMensajeCxC');
+  box.style.display='block';
+  box.textContent = d.preview || d.mensaje || (d.error ? '❌ '+d.error : 'Sin preview');
+}
+
+async function enviarRecordatoriosSeleccionados() {
+  const nits = getSelectedNitsCxC();
+  if (!nits.length) { alert('Selecciona al menos un cliente'); return; }
+  const cuenta_pago = document.getElementById('cxcCuentaPago').value.trim();
+  const res = document.getElementById('rMensajesCxC');
+  res.className='result-box show info'; res.innerHTML='<pre>⏳ Enviando recordatorios...</pre>';
+  let ok=0, err=0;
+  for (const nit of nits) {
+    try {
+      const r = await fetch(api(`/cxc/recordatorio/${nit}`), {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ cuenta_pago })
+      });
+      const d = await r.json();
+      if (d.ok) ok++; else err++;
+    } catch(e) { err++; }
+  }
+  res.className=`result-box show ${err===0?'success':'info'}`;
+  res.innerHTML=`<pre>✅ Enviados: ${ok} | ❌ Errores: ${err}</pre>`;
+}
+
+// ==================== COMPROBANTES DE CLIENTES ====================
+async function loadComprobantesProvSelect() {
+  const sel1 = document.getElementById('compCliente');
+  const sel2 = document.getElementById('compFilterCliente');
+  if (sel1.options.length > 1) return;
+  const data = await fetch(api('/cxc/clientes')).then(r=>r.json()).catch(()=>({clientes:[]}));
+  (data.clientes||[]).forEach(c => {
+    const lbl = `${c.nombre} (${c.nit})`;
+    if(sel1) sel1.add(new Option(lbl, c.nit));
+    if(sel2) sel2.add(new Option(lbl, c.nit));
+  });
+}
+
+function handleCompDrop(e) {
+  e.preventDefault();
+  document.getElementById('compZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer(); dt.items.add(file);
+    document.getElementById('compFile').files = dt.files;
+    document.getElementById('compFileLabel').textContent = '✅ ' + file.name;
+  }
+}
+
+async function subirComprobanteCliente() {
+  const nit   = document.getElementById('compCliente').value;
+  const valor = document.getElementById('compValor').value;
+  const fecha = document.getElementById('compFecha').value;
+  const facts = document.getElementById('compFacturas').value;
+  const notas = document.getElementById('compNotas').value;
+  const file  = document.getElementById('compFile').files[0];
+  const res   = document.getElementById('rComp');
+  if (!nit) { res.className='result-box show error'; res.innerHTML='<pre>Selecciona un cliente</pre>'; return; }
+
+  const btn = document.getElementById('btnSubirComp');
+  btn.disabled=true; btn.textContent='⏳ Subiendo...';
+  const fd = new FormData();
+  fd.append('cliente_nit', nit);
+  if (valor) fd.append('valor', valor);
+  if (fecha) fd.append('fecha_pago', fecha);
+  if (facts) fd.append('facturas', facts);
+  if (notas) fd.append('notas', notas);
+  if (file)  fd.append('archivo', file);
+
+  try {
+    const r = await fetch(api('/cxc/comprobantes'), { method:'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    res.className='result-box show success';
+    res.innerHTML=`<pre>✅ Comprobante registrado para ${d.cliente_nombre}</pre>`;
+    document.getElementById('compCliente').value='';
+    document.getElementById('compValor').value='';
+    document.getElementById('compFecha').value='';
+    document.getElementById('compFacturas').value='';
+    document.getElementById('compNotas').value='';
+    document.getElementById('compFile').value='';
+    document.getElementById('compFileLabel').textContent='Haz clic o arrastra el comprobante del cliente aquí';
+    loadComprobantesClientes();
+    loadCxCCartera();
+  } catch(e) {
+    res.className='result-box show error'; res.innerHTML=`<pre>❌ ${e.message}</pre>`;
+  } finally { btn.disabled=false; btn.textContent='📤 Registrar Comprobante'; }
+}
+
+async function loadComprobantesClientes() {
+  await loadComprobantesProvSelect();
+  const nit = document.getElementById('compFilterCliente')?.value||'';
+  const url = nit ? api(`/cxc/comprobantes?cliente_nit=${nit}`) : api('/cxc/comprobantes');
+  const data = await fetch(url).then(r=>r.json()).catch(()=>({comprobantes:[]}));
+  const cont = document.getElementById('tCompClientes');
+  const comps = data.comprobantes||[];
+  if (!comps.length) { cont.innerHTML='<div class="empty"><div class="icon">📥</div>Sin comprobantes</div>'; return; }
+  cont.innerHTML=`<table>
+    <thead><tr><th>Fecha</th><th>Cliente</th><th>Facturas</th><th>Valor</th><th>Fecha Pago</th><th>Notas</th><th>Archivo</th></tr></thead>
+    <tbody>${comps.map(c=>`<tr>
+      <td>${new Date(c.created_at).toLocaleDateString('es-CO')}</td>
+      <td><b>${c.cliente_nombre||c.cliente_nit}</b></td>
+      <td>${c.facturas||'—'}</td>
+      <td style="font-weight:700;color:#1e6fb5">${c.valor?cop(c.valor):'—'}</td>
+      <td>${c.fecha_pago||'—'}</td>
+      <td style="font-size:11px;color:#666">${c.notas||'—'}</td>
+      <td>${c.archivo_nombre?`<a href="${API_BASE}/cxc/comprobantes/ver/${c.archivo_nombre}" target="_blank" class="btn btn-info" style="padding:4px 8px;font-size:11px">👁️ Ver</a>`:'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// Sobrescribir loadCxC para que cargue también la cartera
+const _origLoadCxC = loadCxC;
+loadCxC = async function(filtro='') {
+  await loadCxCStats();
+  await loadCxCCartera();
+  await loadCxCTabla(filtro);
+  await loadCxCClientes();
+  await poblarSelectClientes();
+};
 </script>
+
 </body>
 </html>

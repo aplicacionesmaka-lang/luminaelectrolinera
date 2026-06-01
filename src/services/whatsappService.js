@@ -1,70 +1,132 @@
 const db = require("../models/db");
+const { getClient, getStatus } = require("./whatsappClient");
+const { MessageMedia } = require("whatsapp-web.js");
 const fetch = require("node-fetch");
+const { registrarNotificacion } = require("./recordatorioService");
+
+// Formatea número al chatId de whatsapp-web.js: "573001234567@c.us"
+function formatChatId(telefono) {
+  let digits = telefono.replace(/\D/g, "");
+  // Agregar código de país Colombia (+57) si no lo tiene
+  if (digits.length === 10 && digits.startsWith("3")) {
+    digits = "57" + digits;
+  }
+  return `${digits}@c.us`;
+}
 
 /**
- * Envía un mensaje de texto via Meta WhatsApp Business Cloud API
- * Docs: https://developers.facebook.com/docs/whatsapp/cloud-api/messages/text-messages
+ * Envía un mensaje de texto
  */
 async function enviarMensajeReal(telefono, mensaje) {
-  const token   = process.env.WHATSAPP_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_ID;
+  const client = getClient();
 
-  if (!token || !phoneId) {
-    // Sin credenciales → simular
-    console.log(`\n📱 [WHATSAPP SIMULADO] Para: ${telefono}\n${mensaje}\n─────────────────`);
+  if (!client || getStatus() !== "connected") {
+    console.log(`\n📱 [WHATSAPP SIMULADO - no conectado] Para: ${telefono}\n${mensaje}\n─────────────────`);
     return null;
   }
 
-  // Limpiar número: solo dígitos, sin "whatsapp:" ni "+"
-  const to = telefono.replace(/\D/g, "");
+  const chatId = formatChatId(telefono);
+  const digits  = chatId.replace("@c.us", "");
 
-  const res = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+  // Intentar hasta 3 formatos de ID para compatibilidad con números migrados a LID
+  const intentos = [
+    async () => {
+      const numberId = await client.getNumberId(digits);
+      const id = numberId ? numberId._serialized : chatId;
+      return client.sendMessage(id, mensaje);
     },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body: mensaje },
-    }),
-  });
+    async () => client.sendMessage(chatId, mensaje),
+    async () => {
+      // Buscar en los chats abiertos por número (para números con @lid)
+      const chats = await client.getChats();
+      const match = chats.find(c => c.id.user === digits || c.id._serialized.includes(digits));
+      if (!match) throw new Error("Número no encontrado en chats");
+      return client.sendMessage(match.id._serialized, mensaje);
+    },
+  ];
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(`Meta API error: ${JSON.stringify(data)}`);
+  let lastErr;
+  for (const intento of intentos) {
+    try {
+      const result = await intento();
+      console.log(`📤 WhatsApp enviado a ${chatId}`);
+      return result.id._serialized;
+    } catch (err) {
+      lastErr = err;
+      if (!err.message?.includes("LID") && !err.message?.includes("lid")) throw err; // error diferente → no reintentar
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Envía un archivo (imagen/PDF) desde una URL pública o ruta local
+ * Usa el mismo mecanismo de fallback LID que enviarMensajeReal.
+ */
+async function enviarDocumento(telefono, urlArchivo, nombreArchivo, mimeType = "image/jpeg") {
+  const client = getClient();
+
+  if (!client || getStatus() !== "connected") {
+    console.log(`\n📎 [WA SIMULADO] Documento para ${telefono}: ${urlArchivo}\n─────────────────`);
+    return null;
   }
 
-  const msgId = data.messages?.[0]?.id;
-  console.log(`📤 WhatsApp enviado a ${to} — ID: ${msgId}`);
-  return msgId;
+  const chatId = formatChatId(telefono);
+  const digits  = chatId.replace("@c.us", "");
+
+  let media;
+  if (urlArchivo.startsWith("http")) {
+    const res    = await fetch(urlArchivo);
+    const buffer = await res.buffer();
+    const base64 = buffer.toString("base64");
+    media = new MessageMedia(mimeType, base64, nombreArchivo);
+  } else {
+    media = MessageMedia.fromFilePath(urlArchivo);
+  }
+
+  const intentos = [
+    async () => {
+      const numberId = await client.getNumberId(digits);
+      const id = numberId ? numberId._serialized : chatId;
+      return client.sendMessage(id, media, { caption: nombreArchivo });
+    },
+    async () => client.sendMessage(chatId, media, { caption: nombreArchivo }),
+    async () => {
+      const chats = await client.getChats();
+      const match = chats.find(c => c.id.user === digits || c.id._serialized.includes(digits));
+      if (!match) throw new Error("Número no encontrado en chats");
+      return client.sendMessage(match.id._serialized, media, { caption: nombreArchivo });
+    },
+  ];
+
+  let lastErr;
+  for (const intento of intentos) {
+    try {
+      const result = await intento();
+      console.log(`📎 Documento enviado a ${chatId}`);
+      return result.id._serialized;
+    } catch (err) {
+      lastErr = err;
+      if (!err.message?.includes("LID") && !err.message?.includes("lid")) throw err;
+    }
+  }
+  throw lastErr;
 }
 
 /**
- * Descarga un archivo multimedia de Meta usando su media_id
+ * Descarga media de un mensaje entrante de whatsapp-web.js
  */
-async function descargarMedia(mediaId) {
-  const token = process.env.WHATSAPP_TOKEN;
-
-  // 1. Obtener URL del media
-  const urlRes = await fetch(`https://graph.facebook.com/v19.0/${mediaId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const urlData = await urlRes.json();
-  if (!urlData.url) throw new Error("No se pudo obtener URL del media");
-
-  // 2. Descargar el archivo
-  const fileRes = await fetch(urlData.url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const buffer = await fileRes.buffer();
-  return { buffer, mimeType: urlData.mime_type };
+async function descargarMedia(msg) {
+  const media = await msg.downloadMedia();
+  if (!media) throw new Error("No se pudo descargar el media");
+  return {
+    buffer:   Buffer.from(media.data, "base64"),
+    mimeType: media.mimetype,
+  };
 }
 
 /**
- * Compatibilidad: envío con registro en BD (usado por /mensajes/generar)
+ * Envío en lote con registro en BD
  */
 async function enviarMensajesLote(mensajes) {
   const resultados = [];
@@ -80,10 +142,10 @@ async function enviarMensajesLote(mensajes) {
         "INSERT INTO conversaciones (proveedor_nit, mensaje_enviado, estado) VALUES (?, ?, 'sin_telefono')"
       ).run(item.proveedor_nit, item.mensaje);
       resultados.push({
-        proveedor_nit: item.proveedor_nit,
+        proveedor_nit:    item.proveedor_nit,
         proveedor_nombre: item.proveedor_nombre,
-        estado: "sin_telefono",
-        mensaje: "Proveedor sin número de teléfono registrado",
+        estado:           "sin_telefono",
+        mensaje:          "Proveedor sin número de teléfono registrado",
       });
       continue;
     }
@@ -91,7 +153,6 @@ async function enviarMensajesLote(mensajes) {
     try {
       const msgId = await enviarMensajeReal(item.telefono, item.mensaje);
 
-      // Enviar también al segundo teléfono si existe
       if (item.telefono2) {
         try {
           await enviarMensajeReal(item.telefono2, item.mensaje);
@@ -104,14 +165,23 @@ async function enviarMensajesLote(mensajes) {
       db.prepare(
         "INSERT INTO conversaciones (proveedor_nit, mensaje_enviado, estado) VALUES (?, ?, 'enviado')"
       ).run(item.proveedor_nit, item.mensaje);
-      resultados.push({
-        proveedor_nit: item.proveedor_nit,
+
+      // Registrar para recordatorio automático en 24h
+      registrarNotificacion({
+        proveedor_nit:    item.proveedor_nit,
         proveedor_nombre: item.proveedor_nombre,
-        telefono: item.telefono,
-        telefono2: item.telefono2 || null,
-        estado: "enviado",
-        simulado: !process.env.WHATSAPP_TOKEN,
-        meta_msg_id: msgId,
+        telefono:         item.telefono,
+        facturas:         item.facturas || "",
+        total:            item.total || 0,
+      });
+
+      resultados.push({
+        proveedor_nit:    item.proveedor_nit,
+        proveedor_nombre: item.proveedor_nombre,
+        telefono:         item.telefono,
+        estado:           "enviado",
+        simulado:         getStatus() !== "connected",
+        wa_msg_id:        msgId,
       });
     } catch (err) {
       resultados.push({ proveedor_nit: item.proveedor_nit, estado: "error", error: err.message });
@@ -119,46 +189,6 @@ async function enviarMensajesLote(mensajes) {
   }
 
   return resultados;
-}
-
-/**
- * Envía un documento/imagen via WhatsApp usando una URL pública
- */
-async function enviarDocumento(telefono, urlArchivo, nombreArchivo, mimeType = "image/jpeg") {
-  const token   = process.env.WHATSAPP_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_ID;
-
-  if (!token || !phoneId) {
-    console.log(`\n📎 [WA SIMULADO] Documento para ${telefono}: ${urlArchivo}\n─────────────────`);
-    return null;
-  }
-
-  const to = telefono.replace(/\D/g, "");
-  const esImagen = mimeType.startsWith("image/");
-
-  const body = esImagen
-    ? {
-        messaging_product: "whatsapp",
-        to,
-        type: "image",
-        image: { link: urlArchivo, caption: nombreArchivo },
-      }
-    : {
-        messaging_product: "whatsapp",
-        to,
-        type: "document",
-        document: { link: urlArchivo, caption: nombreArchivo, filename: nombreArchivo },
-      };
-
-  const res = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Meta API error: ${JSON.stringify(data)}`);
-  return data.messages?.[0]?.id;
 }
 
 function getHistorialConversaciones(proveedorNit = null) {
@@ -170,4 +200,10 @@ function getHistorialConversaciones(proveedorNit = null) {
   return db.prepare("SELECT * FROM conversaciones ORDER BY created_at DESC").all();
 }
 
-module.exports = { enviarMensajeReal, descargarMedia, enviarMensajesLote, getHistorialConversaciones, enviarDocumento };
+module.exports = {
+  enviarMensajeReal,
+  descargarMedia,
+  enviarMensajesLote,
+  getHistorialConversaciones,
+  enviarDocumento,
+};

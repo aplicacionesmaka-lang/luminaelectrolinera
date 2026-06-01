@@ -126,6 +126,14 @@ function updateProveedor(nit, data) {
   const { nombre, telefono, banco, cuenta, tipo_cuenta, ciudad, direccion,
           descuento_cacharro, descuento_joyeria, descuento_activo,
           titular_nombre, titular_id } = data;
+  // Para campos bancarios: solo sobrescribir si el nuevo valor no está vacío
+  // Así se protegen los datos bancarios registrados por WhatsApp
+  const existing = db.prepare("SELECT banco, cuenta, tipo_cuenta, titular_nombre, titular_id FROM proveedores WHERE nit = ?").get(nit) || {};
+  const safeBanco         = banco?.trim()          || existing.banco         || null;
+  const safeCuenta        = cuenta?.trim()         || existing.cuenta        || null;
+  const safeTipo          = tipo_cuenta?.trim()    || existing.tipo_cuenta   || null;
+  const safeTitularNombre = titular_nombre?.trim() || existing.titular_nombre || null;
+  const safeTitularId     = titular_id?.trim()     || existing.titular_id    || null;
   return db.prepare(`
     UPDATE proveedores SET
       nombre = ?, telefono = ?, banco = ?, cuenta = ?, tipo_cuenta = ?,
@@ -133,9 +141,9 @@ function updateProveedor(nit, data) {
       descuento_activo = ?, titular_nombre = ?, titular_id = ?,
       updated_at = CURRENT_TIMESTAMP
     WHERE nit = ?
-  `).run(nombre, telefono, banco, cuenta, tipo_cuenta, ciudad, direccion,
+  `).run(nombre, telefono, safeBanco, safeCuenta, safeTipo, ciudad, direccion,
          descuento_cacharro, descuento_joyeria || null, descuento_activo,
-         titular_nombre || null, titular_id || null, nit);
+         safeTitularNombre, safeTitularId, nit);
 }
 
 function getDescuentoActivoValue(nit) {

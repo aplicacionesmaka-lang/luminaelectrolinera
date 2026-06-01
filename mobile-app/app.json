@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Lumina",
+    "slug": "lumina-ev",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#0a2218"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.maka.lumina"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0a2218"
+      },
+      "package": "com.maka.lumina"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Lumina necesita tu ubicación para mostrarte las electrolineras más cercanas."
+        }
+      ]
+    ]
+  }
+}

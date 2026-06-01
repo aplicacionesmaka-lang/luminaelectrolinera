@@ -8,10 +8,10 @@ const {
 } = require("../services/pagosService");
 
 // GET /pagos/generar - Generar archivo Excel de pagos
-router.get("/generar", (req, res) => {
+router.get("/generar", async (req, res) => {
   try {
-    const { fecha_pago } = req.query;
-    const resultado = generarArchivoPagos(fecha_pago);
+    const { fecha_pago, vencimiento_hasta } = req.query;
+    const resultado = await generarArchivoPagos(fecha_pago, vencimiento_hasta);
 
     res.json({
       mensaje: "Archivo de pagos generado exitosamente",

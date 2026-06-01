@@ -111,6 +111,22 @@ router.post("/:nit/recalcular-facturas", (req, res) => {
   }
 });
 
+// POST /proveedores - Crear nuevo proveedor manualmente
+router.post("/", express.json(), (req, res) => {
+  try {
+    const { nit, nombre, telefono, telefono2, ciudad, direccion, banco, cuenta, tipo_cuenta, titular_nombre, titular_id, descuento_cacharro, descuento_joyeria, descuento_activo } = req.body;
+    if (!nit || !nombre) return res.status(400).json({ error: "nit y nombre son obligatorios" });
+    const existe = db.prepare("SELECT nit FROM proveedores WHERE nit = ?").get(nit);
+    if (existe) return res.status(409).json({ error: "Ya existe un proveedor con ese NIT" });
+    db.prepare(`INSERT INTO proveedores (nit, nombre, telefono, telefono2, ciudad, direccion, banco, cuenta, tipo_cuenta, titular_nombre, titular_id, descuento_cacharro, descuento_joyeria, descuento_activo)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(nit, nombre, telefono||null, telefono2||null, ciudad||null, direccion||null, banco||null, cuenta||null, tipo_cuenta||null, titular_nombre||null, titular_id||null, descuento_cacharro||0, descuento_joyeria||null, descuento_activo||'cacharro');
+    res.json({ mensaje: "Proveedor creado", nit });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PUT /proveedores/:nit - Actualizar todos los datos del proveedor
 router.put("/:nit", express.json(), (req, res) => {
   try {

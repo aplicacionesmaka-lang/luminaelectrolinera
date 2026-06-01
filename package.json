@@ -1,7 +1,7 @@
 {
-  "name": "makabot",
+  "name": "lumina",
   "version": "1.0.0",
-  "description": "Automatización de cuentas por pagar - MAKA QCUTE SAS",
+  "description": "Lumina Gestión Integral - CxP, CxC, Pagos y WhatsApp",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -16,7 +16,10 @@
     "multer": "^1.4.5-lts.1",
     "ngrok": "^5.0.0-beta.2",
     "twilio": "^5.13.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "whatsapp-web.js": "^1.26.0",
+    "qrcode": "^1.5.4",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

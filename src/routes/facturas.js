@@ -9,6 +9,8 @@ const {
 } = require("../services/facturasService");
 const { analizarImagenProveedor } = require("../services/claudeService");
 const db = require("../models/db");
+const { getCuentasPorPagar, getResumenCxP } = require("../services/sqlServerService");
+const { guardarSoporte } = require("../services/soportesService");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -48,35 +50,88 @@ router.get("/", (req, res) => {
   }
 });
 
-// GET /facturas/agrupadas?vencimiento_hasta=YYYY-MM-DD
-router.get("/agrupadas", (req, res) => {
+// GET /facturas/agrupadas — desde ERP en tiempo real
+router.get("/agrupadas", async (req, res) => {
   try {
-    const { vencimiento_hasta, vencimiento_desde, estado = "pendiente", solo_incluir } = req.query;
-    let query = `
-      SELECT
-        proveedor_nit,
-        proveedor_nombre,
-        COUNT(*) as cantidad_facturas,
-        SUM(valor_factura) as total_valor_factura,
-        SUM(descuento_pronto_pago) as total_descuento,
-        SUM(flete) as total_flete,
-        SUM(valor_final) as total_valor_final,
-        MIN(fecha_vencimiento) as primera_vencimiento,
-        MAX(fecha_vencimiento) as ultima_vencimiento,
-        estado
-      FROM facturas WHERE 1=1`;
-    const params = [];
+    const { solo_incluir, vencimiento_hasta, vencimiento_desde } = req.query;
 
-    if (estado) { query += " AND estado = ?"; params.push(estado); }
-    if (vencimiento_desde) { query += " AND fecha_vencimiento >= ?"; params.push(vencimiento_desde); }
-    if (vencimiento_hasta) { query += " AND fecha_vencimiento <= ?"; params.push(vencimiento_hasta); }
-    if (solo_incluir === "1") { query += " AND incluir_pago = 1"; }
-    query += " GROUP BY proveedor_nit, estado ORDER BY proveedor_nit";
+    if (solo_incluir === "1") {
+      // Traer facturas individuales y filtrar solo las marcadas para pago
+      const erpFacturas = await getCuentasPorPagar({ soloVencidas: false });
+      const ajustesRows = db.prepare("SELECT idreg, incluir_pago, flete FROM facturas_erp_ajustes").all();
+      const ajMap = {};
+      ajustesRows.forEach(a => { ajMap[a.idreg] = a; });
 
-    const agrupadas = db.prepare(query).all(...params);
-    res.json({ agrupadas });
+      // Solo incluir facturas ESTRICTAMENTE marcadas para pago (incluir_pago=1)
+      const toISO = d => { if (!d) return null; if (d instanceof Date) return d.toISOString().slice(0,10); return String(d).slice(0,10); };
+      const incluidas = erpFacturas.filter(f => {
+        const aj = ajMap[String(f.idreg)];
+        if (!aj || aj.incluir_pago !== 1) return false;
+        const fecVen = toISO(f.fecha_vencimiento);
+        if (vencimiento_hasta && fecVen && fecVen > vencimiento_hasta) return false;
+        if (vencimiento_desde && fecVen && fecVen < vencimiento_desde) return false;
+        return true;
+      });
+
+      // Agrupar por proveedor
+      const grupos = {};
+      incluidas.forEach(f => {
+        const nit = f.nit;
+        const aj = ajMap[String(f.idreg)] || {};
+        const flete = aj.flete || 0;
+        const saldo = parseFloat(f.saldo_pendiente) || 0;
+        const valorFinal = Math.max(0, saldo - flete);
+        if (!grupos[nit]) {
+          grupos[nit] = {
+            proveedor_nit:       nit,
+            proveedor_nombre:    f.proveedor_nombre,
+            cantidad_facturas:   0,
+            total_valor_final:   0,
+            primera_vencimiento: null,
+            estado:              'pendiente',
+          };
+        }
+        grupos[nit].cantidad_facturas++;
+        grupos[nit].total_valor_final += valorFinal;
+        const fecVen = f.fecha_vencimiento ? String(f.fecha_vencimiento).slice(0,10) : null;
+        if (fecVen && (!grupos[nit].primera_vencimiento || fecVen < grupos[nit].primera_vencimiento))
+          grupos[nit].primera_vencimiento = fecVen;
+      });
+
+      const agrupadas = Object.values(grupos).sort((a,b) => (a.proveedor_nombre||'').localeCompare(b.proveedor_nombre||''));
+      return res.json({ agrupadas, total: agrupadas.length });
+    }
+
+    // Sin filtro: resumen completo del ERP
+    const erp = await getResumenCxP();
+    const agrupadas = erp.map(r => ({
+      proveedor_nit:         r.nit,
+      proveedor_nombre:      r.proveedor_nombre,
+      cantidad_facturas:     r.total_facturas,
+      total_valor_final:     r.total_pendiente,
+      primera_vencimiento:   r.proxima_vencimiento,
+      total_vencido:         r.total_vencido,
+      estado:                'pendiente',
+    }));
+
+    res.json({ agrupadas, total: agrupadas.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("agrupadas ERP:", err.message);
+    // fallback SQLite
+    try {
+      const { vencimiento_hasta, vencimiento_desde, estado = "pendiente", solo_incluir } = req.query;
+      let query = `SELECT proveedor_nit,proveedor_nombre,COUNT(*) as cantidad_facturas,SUM(valor_factura) as total_valor_factura,SUM(descuento_pronto_pago) as total_descuento,SUM(flete) as total_flete,SUM(valor_final) as total_valor_final,MIN(fecha_vencimiento) as primera_vencimiento,MAX(fecha_vencimiento) as ultima_vencimiento,estado FROM facturas WHERE 1=1`;
+      const params = [];
+      if (estado) { query += " AND estado = ?"; params.push(estado); }
+      if (vencimiento_desde) { query += " AND fecha_vencimiento >= ?"; params.push(vencimiento_desde); }
+      if (vencimiento_hasta) { query += " AND fecha_vencimiento <= ?"; params.push(vencimiento_hasta); }
+      if (solo_incluir === "1") { query += " AND incluir_pago = 1"; }
+      query += " GROUP BY proveedor_nit, estado ORDER BY proveedor_nit";
+      const agrupadas2 = db.prepare(query).all(...params);
+      res.json({ agrupadas: agrupadas2 });
+    } catch (err2) {
+      res.status(500).json({ error: err2.message });
+    }
   }
 });
 
@@ -85,56 +140,133 @@ router.post("/analizar-imagen", upload.single("imagen"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Se requiere una imagen" });
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
     if (!allowedTypes.includes(req.file.mimetype)) {
-      return res.status(400).json({ error: "Formato de imagen no válido. Use JPG, PNG, GIF o WEBP" });
+      return res.status(400).json({ error: "Formato no válido. Use JPG, PNG, WEBP o PDF" });
     }
 
     const imageBase64 = req.file.buffer.toString("base64");
     const resultado = await analizarImagenProveedor(imageBase64, req.file.mimetype);
 
-    // Si viene nit_proveedor en el body, actualizar facturas automáticamente
-    const { nit_proveedor, aplicar_automatico } = req.body;
-    let actualizaciones = [];
+    // Intentar identificar proveedor automáticamente por número de factura en el ERP
+    let proveedor_sugerido = null;
+    const numeros = (resultado.facturas_encontradas || []).map(f => f.numero_factura).filter(Boolean);
+    const erpFacturas = await getCuentasPorPagar({ soloVencidas: false });
 
-    if (nit_proveedor && aplicar_automatico === "true" && resultado.facturas_encontradas?.length > 0) {
-      for (const fImg of resultado.facturas_encontradas) {
-        if (!fImg.numero_factura) continue;
-        const factura = db.prepare(
-          "SELECT * FROM facturas WHERE numero_factura = ? AND proveedor_nit = ?"
-        ).get(fImg.numero_factura, nit_proveedor);
+    // Buscar por número de factura en ERP — coincidencia exacta primero
+    for (const num of numeros) {
+      const digits = num.replace(/\D/g,'');
+      // Exact match first (numero_factura == digits exactly)
+      let matches = erpFacturas.filter(f =>
+        f.numero_factura && f.numero_factura.replace(/\D/g,'') === digits
+      );
+      // Fallback: endsWith only if no exact match
+      if (matches.length === 0) {
+        matches = erpFacturas.filter(f =>
+          f.numero_factura && f.numero_factura.replace(/\D/g,'').endsWith(digits)
+        );
+      }
+      if (matches.length === 1) {
+        const match = matches[0];
+        const prov = db.prepare("SELECT * FROM proveedores WHERE nit = ?").get(match.nit);
+        proveedor_sugerido = {
+          nit:    match.nit,
+          nombre: prov?.nombre || match.proveedor_nombre,
+          telefono: prov?.telefono || '',
+          facturas_erp: erpFacturas
+            .filter(f => f.nit === match.nit)
+            .map(f => ({ numero_factura: f.numero_factura, saldo: parseFloat(f.saldo_pendiente)||0 })),
+        };
+        break;
+      } else if (matches.length > 1) {
+        // Ambiguous: multiple providers have same invoice number — do NOT auto-assign
+        console.warn(`[analizar-imagen] Número de factura ${digits} encontrado en ${matches.length} proveedores:`, matches.map(m => m.proveedor_nombre));
+        // Return all candidates so the UI can ask the user to pick
+        proveedor_sugerido = {
+          nit: null,
+          nombre: null,
+          ambiguo: true,
+          candidatos: matches.map(m => ({
+            nit: m.nit,
+            nombre: m.proveedor_nombre,
+            numero_factura: m.numero_factura,
+            saldo: parseFloat(m.saldo_pendiente)||0,
+          })),
+        };
+        break;
+      }
+    }
 
-        if (factura) {
-          const nuevoDescuento = fImg.descuento ?? factura.descuento_pronto_pago;
-          const nuevoFlete = fImg.flete ?? factura.flete;
-          const nuevoValorFinal = fImg.valor_neto ?? (factura.valor_factura - nuevoDescuento + nuevoFlete);
-
-          db.prepare(`
-            UPDATE facturas SET
-              descuento_pronto_pago = ?,
-              flete = ?,
-              valor_final = ?,
-              valor_proveedor = ?,
-              origen_valor = 'imagen_proveedor'
-            WHERE id = ?
-          `).run(nuevoDescuento, nuevoFlete, nuevoValorFinal, fImg.valor_neto, factura.id);
-
-          actualizaciones.push({
-            numero_factura: fImg.numero_factura,
-            descuento_anterior: factura.descuento_pronto_pago,
-            descuento_nuevo: nuevoDescuento,
-            flete_anterior: factura.flete,
-            flete_nuevo: nuevoFlete,
-            valor_final_anterior: factura.valor_final,
-            valor_final_nuevo: nuevoValorFinal,
-          });
+    // Fallback: buscar por nombre del proveedor extraído por la IA
+    if (!proveedor_sugerido && resultado.proveedor_nombre) {
+      const nombreIA = resultado.proveedor_nombre.toUpperCase().replace(/[^A-Z0-9 ]/g,'');
+      // Buscar en SQLite proveedores
+      const provRows = db.prepare("SELECT * FROM proveedores").all();
+      const matchProv = provRows.find(p => {
+        if (!p.nombre) return false;
+        const n = p.nombre.toUpperCase().replace(/[^A-Z0-9 ]/g,'');
+        return nombreIA.includes(n.slice(0,8)) || n.includes(nombreIA.slice(0,8));
+      });
+      if (matchProv) {
+        proveedor_sugerido = { nit: matchProv.nit, nombre: matchProv.nombre, telefono: matchProv.telefono, facturas_erp: [] };
+      }
+      // Buscar en ERP por nombre similar
+      if (!proveedor_sugerido) {
+        const matchERP = erpFacturas.find(f => {
+          if (!f.proveedor_nombre) return false;
+          const n = f.proveedor_nombre.toUpperCase().replace(/[^A-Z0-9 ]/g,'');
+          return nombreIA.includes(n.slice(0,6)) || n.includes(nombreIA.slice(0,6));
+        });
+        if (matchERP) {
+          proveedor_sugerido = { nit: matchERP.nit, nombre: matchERP.proveedor_nombre, telefono: '', facturas_erp: [] };
         }
       }
     }
 
-    res.json({ analisis: resultado, actualizaciones });
+    // Guardar imagen temporalmente en memoria con un token para confirmar después
+    const token = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    req.app.locals._imgBuffer = req.app.locals._imgBuffer || {};
+    req.app.locals._imgBuffer[token] = {
+      buffer: req.file.buffer,
+      mimetype: req.file.mimetype,
+      originalname: req.file.originalname,
+      ts: Date.now(),
+    };
+
+    res.json({ analisis: resultado, proveedor_sugerido, token_imagen: token });
   } catch (err) {
     console.error("Error analizando imagen:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /facturas/confirmar-soporte — guarda imagen como soporte de pago tras confirmación del usuario
+router.post("/confirmar-soporte", express.json(), async (req, res) => {
+  try {
+    const { token_imagen, proveedor_nit, proveedor_nombre_erp, facturas, valor, fecha_pago, notas } = req.body;
+    if (!token_imagen || !proveedor_nit) return res.status(400).json({ error: "token_imagen y proveedor_nit requeridos" });
+
+    const imgData = req.app.locals._imgBuffer?.[token_imagen];
+    if (!imgData) return res.status(404).json({ error: "Imagen expirada o no encontrada. Vuelve a subir." });
+
+    // Limpiar token
+    delete req.app.locals._imgBuffer[token_imagen];
+
+    const resultado = await guardarSoporte({
+      proveedor_nit,
+      proveedor_nombre_erp: proveedor_nombre_erp || null,
+      facturas: facturas || '',
+      valor:    valor ? parseFloat(valor) : null,
+      fecha_pago: fecha_pago || new Date().toISOString().slice(0,10),
+      notas:    notas || 'Guardado desde análisis IA',
+      buffer:   imgData.buffer,
+      originalname: imgData.originalname,
+      mimetype:     imgData.mimetype,
+    });
+
+    res.json({ mensaje: "Soporte guardado y proveedor notificado", ...resultado });
+  } catch (err) {
+    console.error("Error confirmando soporte:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -181,89 +313,186 @@ router.put("/:id/valor-proveedor", express.json(), (req, res) => {
   }
 });
 
-// GET /facturas/vencimientos — todas las facturas con días en sistema y semáforo
-router.get("/vencimientos", (req, res) => {
+// GET /facturas/vencimientos — facturas en tiempo real desde ERP SQL Server
+router.get("/vencimientos", async (req, res) => {
   try {
-    const { estado, proveedor_nit, vencimiento_desde, vencimiento_hasta } = req.query;
-    let query = `
-      SELECT
-        f.*,
-        p.banco, p.cuenta, p.tipo_cuenta, p.telefono as p_telefono,
-        p.nombre as p_nombre, p.titular_nombre, p.titular_id,
-        CAST(julianday(DATE('now')) - julianday(f.created_at) AS INTEGER) as dias_sistema,
-        CAST(julianday(f.fecha_vencimiento) - julianday(DATE('now')) AS INTEGER) as dias_para_vencer
-      FROM facturas f
-      LEFT JOIN proveedores p ON f.proveedor_nit = p.nit
-      WHERE 1=1
-    `;
-    const params = [];
-    if (estado) { query += " AND f.estado = ?"; params.push(estado); }
-    if (proveedor_nit) { query += " AND f.proveedor_nit = ?"; params.push(proveedor_nit); }
-    if (vencimiento_desde) { query += " AND f.fecha_vencimiento >= ?"; params.push(vencimiento_desde); }
-    if (vencimiento_hasta) { query += " AND f.fecha_vencimiento <= ?"; params.push(vencimiento_hasta); }
-    query += " ORDER BY f.fecha_vencimiento ASC, f.proveedor_nit";
+    const { proveedor_nit, vencimiento_desde, vencimiento_hasta } = req.query;
 
-    const facturas = db.prepare(query).all(...params);
+    // 1. Traer todas las facturas pendientes del ERP
+    const erpFacturas = await getCuentasPorPagar({
+      soloVencidas: false,
+      nit: proveedor_nit || null,
+    });
+
+    // 2. Traer ajustes locales (incluir_pago, flete, notas, fecha override) de SQLite
+    const ajustesRows = db.prepare("SELECT * FROM facturas_erp_ajustes").all();
+    const ajustesMap = {};
+    ajustesRows.forEach(a => { ajustesMap[a.idreg] = a; });
+
+    // 3. Traer datos de proveedores (banco, cuenta, titular, descuentos) de SQLite
+    const provRows = db.prepare("SELECT nit, nombre, banco, cuenta, tipo_cuenta, telefono, titular_nombre, titular_id, descuento_cacharro, descuento_joyeria, descuento_activo FROM proveedores").all();
+    const provMap = {};
+    // Indexar por NIT original Y por NIT normalizado (solo dígitos) para tolerar diferencias de formato
+    const normNit = n => String(n || '').replace(/\D/g, '').replace(/^0+/, '');
+    provRows.forEach(p => {
+      provMap[p.nit] = p;
+      const normalized = normNit(p.nit);
+      if (normalized && normalized !== p.nit) provMap[normalized] = p;
+    });
+    const findProv = nit => provMap[nit] || provMap[normNit(nit)] || {};
+
+    // Helper para convertir Date de SQL Server a YYYY-MM-DD
+    const toISO = d => {
+      if (!d) return null;
+      if (d instanceof Date) return d.toISOString().slice(0, 10);
+      return String(d).slice(0, 10);
+    };
+
+    // 4. Mapear al formato que espera el frontend
+    let facturas = erpFacturas.map(f => {
+      const idreg     = String(f.idreg);
+      const aj        = ajustesMap[idreg] || {};
+      const prov      = findProv(f.nit);
+      const fecVen    = aj.fecha_vencimiento_override || toISO(f.fecha_vencimiento);
+      const hoy       = new Date(); hoy.setHours(0,0,0,0);
+      const dVen      = fecVen ? Math.round((new Date(fecVen) - hoy) / 86400000) : null;
+      const fecFac    = toISO(f.fecha_factura);
+      const diasSist  = fecFac ? Math.round((hoy - new Date(fecFac)) / 86400000) : null;
+      const flete     = aj.flete != null ? aj.flete : 0;
+      const saldo     = parseFloat(f.saldo_pendiente) || 0;
+
+      // Calcular descuento: override manual > catálogo proveedor > 0
+      let descuento = 0;
+      if (aj.descuento != null && aj.descuento > 0) {
+        descuento = aj.descuento;
+      } else {
+        const tipo = prov.descuento_activo || 'cacharro';
+        const pct  = tipo === 'joyeria' ? (prov.descuento_joyeria || 0) : (prov.descuento_cacharro || 0);
+        descuento  = Math.round(saldo * pct);
+      }
+
+      // Override de proveedor: si el ERP tiene el NIT/nombre equivocado, usar el corregido manualmente
+      const nitFinal    = aj.proveedor_nit_override    || f.nit;
+      const nombreFinal = aj.proveedor_nombre_override || f.proveedor_nombre;
+      const provFinal   = (aj.proveedor_nit_override ? findProv(nitFinal) : null) || prov;
+
+      return {
+        id:                    idreg,
+        numero_factura:        f.numero_factura,
+        factura_completa:      f.factura_completa,
+        radicado:              f.radicado,
+        proveedor_nit:         nitFinal,
+        proveedor_nombre:      nombreFinal,
+        p_nombre:              provFinal.nombre || nombreFinal,
+        fecha_factura:         fecFac,
+        fecha_vencimiento:     fecVen,
+        dias_para_vencer:      dVen,
+        dias_sistema:          diasSist,
+        valor_factura:         parseFloat(f.valor_bruto) || saldo,
+        descuento_pronto_pago: descuento,
+        flete:                 flete,
+        valor_final:           Math.max(0, saldo - flete - descuento),
+        valor_neto:            parseFloat(f.valor_neto) || 0,
+        valor_abonado:         parseFloat(f.valor_abonado) || 0,
+        saldo_pendiente:       saldo,
+        origen_valor:          'ERP',
+        estado:                'pendiente',
+        incluir_pago:          aj.incluir_pago != null ? aj.incluir_pago : 0,
+        notas:                 aj.notas || '',
+        banco:                 provFinal.banco || '',
+        cuenta:                provFinal.cuenta || '',
+        tipo_cuenta:           provFinal.tipo_cuenta || '',
+        titular_nombre:        provFinal.titular_nombre || '',
+        titular_id:            provFinal.titular_id || '',
+        codalm:                f.Codalm || f.codalm || '',
+        tienda:                ({'001':'ARRE','005':'LA30','006':'PLAZA'}[f.Codalm||f.codalm]) || f.tienda_nombre || f.Codalm || '',
+      };
+    });
+
+    // 5. Filtrar por fechas si vienen en query
+    if (vencimiento_desde) {
+      facturas = facturas.filter(f => f.fecha_vencimiento && f.fecha_vencimiento >= vencimiento_desde);
+    }
+    if (vencimiento_hasta) {
+      facturas = facturas.filter(f => f.fecha_vencimiento && f.fecha_vencimiento <= vencimiento_hasta);
+    }
+
+    // 6. Ordenar por fecha vencimiento ASC
+    facturas.sort((a, b) => {
+      if (!a.fecha_vencimiento) return 1;
+      if (!b.fecha_vencimiento) return -1;
+      return a.fecha_vencimiento.localeCompare(b.fecha_vencimiento);
+    });
+
     res.json({ facturas, total: facturas.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("vencimientos ERP:", err.message);
+    res.status(500).json({ error: "Error consultando ERP: " + err.message });
   }
 });
 
-// PATCH /facturas/:id/ajustar — editar flete y/o fecha_vencimiento manualmente
+// PATCH /facturas/:id/ajustar — editar flete y/o fecha_vencimiento (ERP: upsert en ajustes locales)
 router.patch("/:id/ajustar", express.json(), (req, res) => {
   try {
     const { flete, fecha_vencimiento } = req.body;
-    const factura = db.prepare("SELECT * FROM facturas WHERE id = ?").get(req.params.id);
-    if (!factura) return res.status(404).json({ error: "Factura no encontrada" });
-
-    const updates = [];
-    const params = [];
-
-    let nuevoFlete = factura.flete || 0;
-    if (flete !== undefined) {
-      nuevoFlete = Number(flete) || 0;
-      updates.push("flete = ?");
-      params.push(nuevoFlete);
-      // Recalcular valor_final: base - descuento + nuevo flete
-      const base = (factura.valor_factura || 0) - (factura.descuento_pronto_pago || 0);
-      const nuevoValorFinal = base + nuevoFlete;
-      updates.push("valor_final = ?");
-      params.push(nuevoValorFinal);
+    const idreg = req.params.id;
+    if (flete === undefined && fecha_vencimiento === undefined) {
+      return res.status(400).json({ error: "Nada que actualizar" });
     }
+    // Obtener valores actuales
+    const actual = db.prepare("SELECT * FROM facturas_erp_ajustes WHERE idreg = ?").get(idreg) || {};
+    const nuevoFlete = flete !== undefined ? (Number(flete) || 0) : (actual.flete || 0);
+    const nuevaFecha = fecha_vencimiento !== undefined ? (fecha_vencimiento || null) : (actual.fecha_vencimiento_override || null);
 
-    if (fecha_vencimiento !== undefined) {
-      updates.push("fecha_vencimiento = ?");
-      params.push(fecha_vencimiento || null);
-    }
+    db.prepare(`
+      INSERT INTO facturas_erp_ajustes (idreg, flete, fecha_vencimiento_override, updated_at)
+      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(idreg) DO UPDATE SET
+        flete                      = excluded.flete,
+        fecha_vencimiento_override = excluded.fecha_vencimiento_override,
+        updated_at                 = CURRENT_TIMESTAMP
+    `).run(idreg, nuevoFlete, nuevaFecha);
 
-    if (updates.length === 0) return res.status(400).json({ error: "Nada que actualizar" });
-
-    params.push(req.params.id);
-    db.prepare(`UPDATE facturas SET ${updates.join(", ")} WHERE id = ?`).run(...params);
-
-    const actualizada = db.prepare("SELECT * FROM facturas WHERE id = ?").get(req.params.id);
-    res.json({ mensaje: "Factura ajustada", factura: actualizada });
+    res.json({ mensaje: "Factura ajustada", id: idreg, flete: nuevoFlete, fecha_vencimiento: nuevaFecha });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PATCH /facturas/:id/incluir — marcar/desmarcar para pago
+// PATCH /facturas/:id/corregir-proveedor — corregir manualmente el proveedor de una factura del ERP
+router.patch("/:id/corregir-proveedor", express.json(), (req, res) => {
+  try {
+    const { proveedor_nit, proveedor_nombre } = req.body;
+    const idreg = req.params.id;
+    if (!proveedor_nit && !proveedor_nombre) return res.status(400).json({ error: "proveedor_nit o proveedor_nombre requerido" });
+    db.prepare(`
+      INSERT INTO facturas_erp_ajustes (idreg, proveedor_nit_override, proveedor_nombre_override, updated_at)
+      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(idreg) DO UPDATE SET
+        proveedor_nit_override    = excluded.proveedor_nit_override,
+        proveedor_nombre_override = excluded.proveedor_nombre_override,
+        updated_at                = CURRENT_TIMESTAMP
+    `).run(idreg, proveedor_nit || null, proveedor_nombre || null);
+    res.json({ ok: true, id: idreg, proveedor_nit, proveedor_nombre });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /facturas/:id/incluir — marcar/desmarcar para pago (ERP: upsert en ajustes locales)
 router.patch("/:id/incluir", express.json(), (req, res) => {
   try {
     const { incluir, notas } = req.body;
-    const factura = db.prepare("SELECT * FROM facturas WHERE id = ?").get(req.params.id);
-    if (!factura) return res.status(404).json({ error: "Factura no encontrada" });
-
-    db.prepare("UPDATE facturas SET incluir_pago = ?, notas = COALESCE(?, notas) WHERE id = ?")
-      .run(incluir ? 1 : 0, notas ?? null, req.params.id);
-
-    res.json({
-      id: req.params.id,
-      incluir_pago: incluir ? 1 : 0,
-      notas: notas ?? factura.notas,
-    });
+    const idreg = req.params.id;
+    db.prepare(`
+      INSERT INTO facturas_erp_ajustes (idreg, incluir_pago, notas, updated_at)
+      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(idreg) DO UPDATE SET
+        incluir_pago = excluded.incluir_pago,
+        notas        = COALESCE(excluded.notas, notas),
+        updated_at   = CURRENT_TIMESTAMP
+    `).run(idreg, incluir ? 1 : 0, notas ?? null);
+    res.json({ id: idreg, incluir_pago: incluir ? 1 : 0 });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -274,8 +503,12 @@ router.patch("/incluir-lote", express.json(), (req, res) => {
   try {
     const { ids, incluir } = req.body;
     if (!ids?.length) return res.status(400).json({ error: "ids requerido" });
-    const stmt = db.prepare("UPDATE facturas SET incluir_pago = ? WHERE id = ?");
-    const txn = db.transaction(() => ids.forEach(id => stmt.run(incluir ? 1 : 0, id)));
+    const stmt = db.prepare(`
+      INSERT INTO facturas_erp_ajustes (idreg, incluir_pago, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(idreg) DO UPDATE SET incluir_pago = excluded.incluir_pago, updated_at = CURRENT_TIMESTAMP
+    `);
+    const txn = db.transaction(() => ids.forEach(id => stmt.run(String(id), incluir ? 1 : 0)));
     txn();
     res.json({ actualizadas: ids.length, incluir_pago: incluir ? 1 : 0 });
   } catch (err) {
