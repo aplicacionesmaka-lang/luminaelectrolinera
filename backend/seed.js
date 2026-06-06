@@ -22,29 +22,27 @@ const SAMPLE_USERS = [
 
 // Cada estación tiene exactamente 2 cargadores DC: uno CCS1 y uno CCS2
 const EQ = {
-  CCS1_120: { model: 'HT-ED-120-CCS1', maxPowerKw: 120, connectors: 1, connectorType: 'CCS1', chargerType: 'DC' },
-  CCS2_120: { model: 'HT-ED-120-CCS2', maxPowerKw: 120, connectors: 1, connectorType: 'CCS2', chargerType: 'DC' },
-  CCS1_60:  { model: 'HT-ED-060-CCS1', maxPowerKw: 60,  connectors: 1, connectorType: 'CCS1', chargerType: 'DC' },
-  CCS2_60:  { model: 'HT-ED-060-CCS2', maxPowerKw: 60,  connectors: 1, connectorType: 'CCS2', chargerType: 'DC' },
+  CCS1_7: { model: 'HT-EA-007-CCS1', maxPowerKw: 7, connectors: 1, connectorType: 'CCS1', chargerType: 'AC' },
+  CCS2_7: { model: 'HT-EA-007-CCS2', maxPowerKw: 7, connectors: 1, connectorType: 'CCS2', chargerType: 'AC' },
 };
 
 const OCCUPANCY = {
-  DC: { sessionsPerDay: 13, avgMinutes: 35, varianceMin: 10 },
+  AC: { sessionsPerDay: 4, avgMinutes: 120, varianceMin: 30 },
 };
 
 const STATIONS = [
-  { id: 'baq-buenavista', name: 'C.C. Buenavista',      city: 'Barranquilla', address: 'Cra. 53 #98-99, Barranquilla',       lat: 10.9985, lng: -74.8178,
-    chargers: [{ id: 'CP-BAQ-BV-01', ...EQ.CCS1_120 }, { id: 'CP-BAQ-BV-02', ...EQ.CCS2_120 }] },
-  { id: 'baq-via40',      name: 'Parque Vía 40',         city: 'Barranquilla', address: 'Vía 40 #36-135, Barranquilla',        lat: 10.9927, lng: -74.8050,
-    chargers: [{ id: 'CP-BAQ-V40-01', ...EQ.CCS1_120 }, { id: 'CP-BAQ-V40-02', ...EQ.CCS2_120 }] },
-  { id: 'baq-portal',     name: 'Portal del Prado',      city: 'Barranquilla', address: 'Cra. 54 #72-80, Barranquilla',        lat: 10.9830, lng: -74.8109,
-    chargers: [{ id: 'CP-BAQ-PP-01', ...EQ.CCS1_60 },  { id: 'CP-BAQ-PP-02', ...EQ.CCS2_60 }] },
-  { id: 'smt-arrecifes',  name: 'Playa Arrecifes',       city: 'Santa Marta',  address: 'Parque Tayrona Km 19, Santa Marta',   lat: 11.3230, lng: -74.0580,
-    chargers: [{ id: 'CP-SMT-ARR-01', ...EQ.CCS1_60 },  { id: 'CP-SMT-ARR-02', ...EQ.CCS2_60 }] },
-  { id: 'smt-oceanmak',   name: 'Ocean Mall',            city: 'Santa Marta',  address: 'Cra. 1C #26-40, Santa Marta',         lat: 11.2408, lng: -74.2119,
-    chargers: [{ id: 'CP-SMT-OCM-01', ...EQ.CCS1_120 }, { id: 'CP-SMT-OCM-02', ...EQ.CCS2_120 }] },
-  { id: 'smt-rodadero',   name: 'El Rodadero Centro',    city: 'Santa Marta',  address: 'Cra. 2 #6-19, El Rodadero',           lat: 11.2067, lng: -74.2336,
-    chargers: [{ id: 'CP-SMT-ROD-01', ...EQ.CCS1_120 }, { id: 'CP-SMT-ROD-02', ...EQ.CCS2_120 }] },
+  { id: 'baq-buenavista', name: 'C.C. Buenavista',   city: 'Barranquilla', address: 'Cra. 53 #98-99, Barranquilla',     lat: 10.9985, lng: -74.8178,
+    chargers: [{ id: 'CP-BAQ-BV-01', ...EQ.CCS1_7 }, { id: 'CP-BAQ-BV-02', ...EQ.CCS2_7 }] },
+  { id: 'baq-via40',      name: 'Parque Vía 40',    city: 'Barranquilla', address: 'Vía 40 #36-135, Barranquilla',    lat: 10.9927, lng: -74.8050,
+    chargers: [{ id: 'CP-BAQ-V40-01', ...EQ.CCS1_7 }, { id: 'CP-BAQ-V40-02', ...EQ.CCS2_7 }] },
+  { id: 'baq-portal',     name: 'Portal del Prado', city: 'Barranquilla', address: 'Cra. 54 #72-80, Barranquilla',    lat: 10.9830, lng: -74.8109,
+    chargers: [{ id: 'CP-BAQ-PP-01', ...EQ.CCS1_7 }, { id: 'CP-BAQ-PP-02', ...EQ.CCS2_7 }] },
+  { id: 'smt-arrecifes',  name: 'Playa Arrecifes',  city: 'Santa Marta',  address: 'Parque Tayrona Km 19, Santa Marta', lat: 11.3230, lng: -74.0580,
+    chargers: [{ id: 'CP-SMT-ARR-01', ...EQ.CCS1_7 }, { id: 'CP-SMT-ARR-02', ...EQ.CCS2_7 }] },
+  { id: 'smt-oceanmak',   name: 'Ocean Mall',       city: 'Santa Marta',  address: 'Cra. 1C #26-40, Santa Marta',      lat: 11.2408, lng: -74.2119,
+    chargers: [{ id: 'CP-SMT-OCM-01', ...EQ.CCS1_7 }, { id: 'CP-SMT-OCM-02', ...EQ.CCS2_7 }] },
+  { id: 'smt-rodadero',   name: 'El Rodadero',      city: 'Santa Marta',  address: 'Cra. 2 #6-19, El Rodadero',        lat: 11.2067, lng: -74.2336,
+    chargers: [{ id: 'CP-SMT-ROD-01', ...EQ.CCS1_7 }, { id: 'CP-SMT-ROD-02', ...EQ.CCS2_7 }] },
 ];
 
 const rnd    = (a, b) => Math.random() * (b - a) + a;

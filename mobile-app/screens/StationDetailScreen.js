@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ActivityIndicator,
-  Alert, ScrollView, RefreshControl, Modal,
+  Alert, ScrollView, RefreshControl, Linking,
 } from 'react-native';
 import { stations, chargers } from '../services/api';
 import { useAuth } from '../services/AuthContext';
@@ -178,11 +178,18 @@ export default function StationDetailScreen({ route, navigation }) {
       style={s.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#2563eb" />}
     >
-      {/* Header */}
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={s.backText}>← Volver</Text>
+      {/* Banner */}
+      <View style={s.banner}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backWrap}>
+          <Text style={s.backText}>←</Text>
         </TouchableOpacity>
+        <View style={s.bannerLogo}>
+          <Text style={s.bannerBolt}>⚡</Text>
+        </View>
+        <View>
+          <Text style={s.bannerTitle}>LUMINA</Text>
+          <Text style={s.bannerSub}>ELECTROLINERAS</Text>
+        </View>
         <View style={s.onlinePill}>
           <View style={[s.dot, { backgroundColor: station.online ? '#16a34a' : '#9ca3af' }]} />
           <Text style={{ color: station.online ? '#16a34a' : '#9ca3af', fontSize: 12, fontWeight: '600' }}>
@@ -199,8 +206,20 @@ export default function StationDetailScreen({ route, navigation }) {
         <View style={{ flex: 1 }}>
           <Text style={s.stationName}>{station.name}</Text>
           <Text style={s.stationAddress}>{station.address}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Reservations', { stationId: id, stationName: station.name, chargers: station.chargers })}>
-            <Text style={s.reserveLink}>Ir a la estación →</Text>
+          <TouchableOpacity
+            style={s.wazeBtn}
+            onPress={() => {
+              const lat = station.lat;
+              const lng = station.lng;
+              const wazeUrl  = `waze://?ll=${lat},${lng}&navigate=yes`;
+              const mapsUrl  = `https://maps.google.com/?q=${lat},${lng}`;
+              Linking.canOpenURL(wazeUrl)
+                .then(can => Linking.openURL(can ? wazeUrl : mapsUrl))
+                .catch(() => Linking.openURL(mapsUrl));
+            }}
+          >
+            <Text style={s.wazeIcon}>🚗</Text>
+            <Text style={s.wazeBtnText}>Cómo llegar en Waze</Text>
           </TouchableOpacity>
         </View>
         <View style={s.distBadge}>
@@ -373,15 +392,25 @@ export default function StationDetailScreen({ route, navigation }) {
 const s = StyleSheet.create({
   container:            { flex: 1, backgroundColor: '#f8fafc' },
   center:               { flex: 1, backgroundColor: '#f8fafc', justifyContent: 'center', alignItems: 'center' },
-  header:               { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56 },
-  backText:             { color: '#2563eb', fontSize: 16, fontWeight: '600' },
-  onlinePill:           { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+
+  /* Banner */
+  banner:               { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0a1628', paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14, gap: 10 },
+  backWrap:             { marginRight: 4 },
+  backText:             { color: '#00e5b4', fontSize: 22, fontWeight: '700' },
+  bannerLogo:           { width: 34, height: 34, borderRadius: 9, backgroundColor: '#00e5b4', justifyContent: 'center', alignItems: 'center' },
+  bannerBolt:           { fontSize: 18 },
+  bannerTitle:          { color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  bannerSub:            { color: '#00e5b4', fontSize: 8, fontWeight: '700', letterSpacing: 3 },
+  onlinePill:           { marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#1a2a3a', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
   dot:                  { width: 8, height: 8, borderRadius: 4 },
   stationCard:          { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff', marginHorizontal: 16, borderRadius: 16, padding: 18, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
   stationIconWrap:      { width: 46, height: 46, borderRadius: 23, backgroundColor: '#eff6ff', justifyContent: 'center', alignItems: 'center', marginRight: 14 },
   stationIcon:          { fontSize: 22 },
   stationName:          { color: '#1e293b', fontSize: 18, fontWeight: '800', marginBottom: 2 },
   stationAddress:       { color: '#94a3b8', fontSize: 13, marginBottom: 6 },
+  wazeBtn:              { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, backgroundColor: '#f0fdf4', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, alignSelf: 'flex-start', borderWidth: 1, borderColor: '#bbf7d0' },
+  wazeIcon:             { fontSize: 14 },
+  wazeBtnText:          { color: '#15803d', fontWeight: '700', fontSize: 13 },
   reserveLink:          { color: '#2563eb', fontSize: 13, fontWeight: '600' },
   distBadge:            { backgroundColor: '#eff6ff', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
   distText:             { color: '#2563eb', fontWeight: '800', fontSize: 16 },

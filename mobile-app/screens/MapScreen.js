@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, ScrollView, RefreshControl, StatusBar } from 'react-native';
 import * as Location from 'expo-location';
 import { stations } from '../services/api';
 import { useAuth } from '../services/AuthContext';
@@ -67,12 +67,22 @@ export default function MapScreen({ navigation }) {
 
   return (
     <View style={s.container}>
-      <View style={s.header}>
-        <Text style={s.title}>Electrolineras</Text>
+      <StatusBar barStyle="light-content" backgroundColor="#0a1628" />
+
+      {/* Banner Lumina */}
+      <View style={s.banner}>
+        <View style={s.bannerLogo}>
+          <Text style={s.bannerBolt}>⚡</Text>
+        </View>
+        <View>
+          <Text style={s.bannerTitle}>LUMINA</Text>
+          <Text style={s.bannerSub}>ELECTROLINERAS</Text>
+        </View>
         <TouchableOpacity style={s.balanceBadge} onPress={() => navigation.navigate('Topup')}>
           <Text style={s.balanceText}>💳 ${(user?.balance || 0).toLocaleString('es-CO')}</Text>
         </TouchableOpacity>
       </View>
+
 
       {/* Filtros */}
       <View style={s.filters}>
@@ -152,35 +162,42 @@ export default function MapScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: '#0f1117' },
-  center:       { flex: 1, backgroundColor: '#0f1117', justifyContent: 'center', alignItems: 'center' },
-  header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56 },
-  title:        { color: '#fff', fontSize: 24, fontWeight: '800' },
-  balanceBadge: { backgroundColor: '#1a1d27', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
-  balanceText:  { color: '#00e5b4', fontWeight: '700', fontSize: 13 },
-  filters:      { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  chip:         { backgroundColor: '#1a1d27', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8 },
-  chipActive:   { backgroundColor: '#00e5b4' },
-  chipText:     { color: '#888', fontWeight: '600', fontSize: 13 },
+  container:      { flex: 1, backgroundColor: '#0f1117' },
+  center:         { flex: 1, backgroundColor: '#0f1117', justifyContent: 'center', alignItems: 'center' },
+
+  /* Banner superior */
+  banner:         { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0a1628', paddingHorizontal: 20, paddingTop: 52, paddingBottom: 14, gap: 12 },
+  bannerLogo:     { width: 38, height: 38, borderRadius: 10, backgroundColor: '#00e5b4', justifyContent: 'center', alignItems: 'center' },
+  bannerBolt:     { fontSize: 20 },
+  bannerTitle:    { color: '#fff', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  bannerSub:      { color: '#00e5b4', fontSize: 9, fontWeight: '700', letterSpacing: 3 },
+  balanceBadge:   { marginLeft: 'auto', backgroundColor: '#1a2a3a', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
+  balanceText:    { color: '#00e5b4', fontWeight: '700', fontSize: 13 },
+
+  filters:        { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  chip:           { backgroundColor: '#1a1d27', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8 },
+  chipActive:     { backgroundColor: '#00e5b4' },
+  chipText:       { color: '#888', fontWeight: '600', fontSize: 13 },
   chipTextActive: { color: '#0f1117' },
-  locBtn:       { backgroundColor: '#1a1d27', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginRight: 16 },
-  locText:      { color: '#00e5b4', fontWeight: '600', fontSize: 13 },
-  card:         { backgroundColor: '#1a1d27', borderRadius: 16, padding: 18, marginBottom: 14 },
-  cardTop:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
-  stationName:  { color: '#fff', fontSize: 17, fontWeight: '700' },
-  dot:          { width: 8, height: 8, borderRadius: 4 },
-  onlinePill:   { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
-  onlineText:   { fontSize: 11, fontWeight: '600' },
-  dist:         { color: '#00e5b4', fontSize: 12, fontWeight: '700' },
-  cityTag:      { color: '#00e5b4', fontSize: 12, fontWeight: '600', marginTop: 2 },
-  address:      { color: '#888', fontSize: 13, marginBottom: 12 },
-  connectors:   { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
-  connector:    { borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center' },
-  connText:     { fontWeight: '800', fontSize: 14 },
-  connType2:    { fontSize: 10, marginTop: 2, fontWeight: '600' },
-  cardFooter:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  price:        { color: '#555', fontSize: 12 },
-  availPill:    { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  availText:    { fontSize: 12, fontWeight: '700' },
-  empty:        { color: '#888', textAlign: 'center', marginTop: 60 },
+  locBtn:         { backgroundColor: '#1a1d27', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginRight: 16 },
+  locText:        { color: '#00e5b4', fontWeight: '600', fontSize: 13 },
+
+  card:           { backgroundColor: '#1a1d27', borderRadius: 16, padding: 18, marginBottom: 14 },
+  cardTop:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
+  stationName:    { color: '#fff', fontSize: 17, fontWeight: '700' },
+  dot:            { width: 8, height: 8, borderRadius: 4 },
+  onlinePill:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
+  onlineText:     { fontSize: 11, fontWeight: '600' },
+  dist:           { color: '#00e5b4', fontSize: 12, fontWeight: '700' },
+  cityTag:        { color: '#00e5b4', fontSize: 12, fontWeight: '600', marginTop: 2 },
+  address:        { color: '#888', fontSize: 13, marginBottom: 12 },
+  connectors:     { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
+  connector:      { borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center' },
+  connText:       { fontWeight: '800', fontSize: 14 },
+  connType2:      { fontSize: 10, marginTop: 2, fontWeight: '600' },
+  cardFooter:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  price:          { color: '#555', fontSize: 12 },
+  availPill:      { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  availText:      { fontSize: 12, fontWeight: '700' },
+  empty:          { color: '#888', textAlign: 'center', marginTop: 60 },
 });
