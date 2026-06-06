@@ -61,8 +61,23 @@ async function initDb() {
       status          TEXT DEFAULT 'Active',
       kwh_used        NUMERIC DEFAULT 0,
       cost            NUMERIC DEFAULT 0,
+      parking_fee     NUMERIC DEFAULT 0,
       started_at      TIMESTAMPTZ,
-      ended_at        TIMESTAMPTZ
+      ended_at        TIMESTAMPTZ,
+      disconnected_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS reservations (
+      id              TEXT PRIMARY KEY,
+      user_id         TEXT NOT NULL,
+      station_id      TEXT NOT NULL,
+      charge_point_id TEXT NOT NULL,
+      reserved_date   DATE NOT NULL,
+      time_slot       INT NOT NULL,
+      duration_hours  INT DEFAULT 1,
+      status          TEXT DEFAULT 'Confirmed',
+      created_at      TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(charge_point_id, reserved_date, time_slot)
     );
   `);
   console.log('✅ PostgreSQL tables ready');

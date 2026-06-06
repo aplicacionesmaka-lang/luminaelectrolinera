@@ -5,13 +5,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
 import { useAuth } from '../services/AuthContext';
-import LoginScreen        from '../screens/LoginScreen';
-import RegisterScreen     from '../screens/RegisterScreen';
-import MapScreen          from '../screens/MapScreen';
+import LoginScreen         from '../screens/LoginScreen';
+import RegisterScreen      from '../screens/RegisterScreen';
+import MapScreen           from '../screens/MapScreen';
 import StationDetailScreen from '../screens/StationDetailScreen';
-import HistoryScreen      from '../screens/HistoryScreen';
-import ProfileScreen      from '../screens/ProfileScreen';
-import TopupScreen        from '../screens/TopupScreen';
+import ReservationScreen   from '../screens/ReservationScreen';
+import HistoryScreen       from '../screens/HistoryScreen';
+import ProfileScreen       from '../screens/ProfileScreen';
+import TopupScreen         from '../screens/TopupScreen';
+import QRScreen            from '../screens/QRScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
@@ -21,16 +23,16 @@ function HomeTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarStyle:       { backgroundColor: '#1a1d27', borderTopColor: '#0f1117', height: 60, paddingBottom: 8 },
-        tabBarActiveTintColor:   '#00e5b4',
-        tabBarInactiveTintColor: '#555',
+        tabBarStyle:             { backgroundColor: '#fff', borderTopColor: '#e2e8f0', height: 64, paddingBottom: 10 },
+        tabBarActiveTintColor:   '#2563eb',
+        tabBarInactiveTintColor: '#94a3b8',
         tabBarLabel: ({ color }) => {
           const labels = { Map: 'Estaciones', History: 'Historial', Profile: 'Perfil' };
           return <Text style={{ color, fontSize: 11, fontWeight: '600' }}>{labels[route.name]}</Text>;
         },
         tabBarIcon: ({ color, size }) => {
           const icons = { Map: '⚡', History: '🕐', Profile: '👤' };
-          return <Text style={{ fontSize: size - 4 }}>{icons[route.name]}</Text>;
+          return <Text style={{ fontSize: size - 2 }}>{icons[route.name]}</Text>;
         },
       })}
     >
@@ -53,7 +55,9 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="HomeTabs"      component={HomeTabs} />
             <Stack.Screen name="StationDetail" component={StationDetailScreen} />
+            <Stack.Screen name="Reservations"  component={ReservationScreen} />
             <Stack.Screen name="Topup"         component={TopupScreen} />
+            <Stack.Screen name="QR"            component={QRScreen} />
           </>
         ) : (
           <>

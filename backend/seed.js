@@ -20,23 +20,31 @@ const SAMPLE_USERS = [
   { name: 'Sebastián Ruiz', email: 'seba.ruiz@test.com',     password: 'lumina123', targetKwh: 8,   city: 'Barranquilla' },
 ];
 
+// Cada estación tiene exactamente 2 cargadores DC: uno CCS1 y uno CCS2
 const EQ = {
-  AC7:  { model: 'HT-EA-007-C-D', maxPowerKw: 7,  connectors: 1, connectorType: 'Type 2', chargerType: 'AC' },
-  DC60: { model: 'HT-ED-060-C',   maxPowerKw: 60, connectors: 2, connectorType: 'CCS2',   chargerType: 'DC' },
+  CCS1_120: { model: 'HT-ED-120-CCS1', maxPowerKw: 120, connectors: 1, connectorType: 'CCS1', chargerType: 'DC' },
+  CCS2_120: { model: 'HT-ED-120-CCS2', maxPowerKw: 120, connectors: 1, connectorType: 'CCS2', chargerType: 'DC' },
+  CCS1_60:  { model: 'HT-ED-060-CCS1', maxPowerKw: 60,  connectors: 1, connectorType: 'CCS1', chargerType: 'DC' },
+  CCS2_60:  { model: 'HT-ED-060-CCS2', maxPowerKw: 60,  connectors: 1, connectorType: 'CCS2', chargerType: 'DC' },
 };
 
 const OCCUPANCY = {
-  AC: { sessionsPerDay: 4,  avgMinutes: 120, varianceMin: 30 },
-  DC: { sessionsPerDay: 13, avgMinutes: 35,  varianceMin: 10 },
+  DC: { sessionsPerDay: 13, avgMinutes: 35, varianceMin: 10 },
 };
 
 const STATIONS = [
-  { id: 'baq-buenavista', name: 'C.C. Buenavista',  city: 'Barranquilla', address: 'Cra. 53 #98-99, Barranquilla', lat: 10.9985, lng: -74.8178, chargers: [{ id: 'CP-BAQ-BV-01', ...EQ.AC7 }, { id: 'CP-BAQ-BV-02', ...EQ.AC7 }] },
-  { id: 'baq-via40',      name: 'Parque Vía 40',     city: 'Barranquilla', address: 'Vía 40 #36-135, Barranquilla', lat: 10.9927, lng: -74.8050, chargers: [{ id: 'CP-BAQ-V40-01', ...EQ.DC60 }] },
-  { id: 'baq-portal',     name: 'Portal del Prado',  city: 'Barranquilla', address: 'Cra. 54 #72-80, Barranquilla', lat: 10.9830, lng: -74.8109, chargers: [{ id: 'CP-BAQ-PP-01', ...EQ.AC7 }] },
-  { id: 'smt-arrecifes',  name: 'Arrecifes',         city: 'Santa Marta',  address: 'Parque Tayrona, Santa Marta',  lat: 11.3230, lng: -74.0580, chargers: [{ id: 'CP-SMT-ARR-01', ...EQ.AC7 }] },
-  { id: 'smt-oceanmak',   name: 'Ocean Mall',        city: 'Santa Marta',  address: 'Cra. 1C #26-40, Santa Marta', lat: 11.2408, lng: -74.2119, chargers: [{ id: 'CP-SMT-OCM-01', ...EQ.AC7 }] },
-  { id: 'smt-rodadero',   name: 'Rodadero',          city: 'Santa Marta',  address: 'Cra. 2 #6-19, El Rodadero',   lat: 11.2067, lng: -74.2336, chargers: [{ id: 'CP-SMT-ROD-01', ...EQ.DC60 }] },
+  { id: 'baq-buenavista', name: 'C.C. Buenavista',      city: 'Barranquilla', address: 'Cra. 53 #98-99, Barranquilla',       lat: 10.9985, lng: -74.8178,
+    chargers: [{ id: 'CP-BAQ-BV-01', ...EQ.CCS1_120 }, { id: 'CP-BAQ-BV-02', ...EQ.CCS2_120 }] },
+  { id: 'baq-via40',      name: 'Parque Vía 40',         city: 'Barranquilla', address: 'Vía 40 #36-135, Barranquilla',        lat: 10.9927, lng: -74.8050,
+    chargers: [{ id: 'CP-BAQ-V40-01', ...EQ.CCS1_120 }, { id: 'CP-BAQ-V40-02', ...EQ.CCS2_120 }] },
+  { id: 'baq-portal',     name: 'Portal del Prado',      city: 'Barranquilla', address: 'Cra. 54 #72-80, Barranquilla',        lat: 10.9830, lng: -74.8109,
+    chargers: [{ id: 'CP-BAQ-PP-01', ...EQ.CCS1_60 },  { id: 'CP-BAQ-PP-02', ...EQ.CCS2_60 }] },
+  { id: 'smt-arrecifes',  name: 'Playa Arrecifes',       city: 'Santa Marta',  address: 'Parque Tayrona Km 19, Santa Marta',   lat: 11.3230, lng: -74.0580,
+    chargers: [{ id: 'CP-SMT-ARR-01', ...EQ.CCS1_60 },  { id: 'CP-SMT-ARR-02', ...EQ.CCS2_60 }] },
+  { id: 'smt-oceanmak',   name: 'Ocean Mall',            city: 'Santa Marta',  address: 'Cra. 1C #26-40, Santa Marta',         lat: 11.2408, lng: -74.2119,
+    chargers: [{ id: 'CP-SMT-OCM-01', ...EQ.CCS1_120 }, { id: 'CP-SMT-OCM-02', ...EQ.CCS2_120 }] },
+  { id: 'smt-rodadero',   name: 'El Rodadero Centro',    city: 'Santa Marta',  address: 'Cra. 2 #6-19, El Rodadero',           lat: 11.2067, lng: -74.2336,
+    chargers: [{ id: 'CP-SMT-ROD-01', ...EQ.CCS1_120 }, { id: 'CP-SMT-ROD-02', ...EQ.CCS2_120 }] },
 ];
 
 const rnd    = (a, b) => Math.random() * (b - a) + a;
@@ -119,7 +127,7 @@ async function seed() {
   console.log('🌱 Seed Lumina (PostgreSQL)\n');
 
   // Limpiar
-  await pool.query('TRUNCATE sessions, chargers, stations, users RESTART IDENTITY CASCADE');
+  await pool.query('TRUNCATE reservations, sessions, chargers, stations, users RESTART IDENTITY CASCADE');
   console.log('🗑  Tablas limpias');
 
   // Admin user
@@ -175,7 +183,7 @@ async function seed() {
     const sess = generateUserSessions(u.uid, u.targetKwh, allChargers);
     await insertSessions(sess);
     totSess += sess.length;
-    const lvl = u.targetKwh >= 500 ? '💎 Platino' : u.targetKwh >= 200 ? '🥇 Oro' : u.targetKwh >= 50 ? '🥈 Plata' : '🥉 Bronce';
+    const lvl = u.targetKwh >= 500 ? '💎' : u.targetKwh >= 200 ? '🥇' : u.targetKwh >= 50 ? '🥈' : '🥉';
     console.log(`  ${lvl.padEnd(12)} ${u.name.padEnd(20)} ~${u.targetKwh} kWh → ${sess.length} sesiones`);
   }
 

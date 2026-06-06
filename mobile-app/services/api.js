@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.11:4000/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://api.lumina.69.62.64.153.nip.io/api';
 
 const api = axios.create({ baseURL: BASE_URL, timeout: 15000 });
 
@@ -44,6 +44,13 @@ export const sessions = {
 export const payments = {
   topup:   (amount, returnUrl) => api.post('/payments/topup', { amount, returnUrl }),
   history: ()                  => api.get('/payments/history'),
+};
+
+export const reservations = {
+  availability: (chargePointId, date) => api.get('/reservations/availability', { params: { chargePointId, date } }),
+  my:           ()                    => api.get('/reservations/my'),
+  create:       (data)                => api.post('/reservations', data),
+  cancel:       (id)                  => api.delete(`/reservations/${id}`),
 };
 
 export default api;
