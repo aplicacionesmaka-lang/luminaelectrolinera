@@ -2,11 +2,66 @@ const { pool } = require('../utils/db');
 
 async function myHistory(req, res) {
   try {
-    const { rows } = await pool.query(
-      `SELECT * FROM sessions WHERE user_id=$1 ORDER BY started_at DESC LIMIT 50`,
-      [req.user.uid]
-    );
-    res.json(rows.map(s => ({ ...s, chargePointId: s.charge_point_id, kwhUsed: parseFloat(s.kwh_used), cost: parseFloat(s.cost), startedAt: s.started_at, endedAt: s.ended_at })));
+    const { from, to } = req.query;
+    let q = `SELECT s.*, st.name as station_name, st.city as station_city, st.address as station_address
+             FROM sessions s
+             LEFT JOIN stations st ON st.id = s.station_id
+             WHERE s.user_id=$1 AND s.status='Completed'`;
+    const params = [req.user.uid];
+    if (from) { params.push(from); q += ` AND s.started_at >= $${params.length}`; }
+    if (to)   { params.push(to);   q += ` AND s.started_at <= $${params.length}`; }
+    q += ' ORDER BY s.started_at DESC LIMIT 200';
+    const { rows } = await pool.query(q, params);
+    res.json(rows.map(s => ({
+      ...s,
+      kwh_used: parseFloat(s.kwh_used),
+      cost:     parseFloat(s.cost),
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function myStats(req, res) {
+  try {
+    // Por mes
+    const { rows: monthly } = await pool.query(`
+      SELECT TO_CHAR(started_at,'YYYY-MM') as month,
+             COUNT(*)::int                as sessions,
+             COALESCE(SUM(kwh_used),0)::numeric as kwh,
+             COALESCE(SUM(cost),0)::numeric     as cost
+      FROM sessions
+      WHERE user_id=$1 AND status='Completed'
+      GROUP BY month ORDER BY month DESC LIMIT 12
+    `, [req.user.uid]);
+
+    // Por estación
+    const { rows: byStation } = await pool.query(`
+      SELECT st.name as station_name, st.city,
+             COUNT(s.id)::int                as sessions,
+             COALESCE(SUM(s.kwh_used),0)::numeric as kwh,
+             COALESCE(SUM(s.cost),0)::numeric     as cost
+      FROM sessions s
+      LEFT JOIN stations st ON st.id = s.station_id
+      WHERE s.user_id=$1 AND s.status='Completed'
+      GROUP BY st.name, st.city
+      ORDER BY sessions DESC LIMIT 6
+    `, [req.user.uid]);
+
+    // Totales
+    const { rows: totals } = await pool.query(`
+      SELECT COUNT(*)::int as sessions,
+             COALESCE(SUM(kwh_used),0)::numeric as kwh,
+             COALESCE(SUM(cost),0)::numeric     as cost,
+             COALESCE(AVG(EXTRACT(EPOCH FROM (ended_at - started_at))/60),0)::numeric as avg_minutes
+      FROM sessions WHERE user_id=$1 AND status='Completed'
+    `, [req.user.uid]);
+
+    res.json({
+      monthly: monthly.map(m => ({ ...m, kwh: parseFloat(m.kwh), cost: parseFloat(m.cost) })),
+      byStation: byStation.map(s => ({ ...s, kwh: parseFloat(s.kwh), cost: parseFloat(s.cost) })),
+      totals: { ...totals[0], kwh: parseFloat(totals[0].kwh), cost: parseFloat(totals[0].cost), avg_minutes: parseFloat(totals[0].avg_minutes) },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -45,4 +100,4 @@ async function summary(_req, res) {
   }
 }
 
-module.exports = { myHistory, getById, listAll, summary };
+module.exports = { myHistory, myStats, getById, listAll, summary };

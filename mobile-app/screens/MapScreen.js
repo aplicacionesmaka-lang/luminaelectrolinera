@@ -19,6 +19,7 @@ export default function MapScreen({ navigation }) {
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [cityFilter, setCityFilter] = useState('');
+  const [connFilter, setConnFilter] = useState(''); // '' | 'CCS1' | 'CCS2'
   const [cities,     setCities]     = useState([]);
   const [location,   setLocation]   = useState(null);
   const [locating,   setLocating]   = useState(false);
@@ -40,6 +41,11 @@ export default function MapScreen({ navigation }) {
 
   useEffect(() => {
     let list = cityFilter ? data.filter(s => s.city === cityFilter) : data;
+    if (connFilter) {
+      list = list.filter(s => (s.chargers || []).some(c =>
+        (c.connector_type || c.connectorType || '') === connFilter
+      ));
+    }
     if (location) {
       list = [...list].sort((a, b) =>
         distKm(location.lat, location.lng, a.lat, a.lng) -
@@ -47,7 +53,7 @@ export default function MapScreen({ navigation }) {
       );
     }
     setFiltered(list);
-  }, [cityFilter, data, location]);
+  }, [cityFilter, connFilter, data, location]);
 
   async function handleLocate() {
     setLocating(true);
@@ -104,6 +110,20 @@ export default function MapScreen({ navigation }) {
               : <Text style={s.locText}>{location ? '📍 Cerca' : '📍 Ubícame'}</Text>}
           </TouchableOpacity>
         </ScrollView>
+      </View>
+
+      {/* Filtro tipo de conector */}
+      <View style={s.connFilters}>
+        <Text style={s.connFiltersLabel}>Conector:</Text>
+        {[['', 'Todos'], ['CCS1', 'CCS1'], ['CCS2', 'CCS2']].map(([val, label]) => (
+          <TouchableOpacity
+            key={val}
+            style={[s.connChip, connFilter === val && s.connChipActive]}
+            onPress={() => setConnFilter(val)}
+          >
+            <Text style={[s.connChipText, connFilter === val && s.connChipTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <FlatList
@@ -199,5 +219,11 @@ const s = StyleSheet.create({
   price:          { color: '#555', fontSize: 12 },
   availPill:      { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   availText:      { fontSize: 12, fontWeight: '700' },
+  connFilters:     { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 8, gap: 8 },
+  connFiltersLabel:{ color: '#888', fontSize: 12, fontWeight: '600' },
+  connChip:        { borderWidth: 1.5, borderColor: '#2a3040', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
+  connChipActive:  { backgroundColor: '#00e5b4', borderColor: '#00e5b4' },
+  connChipText:    { color: '#888', fontWeight: '700', fontSize: 13 },
+  connChipTextActive: { color: '#0f1117' },
   empty:          { color: '#888', textAlign: 'center', marginTop: 60 },
 });

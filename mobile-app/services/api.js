@@ -37,8 +37,17 @@ export const chargers = {
 };
 
 export const sessions = {
-  myHistory: () => api.get('/sessions/my'),
-  getById:   (id) => api.get(`/sessions/${id}`),
+  myHistory: (from, to) => api.get('/sessions/my', { params: { from, to } }),
+  myStats:   ()         => api.get('/sessions/mystats'),
+  getById:   (id)       => api.get(`/sessions/${id}`),
+};
+
+export const paymentMethods = {
+  list:        ()    => api.get('/payment-methods'),
+  add:         (d)   => api.post('/payment-methods', d),
+  setFavorite: (id)  => api.patch(`/payment-methods/${id}/favorite`),
+  toggle:      (id)  => api.patch(`/payment-methods/${id}/toggle`),
+  remove:      (id)  => api.delete(`/payment-methods/${id}`),
 };
 
 export const payments = {
