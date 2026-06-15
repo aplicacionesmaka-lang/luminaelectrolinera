@@ -139,14 +139,14 @@ export default function StationsPage() {
         </div>
       </div>
 
-      {/* Nuevos equipos detectados */}
+      {/* Equipos pendientes de instalación */}
       {unassigned.length > 0 && tab === 'list' && (
         <div style={{ background: '#fffbeb', border: '2px solid #f59e0b', borderRadius: 18, padding: 24, marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <span style={{ fontSize: 22 }}>⚡</span>
             <div>
-              <div style={{ color: '#92400e', fontWeight: 800, fontSize: 16 }}>Nuevos equipos detectados ({unassigned.length})</div>
-              <div style={{ color: '#b45309', fontSize: 12 }}>Estos cargadores se conectaron por OCPP y aún no tienen estación asignada</div>
+              <div style={{ color: '#92400e', fontWeight: 800, fontSize: 16 }}>Equipos pendientes de instalación ({unassigned.length})</div>
+              <div style={{ color: '#b45309', fontSize: 12 }}>Pre-configurados o detectados por OCPP — asigna la estación cuando se instalen</div>
             </div>
           </div>
           <div style={{ display: 'grid', gap: 14 }}>
@@ -216,17 +216,20 @@ export default function StationsPage() {
       {/* Nuevo cargador */}
       {tab === 'charger' && (
         <div style={{ background: '#fff', borderRadius: 16, padding: 28, marginBottom: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-          <h2 style={{ color: T.text, fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Nuevo cargador</h2>
+          <h2 style={{ color: T.text, fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Pre-configurar cargador</h2>
+          <p style={{ color: T.textMuted, fontSize: 13, marginBottom: 20 }}>
+            Registra el equipo ahora con su ID y modelo. La estación se puede asignar después cuando ya esté instalado.
+          </p>
           <form onSubmit={handleCreateCharger} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div style={{ gridColumn:'1/-1' }}>
-              <label style={lbl}>Estación</label>
-              <select required value={chForm.stationId} onChange={setCh('stationId')} style={{ ...sel, width:'100%' }}>
-                <option value="">Selecciona estación</option>
-                {data.map(s => <option key={s.id} value={s.id}>{s.name} — {s.city}</option>)}
-              </select>
+              <label style={lbl}>ChargePoint ID (único — este ID va en el equipo físico) *</label>
+              <input placeholder="Ej: CP-BOG-001" required value={chForm.chargePointId} onChange={setCh('chargePointId')} style={{ ...inp, width:'100%' }} />
+              <div style={{ color: '#64748b', fontSize: 11, marginTop: 4 }}>
+                URL OCPP para este equipo: <code style={{ background: '#f1f5f9', padding: '1px 6px', borderRadius: 4 }}>ws://api.lumina.69.62.64.153.nip.io/ocpp/{chForm.chargePointId || '{ID}'}</code>
+              </div>
             </div>
             <div style={{ gridColumn:'1/-1' }}>
-              <label style={lbl}>Modelo de equipo</label>
+              <label style={lbl}>Modelo de equipo *</label>
               <select required value={chForm.model} onChange={setCh('model')} style={{ ...sel, width:'100%' }}>
                 <option value="">Selecciona el equipo</option>
                 {EQUIPMENT_CATALOG.map(eq => <option key={eq.model} value={eq.model}>{eq.label}</option>)}
@@ -240,11 +243,14 @@ export default function StationsPage() {
               </div>
             )}
             <div style={{ gridColumn:'1/-1' }}>
-              <label style={lbl}>ChargePoint ID (único)</label>
-              <input placeholder="Ej: CP-BOG-001" required value={chForm.chargePointId} onChange={setCh('chargePointId')} style={{ ...inp, width:'100%' }} />
+              <label style={lbl}>Estación (opcional — asignar después si aún no se sabe)</label>
+              <select value={chForm.stationId} onChange={setCh('stationId')} style={{ ...sel, width:'100%' }}>
+                <option value="">Sin asignar por ahora</option>
+                {data.map(s => <option key={s.id} value={s.id}>{s.name} — {s.city}</option>)}
+              </select>
             </div>
             {chError && <div style={{ color: T.danger, fontSize: 13, gridColumn:'1/-1' }}>{chError}</div>}
-            <button type="submit" disabled={savingCh} style={{ ...btnPrimary, gridColumn:'1/-1' }}>{savingCh ? 'Guardando...' : '+ Agregar cargador'}</button>
+            <button type="submit" disabled={savingCh} style={{ ...btnPrimary, gridColumn:'1/-1' }}>{savingCh ? 'Guardando...' : '+ Pre-configurar cargador'}</button>
           </form>
         </div>
       )}

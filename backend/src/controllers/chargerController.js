@@ -17,9 +17,9 @@ async function getById(req, res) {
 
 async function create(req, res) {
   try {
-    const { stationId, chargePointId, connectors = 1, maxPowerKw = 120, model = '', connectorType = 'CCS2', chargerType = 'DC' } = req.body;
-    if (!stationId || !chargePointId)
-      return res.status(400).json({ error: 'stationId y chargePointId son requeridos' });
+    const { stationId = null, chargePointId, connectors = 1, maxPowerKw = 120, model = '', connectorType = 'CCS2', chargerType = 'DC' } = req.body;
+    if (!chargePointId)
+      return res.status(400).json({ error: 'chargePointId es requerido' });
 
     const { rows } = await pool.query(
       `INSERT INTO chargers (id, charge_point_id, station_id, model, connectors, connector_type, charger_type, max_power_kw, status)
