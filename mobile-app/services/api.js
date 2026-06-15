@@ -51,8 +51,9 @@ export const paymentMethods = {
 };
 
 export const payments = {
-  topup:   (amount, returnUrl) => api.post('/payments/topup', { amount, returnUrl }),
-  history: ()                  => api.get('/payments/history'),
+  topup:       (amount, provider, returnUrl) => api.post('/payments/topup', { amount, provider, returnUrl }),
+  history:     ()                            => api.get('/payments/history'),
+  checkStatus: (reference)                  => api.get(`/payments/status/${reference}`),
 };
 
 export const reservations = {

@@ -16,8 +16,6 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(rateLimit({ windowMs: 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
-// Raw body for Stripe webhook — must come before express.json()
-app.use('/api/payments/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 app.use('/api/users',    require('./routes/users'));

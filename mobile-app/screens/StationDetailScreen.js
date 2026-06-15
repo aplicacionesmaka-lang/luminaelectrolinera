@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ActivityIndicator,
-  Alert, ScrollView, RefreshControl, Linking,
+  Alert, ScrollView, RefreshControl, Linking, Modal,
 } from 'react-native';
 import { stations, chargers } from '../services/api';
 import { useAuth } from '../services/AuthContext';
@@ -87,7 +87,13 @@ export default function StationDetailScreen({ route, navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [starting,   setStarting]   = useState(null);
   const [stopping,   setStopping]   = useState(null);
-  const [selected,   setSelected]   = useState(null); // cpId seleccionado
+  const [selected,   setSelected]   = useState(null);
+  const [chargeModal,  setChargeModal]  = useState(null);
+  const [chargeMode,   setChargeMode]   = useState('full');
+  const [chargeValue,  setChargeValue]  = useState(30);
+  const [connecting,   setConnecting]   = useState(null);
+  const connectingRef = useRef(null);
+  const connectingCpId = useRef(null);
   const now = useNow();
 
   const load = useCallback(async () => {
@@ -98,7 +104,7 @@ export default function StationDetailScreen({ route, navigation }) {
       await Promise.all(
         (st.chargers || []).map(async c => {
           const cpId = c.charge_point_id || c.chargePointId || c.id;
-          try { map[cpId] = await chargers.activeSession(cpId); } catch {}
+          try { map[cpId] = await chargers.activeSession(cpId); } catch (_e) {}
         })
       );
       setSessionMap(map);
@@ -116,34 +122,52 @@ export default function StationDetailScreen({ route, navigation }) {
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     if (Object.keys(sessionMap).length === 0) return;
-    const t = setInterval(load, 30000);
+    const t = setInterval(load, 8000);
     return () => clearInterval(t);
   }, [sessionMap, load]);
 
-  async function handleStart(cpId) {
-    Alert.alert(
-      '⚡ Iniciar carga',
-      `Al terminar la carga tienes ${PARKING_GRACE_MIN} min para desconectar y retirar tu vehículo.\n\nSi permaneces estacionado después de ese tiempo se cobrará $${PARKING_FEE_PER_MIN.toLocaleString('es-CO')} COP por cada minuto adicional.\n\n¿Deseas continuar?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Sí, iniciar',
-          onPress: async () => {
-            setStarting(cpId);
-            try {
-              await chargers.start(cpId, 1);
-              await refreshBalance();
-              await load();
-              Alert.alert('✅ Carga iniciada', 'Tu sesión ha comenzado. Te notificaremos al finalizar.');
-            } catch (err) {
-              Alert.alert('Error', err.error || 'No se pudo iniciar la carga');
-            } finally {
-              setStarting(null);
-            }
-          },
-        },
-      ]
-    );
+  function handleStart(cpId) {
+    setChargeMode('full');
+    setChargeValue(30);
+    setChargeModal(cpId);
+  }
+
+  function confirmStart(cpId) {
+    setChargeModal(null);
+    connectingCpId.current = cpId;
+    setConnecting({ cpId, countdown: 60 });
+    let secs = 60;
+    if (connectingRef.current) clearInterval(connectingRef.current);
+    connectingRef.current = setInterval(() => {
+      secs -= 1;
+      if (secs <= 0) {
+        clearInterval(connectingRef.current);
+        connectingRef.current = null;
+        setConnecting(null);
+        doStartCharge(connectingCpId.current);
+      } else {
+        setConnecting({ cpId: connectingCpId.current, countdown: secs });
+      }
+    }, 1000);
+  }
+
+  function cancelConnecting() {
+    if (connectingRef.current) clearInterval(connectingRef.current);
+    connectingRef.current = null;
+    setConnecting(null);
+  }
+
+  async function doStartCharge(cpId) {
+    setStarting(cpId);
+    try {
+      await chargers.start(cpId, 1);
+      await refreshBalance();
+      await load();
+    } catch (err) {
+      Alert.alert('Error al iniciar', err.error || err.message || JSON.stringify(err));
+    } finally {
+      setStarting(null);
+    }
   }
 
   async function handleStop(cpId, transactionId) {
@@ -166,6 +190,15 @@ export default function StationDetailScreen({ route, navigation }) {
   if (loading) return <View style={s.center}><ActivityIndicator color="#2563eb" size="large" /></View>;
   if (!station) return <View style={s.center}><Text style={{ color: '#888' }}>Estación no encontrada</Text></View>;
 
+  const pricePerKwh = parseFloat(station.price_per_kwh || 1800);
+  const modalCharger = chargeModal ? (station.chargers || []).find(c => (c.charge_point_id || c.chargePointId || c.id) === chargeModal) : null;
+  const modalPowerKw = modalCharger ? (modalCharger.max_power_kw || modalCharger.maxPowerKw || 7) : 7;
+  const estimatedCost = chargeMode === 'kwh'
+    ? Math.round(chargeValue * pricePerKwh)
+    : chargeMode === 'time'
+    ? Math.round((chargeValue / 60) * modalPowerKw * pricePerKwh)
+    : null;
+
   const available = (station.chargers || []).filter(c => c.status === 'Available').length;
   const total     = (station.chargers || []).length;
 
@@ -174,6 +207,133 @@ export default function StationDetailScreen({ route, navigation }) {
   );
 
   return (
+    <View style={{ flex: 1 }}>
+    {/* Modal configuración de carga */}
+    {/* Pantalla de conexión pendiente */}
+    <Modal visible={!!connecting} transparent animationType="fade" onRequestClose={cancelConnecting}>
+      <View style={cx.overlay}>
+        <View style={cx.card}>
+          {/* Icono animado */}
+          <View style={cx.iconCircle}>
+            <Text style={cx.iconText}>🔌</Text>
+          </View>
+
+          {/* Contador */}
+          <View style={cx.countdownWrap}>
+            <Text style={cx.countdownNum}>{connecting?.countdown ?? 60}</Text>
+            <Text style={cx.countdownLabel}>segundos</Text>
+          </View>
+
+          {/* Barra de progreso */}
+          <View style={cx.progressBg}>
+            <View style={[cx.progressFill, { width: `${((60 - (connecting?.countdown ?? 60)) / 60) * 100}%` }]} />
+          </View>
+
+          <Text style={cx.title}>Conecta tu vehículo</Text>
+          <Text style={cx.sub}>Inserta el conector en tu vehículo ahora.{'\n'}La carga iniciará automáticamente cuando el cargador detecte la conexión en modo seguro.</Text>
+
+          <View style={cx.steps}>
+            {[
+              ['1', 'Toma el conector del cargador'],
+              ['2', 'Insértalo en el puerto de carga de tu vehículo'],
+              ['3', 'Espera la confirmación de conexión segura'],
+            ].map(([n, t]) => (
+              <View key={n} style={cx.step}>
+                <View style={cx.stepNum}><Text style={cx.stepNumTxt}>{n}</Text></View>
+                <Text style={cx.stepTxt}>{t}</Text>
+              </View>
+            ))}
+          </View>
+
+          <TouchableOpacity style={cx.btnConfirm} onPress={() => {
+            if (connectingRef.current) clearInterval(connectingRef.current);
+            connectingRef.current = null;
+            setConnecting(null);
+            doStartCharge(connectingCpId.current);
+          }}>
+            <Text style={cx.btnConfirmTxt}>✅ Ya conecté mi vehículo — Iniciar ahora</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={cx.btnCancel} onPress={cancelConnecting}>
+            <Text style={cx.btnCancelTxt}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+
+    <Modal visible={!!chargeModal} transparent animationType="slide" onRequestClose={() => setChargeModal(null)}>
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity style={m.overlay} activeOpacity={1} onPress={() => setChargeModal(null)} />
+        <View style={m.sheet}>
+          <View style={m.handle} />
+          <Text style={m.title}>⚡ ¿Cómo quieres cargar?</Text>
+          <Text style={m.sub}>Selecciona el método antes de conectarte</Text>
+
+          {/* Opciones */}
+          <View style={m.options}>
+            {[
+              { key: 'full', icon: '🔋', label: 'Carga completa', desc: 'Hasta que lo detengas' },
+              { key: 'time', icon: '⏱', label: 'Por tiempo',      desc: 'Minutos de carga' },
+              { key: 'kwh',  icon: '⚡', label: 'Por kWh',         desc: 'Energía a recibir' },
+            ].map(opt => (
+              <TouchableOpacity key={opt.key} style={[m.option, chargeMode === opt.key && m.optionActive]}
+                onPress={() => { setChargeMode(opt.key); setChargeValue(opt.key === 'kwh' ? 5 : 30); }}>
+                <Text style={m.optionIcon}>{opt.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[m.optionLabel, chargeMode === opt.key && m.optionLabelActive]}>{opt.label}</Text>
+                  <Text style={m.optionDesc}>{opt.desc}</Text>
+                </View>
+                <View style={[m.radio, chargeMode === opt.key && m.radioActive]}>
+                  {chargeMode === opt.key && <View style={m.radioDot} />}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Selector numérico */}
+          {chargeMode !== 'full' && (
+            <View>
+              <View style={m.stepper}>
+                <TouchableOpacity style={m.stepBtn}
+                  onPress={() => setChargeValue(v => Math.max(chargeMode === 'kwh' ? 1 : 5, v - (chargeMode === 'kwh' ? 1 : 5)))}>
+                  <Text style={m.stepBtnText}>−</Text>
+                </TouchableOpacity>
+                <View style={m.stepValue}>
+                  <Text style={m.stepNum}>{chargeValue}</Text>
+                  <Text style={m.stepUnit}>{chargeMode === 'time' ? 'minutos' : 'kWh'}</Text>
+                </View>
+                <TouchableOpacity style={m.stepBtn}
+                  onPress={() => setChargeValue(v => Math.min(chargeMode === 'kwh' ? 100 : 240, v + (chargeMode === 'kwh' ? 1 : 5)))}>
+                  <Text style={m.stepBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              {estimatedCost !== null && (
+                <View style={m.costEstimate}>
+                  <Text style={m.costLabel}>💰 Costo estimado</Text>
+                  <Text style={m.costValue}>${estimatedCost.toLocaleString('es-CO')} COP</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Aviso parqueo */}
+          <View style={m.parkingNote}>
+            <Text style={m.parkingNoteText}>
+              🅿️ Tras finalizar tienes <Text style={{ fontWeight: '800' }}>15 min gratuitos</Text> para retirar tu vehículo.
+            </Text>
+          </View>
+
+          <TouchableOpacity style={m.btnConfirm} onPress={() => confirmStart(chargeModal)}>
+            <Text style={m.btnConfirmText}>⚡ Conectar y comenzar carga</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={m.btnCancel} onPress={() => setChargeModal(null)}>
+            <Text style={m.btnCancelText}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+
     <ScrollView
       style={s.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#2563eb" />}
@@ -241,7 +401,7 @@ export default function StationDetailScreen({ route, navigation }) {
           const stCfg      = STATUS_CONFIG[charger.status] || STATUS_CONFIG.Unavailable;
           const isSelected = selected === cpId;
           const activeSession = sessionMap[cpId];
-          const mySession  = activeSession?.user_id === user?.id ? activeSession : null;
+          const mySession  = (activeSession?.user_id === user?.id || activeSession?.user_id === user?.uid) ? activeSession : null;
 
           // Live timer
           let elapsedMin = 0, elapsedSec = 0, remainingMin = 0;
@@ -268,7 +428,7 @@ export default function StationDetailScreen({ route, navigation }) {
 
               <View style={s.connectorInfo}>
                 <Text style={[s.connectorStatus, { color: stCfg.color }]}>{stCfg.label}</Text>
-                <Text style={s.connectorPrice}>${(1200).toLocaleString('es-CO')} / 1 kWh</Text>
+                <Text style={s.connectorPrice}>${(1800).toLocaleString('es-CO')} / 1 kWh</Text>
                 <Text style={s.connectorPower}>Potencia máxima <Text style={{ fontWeight: '800', color: '#1d4ed8' }}>{powerKw} kW</Text></Text>
 
                 {/* Timer activo */}
@@ -294,15 +454,21 @@ export default function StationDetailScreen({ route, navigation }) {
       {selectedCharger && (() => {
         const cpId = selectedCharger.charge_point_id || selectedCharger.chargePointId || selectedCharger.id;
         const activeSession = sessionMap[cpId];
-        const mySession = activeSession?.user_id === user?.id ? activeSession : null;
+        const mySession = (activeSession?.user_id === user?.id || activeSession?.user_id === user?.uid) ? activeSession : null;
         const busy = starting === cpId || stopping === cpId;
 
         return (
           <View style={s.actionArea}>
             {mySession ? (
-              <>
+              <View>
                 <View style={s.mySessionCard}>
-                  <Text style={s.mySessionTitle}>⚡ Tu sesión activa</Text>
+                  <View style={s.mySessionHeader}>
+                    <View style={s.liveIndicator}>
+                      <View style={s.liveDot} />
+                      <Text style={s.liveText}>EN VIVO</Text>
+                    </View>
+                    <Text style={s.mySessionTitle}>⚡ Tu sesión activa</Text>
+                  </View>
                   {(() => {
                     const ms = now - new Date(mySession.started_at).getTime();
                     const min = Math.floor(ms / 60000);
@@ -310,24 +476,54 @@ export default function StationDetailScreen({ route, navigation }) {
                     const powerKw = selectedCharger.max_power_kw || selectedCharger.maxPowerKw || 0;
                     const avgDur = powerKw >= 50 ? 35 : 120;
                     const remaining = Math.max(0, avgDur - min);
+
+                    // Estimación en tiempo real (se actualiza cada segundo)
+                    const backendKwh  = parseFloat(mySession.kwh_used || 0);
+                    const backendCost = parseFloat(mySession.cost || 0);
+                    const liveKwh     = backendKwh > 0 ? backendKwh : parseFloat(((ms / 3600000) * powerKw).toFixed(2));
+                    const liveCop     = backendCost > 0 ? backendCost : Math.round(liveKwh * pricePerKwh);
+
                     return (
-                      <View style={s.timerBig}>
-                        <View style={s.timerBox}>
-                          <Text style={s.timerNum}>{String(min).padStart(2,'0')}:{String(sec).padStart(2,'0')}</Text>
-                          <Text style={s.timerLabel}>transcurrido</Text>
+                      <View>
+                        <View style={s.metricsGrid}>
+                          {/* kWh */}
+                          <View style={[s.metricCard, { borderLeftColor: '#2563eb' }]}>
+                            <Text style={s.metricIcon}>⚡</Text>
+                            <Text style={[s.metricValue, { color: '#2563eb' }]}>{liveKwh.toFixed(2)}</Text>
+                            <Text style={s.metricUnit}>kWh cargados</Text>
+                          </View>
+                          {/* COP */}
+                          <View style={[s.metricCard, { borderLeftColor: '#16a34a' }]}>
+                            <Text style={s.metricIcon}>💰</Text>
+                            <Text style={[s.metricValue, { color: '#16a34a' }]}>${liveCop.toLocaleString('es-CO')}</Text>
+                            <Text style={s.metricUnit}>COP cobrado</Text>
+                          </View>
+                          {/* Tiempo transcurrido */}
+                          <View style={[s.metricCard, { borderLeftColor: '#7c3aed' }]}>
+                            <Text style={s.metricIcon}>⏱</Text>
+                            <Text style={[s.metricValue, { color: '#7c3aed' }]}>{String(min).padStart(2,'0')}:{String(sec).padStart(2,'0')}</Text>
+                            <Text style={s.metricUnit}>transcurrido</Text>
+                          </View>
+                          {/* Tiempo restante */}
+                          <View style={[s.metricCard, { borderLeftColor: remaining > 0 ? '#d97706' : '#dc2626' }]}>
+                            <Text style={s.metricIcon}>{remaining > 0 ? '🕐' : '✅'}</Text>
+                            <Text style={[s.metricValue, { color: remaining > 0 ? '#d97706' : '#dc2626', fontSize: remaining > 0 ? 20 : 15 }]}>
+                              {remaining > 0 ? `~${formatDuration(remaining)}` : 'Listo'}
+                            </Text>
+                            <Text style={s.metricUnit}>restante</Text>
+                          </View>
                         </View>
-                        <View style={[s.timerBox, { backgroundColor: remaining > 0 ? '#eff6ff' : '#fffbeb' }]}>
-                          <Text style={[s.timerNum, { color: remaining > 0 ? '#2563eb' : '#d97706' }]}>
-                            {remaining > 0 ? `~${formatDuration(remaining)}` : 'Finalizando'}
-                          </Text>
-                          <Text style={[s.timerLabel, { color: remaining > 0 ? '#2563eb' : '#d97706' }]}>restante</Text>
+
+                        {/* Barra de progreso */}
+                        <View style={s.progressWrap}>
+                          <View style={s.progressBg}>
+                            <View style={[s.progressFill, { width: `${Math.min(100, (min / avgDur) * 100)}%` }]} />
+                          </View>
+                          <Text style={s.progressLabel}>{Math.min(100, Math.round((min / avgDur) * 100))}% completado</Text>
                         </View>
                       </View>
                     );
                   })()}
-                  <Text style={s.mySessionDetail}>
-                    ⚡ {parseFloat(mySession.kwh_used || 0).toFixed(2)} kWh · 💰 ${Math.round(parseFloat(mySession.cost || 0)).toLocaleString('es-CO')} COP
-                  </Text>
                 </View>
                 <TouchableOpacity
                   style={[s.btnStop]}
@@ -336,9 +532,9 @@ export default function StationDetailScreen({ route, navigation }) {
                 >
                   {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>⏹ Detener carga</Text>}
                 </TouchableOpacity>
-              </>
+              </View>
             ) : selectedCharger.status === 'Available' ? (
-              <>
+              <View>
                 <TouchableOpacity style={s.btnStart} onPress={() => handleStart(cpId)} disabled={busy}>
                   {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>⚡ Iniciar carga</Text>}
                 </TouchableOpacity>
@@ -353,7 +549,7 @@ export default function StationDetailScreen({ route, navigation }) {
                 >
                   <Text style={s.btnReserveText}>📅 Reservar turno</Text>
                 </TouchableOpacity>
-              </>
+              </View>
             ) : (
               <View style={s.unavailBlock}>
                 <Text style={s.unavailText}>
@@ -386,6 +582,7 @@ export default function StationDetailScreen({ route, navigation }) {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </View>
   );
 }
 
@@ -430,8 +627,21 @@ const s = StyleSheet.create({
   radioOuterSelected:   { borderColor: '#2563eb' },
   radioInner:           { width: 12, height: 12, borderRadius: 6, backgroundColor: '#2563eb' },
   actionArea:           { marginHorizontal: 16, marginBottom: 14 },
-  mySessionCard:        { backgroundColor: '#fff', borderRadius: 16, padding: 18, marginBottom: 12, borderLeftWidth: 4, borderLeftColor: '#2563eb', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
-  mySessionTitle:       { color: '#2563eb', fontWeight: '800', fontSize: 15, marginBottom: 12 },
+  mySessionCard:        { backgroundColor: '#fff', borderRadius: 20, padding: 18, marginBottom: 12, shadowColor: '#2563eb', shadowOpacity: 0.10, shadowRadius: 12, elevation: 4, borderWidth: 1, borderColor: '#dbeafe' },
+  mySessionHeader:      { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
+  mySessionTitle:       { color: '#1e293b', fontWeight: '800', fontSize: 15 },
+  liveIndicator:        { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#fef2f2', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
+  liveDot:              { width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#dc2626' },
+  liveText:             { color: '#dc2626', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  metricsGrid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  metricCard:           { flex: 1, minWidth: '44%', backgroundColor: '#f8fafc', borderRadius: 14, padding: 14, borderLeftWidth: 3, alignItems: 'flex-start' },
+  metricIcon:           { fontSize: 18, marginBottom: 4 },
+  metricValue:          { fontSize: 22, fontWeight: '900', marginBottom: 2 },
+  metricUnit:           { color: '#94a3b8', fontSize: 11, fontWeight: '600' },
+  progressWrap:         { gap: 6 },
+  progressBg:           { height: 8, backgroundColor: '#e2e8f0', borderRadius: 4, overflow: 'hidden' },
+  progressFill:         { height: '100%', backgroundColor: '#2563eb', borderRadius: 4 },
+  progressLabel:        { color: '#94a3b8', fontSize: 12, fontWeight: '600', textAlign: 'right' },
   timerBig:             { flexDirection: 'row', gap: 10, marginBottom: 10 },
   timerBox:             { flex: 1, backgroundColor: '#f1f5f9', borderRadius: 12, padding: 14, alignItems: 'center' },
   timerNum:             { color: '#1e293b', fontSize: 22, fontWeight: '800' },
@@ -447,4 +657,60 @@ const s = StyleSheet.create({
   parkingNotice:        { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fefce8', marginHorizontal: 16, borderRadius: 14, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: '#fde047' },
   parkingIcon:          { fontSize: 20, marginRight: 10, marginTop: 2 },
   parkingText:          { flex: 1, color: '#713f12', fontSize: 13, lineHeight: 20 },
+});
+
+const cx = StyleSheet.create({
+  overlay:       { flex: 1, backgroundColor: 'rgba(10,14,26,0.92)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  card:          { backgroundColor: '#fff', borderRadius: 24, padding: 28, width: '100%', alignItems: 'center' },
+  iconCircle:    { width: 80, height: 80, borderRadius: 40, backgroundColor: '#eff6ff', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  iconText:      { fontSize: 40 },
+  countdownWrap: { alignItems: 'center', marginBottom: 12 },
+  countdownNum:  { fontSize: 64, fontWeight: '900', color: '#2563eb', lineHeight: 70 },
+  countdownLabel:{ color: '#94a3b8', fontSize: 13, fontWeight: '600', marginTop: -4 },
+  progressBg:    { width: '100%', height: 6, backgroundColor: '#e2e8f0', borderRadius: 3, overflow: 'hidden', marginBottom: 20 },
+  progressFill:  { height: '100%', backgroundColor: '#2563eb', borderRadius: 3 },
+  title:         { color: '#1e293b', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 8 },
+  sub:           { color: '#64748b', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 20 },
+  steps:         { width: '100%', gap: 10, marginBottom: 24 },
+  step:          { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  stepNum:       { width: 28, height: 28, borderRadius: 14, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
+  stepNumTxt:    { color: '#2563eb', fontWeight: '800', fontSize: 13 },
+  stepTxt:       { flex: 1, color: '#475569', fontSize: 13 },
+  btnConfirm:    { backgroundColor: '#2563eb', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', marginBottom: 10 },
+  btnConfirmTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  btnCancel:     { borderWidth: 1.5, borderColor: '#fecaca', borderRadius: 12, paddingHorizontal: 32, paddingVertical: 12, width: '100%', alignItems: 'center' },
+  btnCancelTxt:  { color: '#dc2626', fontWeight: '700', fontSize: 15 },
+});
+
+const m = StyleSheet.create({
+  overlay:        { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet:          { backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 44, position: 'absolute', bottom: 0, left: 0, right: 0 },
+  handle:         { width: 40, height: 4, backgroundColor: '#e2e8f0', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  title:          { color: '#1e293b', fontSize: 22, fontWeight: '800', marginBottom: 4 },
+  sub:            { color: '#94a3b8', fontSize: 13, marginBottom: 18 },
+  options:        { gap: 8, marginBottom: 18 },
+  option:         { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#f8fafc', borderRadius: 14, padding: 12, borderWidth: 1.5, borderColor: '#e2e8f0' },
+  optionActive:   { borderColor: '#2563eb', backgroundColor: '#eff6ff' },
+  optionIcon:     { fontSize: 22 },
+  optionLabel:    { color: '#1e293b', fontWeight: '700', fontSize: 14, marginBottom: 1 },
+  optionLabelActive: { color: '#2563eb' },
+  optionDesc:     { color: '#94a3b8', fontSize: 11 },
+  radio:          { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#cbd5e1', justifyContent: 'center', alignItems: 'center' },
+  radioActive:    { borderColor: '#2563eb' },
+  radioDot:       { width: 12, height: 12, borderRadius: 6, backgroundColor: '#2563eb' },
+  stepper:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 14 },
+  stepBtn:        { width: 56, height: 56, borderRadius: 28, backgroundColor: '#eff6ff', borderWidth: 2, borderColor: '#2563eb', justifyContent: 'center', alignItems: 'center' },
+  stepBtnText:    { color: '#2563eb', fontSize: 28, fontWeight: '700', lineHeight: 32 },
+  stepValue:      { alignItems: 'center', minWidth: 100 },
+  stepNum:        { color: '#1e293b', fontSize: 48, fontWeight: '900', lineHeight: 56 },
+  stepUnit:       { color: '#94a3b8', fontSize: 13, fontWeight: '600', marginTop: -4 },
+  costEstimate:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f0fdf4', borderRadius: 12, padding: 14, marginBottom: 14 },
+  costLabel:      { color: '#15803d', fontWeight: '600', fontSize: 14 },
+  costValue:      { color: '#15803d', fontWeight: '900', fontSize: 18 },
+  parkingNote:    { backgroundColor: '#fefce8', borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: '#fde047' },
+  parkingNoteText:{ color: '#713f12', fontSize: 11, lineHeight: 17 },
+  btnConfirm:     { backgroundColor: '#2563eb', borderRadius: 14, padding: 18, alignItems: 'center', marginBottom: 10 },
+  btnConfirmText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  btnCancel:      { alignItems: 'center', padding: 10 },
+  btnCancelText:  { color: '#94a3b8', fontWeight: '600', fontSize: 15 },
 });

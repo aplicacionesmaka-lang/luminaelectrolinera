@@ -79,6 +79,19 @@ async function initDb() {
       created_at      TIMESTAMPTZ DEFAULT NOW(),
       UNIQUE(charge_point_id, reserved_date, time_slot)
     );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id          TEXT PRIMARY KEY,
+      user_id     TEXT NOT NULL,
+      amount      NUMERIC NOT NULL,
+      provider    TEXT NOT NULL,
+      status      TEXT DEFAULT 'Pending',
+      reference   TEXT UNIQUE,
+      gateway_ref TEXT,
+      metadata    JSONB,
+      created_at  TIMESTAMPTZ DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
   console.log('✅ PostgreSQL tables ready');
 }

@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { list, getById, create, remoteStart, remoteStop, activeSession } = require('../controllers/chargerController');
+const { list, getById, create, remoteStart, remoteStop, activeSession, resetCharger } = require('../controllers/chargerController');
 const { authMiddleware, requireRole } = require('../utils/auth');
 
 router.get('/',               authMiddleware, list);
@@ -8,5 +8,6 @@ router.post('/',              authMiddleware, requireRole('admin'), create);
 router.post('/:id/start',     authMiddleware, remoteStart);
 router.post('/:id/stop',      authMiddleware, remoteStop);
 router.get('/:id/session',    authMiddleware, activeSession);
+router.post('/:id/reset',     authMiddleware, requireRole('admin'), resetCharger);
 
 module.exports = router;

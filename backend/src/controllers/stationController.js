@@ -64,4 +64,19 @@ async function update(req, res) {
   }
 }
 
-module.exports = { list, getById, create, update };
+async function updatePrice(req, res) {
+  try {
+    const price = parseFloat(req.body.price);
+    if (isNaN(price) || price < 0) return res.status(400).json({ error: 'Precio inválido' });
+    const { rows } = await pool.query(
+      'UPDATE stations SET price_per_kwh=$1 WHERE id=$2 RETURNING id, name, price_per_kwh',
+      [price, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Estación no encontrada' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { list, getById, create, update, updatePrice };

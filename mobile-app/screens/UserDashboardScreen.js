@@ -33,7 +33,7 @@ const CARDS = [
 ];
 
 export default function UserDashboardScreen({ navigation }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -87,6 +87,12 @@ export default function UserDashboardScreen({ navigation }) {
         <Text style={s.qrCardText}>⬛ Mi código QR de carga</Text>
         <Text style={s.qrCardSub}>Escanea en el cargador para iniciar sin abrir la app</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={s.logoutBtn} onPress={logout} activeOpacity={0.8}>
+        <Text style={s.logoutText}>🚪 Cerrar sesión</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: 32 }} />
     </ScrollView>
   );
 }
@@ -117,4 +123,6 @@ const s = StyleSheet.create({
   qrCard:         { backgroundColor: '#1e293b', marginHorizontal: 16, borderRadius: 16, padding: 18, marginTop: 4, alignItems: 'center' },
   qrCardText:     { color: '#fff', fontWeight: '800', fontSize: 15 },
   qrCardSub:      { color: '#64748b', fontSize: 12, marginTop: 4, textAlign: 'center' },
+  logoutBtn:      { marginHorizontal: 16, marginTop: 16, borderRadius: 14, padding: 16, alignItems: 'center', borderWidth: 1.5, borderColor: '#fecaca', backgroundColor: '#fff5f5' },
+  logoutText:     { color: '#dc2626', fontWeight: '700', fontSize: 15 },
 });

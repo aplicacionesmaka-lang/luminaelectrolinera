@@ -44,8 +44,21 @@ async function remoteStart(req, res) {
     if ((parseFloat(user?.balance) || 0) < Number(process.env.MIN_BALANCE || 500))
       return res.status(402).json({ error: 'Saldo insuficiente. Recarga tu cuenta.' });
 
-    const result = await ocpp.remoteStart(chargers[0].charge_point_id, connectorId, user.id_tag);
-    res.json({ ok: true, result });
+    try {
+      const result = await ocpp.remoteStart(chargers[0].charge_point_id, connectorId, user.id_tag);
+      res.json({ ok: true, result });
+    } catch (ocppErr) {
+      // Modo demo: cargador sin conexión OCPP — crear sesión directamente en DB
+      const { v4: uuidv4 } = require('uuid');
+      const txId = Math.floor(Math.random() * 900000) + 100000;
+      await pool.query(
+        `INSERT INTO sessions (id, user_id, charge_point_id, station_id, transaction_id, status, kwh_used, cost, started_at)
+         VALUES ($1,$2,$3,$4,$5,'Active',0,0,NOW())`,
+        [uuidv4(), req.user.uid, chargers[0].charge_point_id, chargers[0].station_id, txId]
+      );
+      await pool.query("UPDATE chargers SET status='Charging' WHERE id=$1", [req.params.id]);
+      res.json({ ok: true, demo: true, transactionId: txId });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -59,8 +72,15 @@ async function remoteStop(req, res) {
     const { rows } = await pool.query('SELECT * FROM chargers WHERE id=$1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Cargador no encontrado' });
 
-    const result = await ocpp.remoteStop(rows[0].charge_point_id, transactionId);
-    res.json({ ok: true, result });
+    try {
+      const result = await ocpp.remoteStop(rows[0].charge_point_id, transactionId);
+      res.json({ ok: true, result });
+    } catch {
+      // Modo demo: finalizar sesión directamente en DB
+      await pool.query("UPDATE sessions SET status='Completed', ended_at=NOW() WHERE transaction_id=$1", [transactionId]);
+      await pool.query("UPDATE chargers SET status='Available' WHERE id=$1", [req.params.id]);
+      res.json({ ok: true, demo: true });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -74,4 +94,14 @@ async function activeSession(req, res) {
   res.json(rows.length ? rows[0] : null);
 }
 
-module.exports = { list, getById, create, remoteStart, remoteStop, activeSession };
+async function resetCharger(req, res) {
+  try {
+    await pool.query("UPDATE chargers SET status='Available' WHERE id=$1", [req.params.id]);
+    await pool.query("UPDATE sessions SET status='Completed', ended_at=NOW() WHERE charge_point_id=$1 AND status='Active'", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { list, getById, create, remoteStart, remoteStop, activeSession, resetCharger };
