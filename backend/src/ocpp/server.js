@@ -13,9 +13,27 @@ function initOcppServer(httpServer) {
     path: '/ocpp',
   });
 
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', async (ws, req) => {
     const cpId = decodeURIComponent(req.url.replace(/^\/ocpp\/?/, ''));
-    if (!cpId) { ws.close(); return; }
+    if (!cpId) { ws.close(1008, 'Missing ChargePoint ID'); return; }
+
+    // Basic Auth validation
+    const authHeader = req.headers['authorization'] || '';
+    if (authHeader.startsWith('Basic ')) {
+      const decoded = Buffer.from(authHeader.slice(6), 'base64').toString();
+      const [user, pass] = decoded.split(':');
+      const { rows } = await pool.query(
+        'SELECT ocpp_password FROM chargers WHERE charge_point_id=$1', [cpId]
+      );
+      const expected = rows[0]?.ocpp_password;
+      if (!expected || pass !== expected || user !== cpId) {
+        console.warn(`🚫 OCPP AUTH FAILED  ${cpId}`);
+        ws.close(1008, 'Unauthorized');
+        return;
+      }
+    }
+    // Si no envían Basic Auth se acepta igualmente (compatibilidad equipos sin auth config)
+
     console.log(`🔌 OCPP CONNECT  ${cpId}`);
     connections.set(cpId, ws);
     setChargerField(cpId, { status: 'Connected' });
