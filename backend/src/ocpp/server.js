@@ -63,11 +63,21 @@ function onClose(cpId) {
 }
 
 async function onBoot(cpId, p) {
-  await setChargerField(cpId, {
-    model:   p.chargePointModel  || 'HT-ED-120-C',
-    vendor:  p.chargePointVendor || 'Unknown',
-    status:  'Available',
-  });
+  const model  = p.chargePointModel  || 'Unknown';
+  const vendor = p.chargePointVendor || 'Unknown';
+  const { rows } = await pool.query('SELECT id FROM chargers WHERE charge_point_id=$1', [cpId]);
+  if (!rows.length) {
+    // Auto-registrar equipo nuevo sin estación asignada
+    const { v4: uuidv4 } = require('uuid');
+    await pool.query(
+      `INSERT INTO chargers (id, charge_point_id, model, status, connectors, connector_type, charger_type, max_power_kw)
+       VALUES ($1,$2,$3,'Available',1,'CCS2','DC',0) ON CONFLICT (charge_point_id) DO NOTHING`,
+      [uuidv4(), cpId, `${vendor} ${model}`.trim()]
+    );
+    console.log(`🆕 Nuevo equipo detectado y registrado: ${cpId} (${vendor} ${model})`);
+  } else {
+    await pool.query("UPDATE chargers SET status='Available', model=$2 WHERE charge_point_id=$1", [cpId, `${vendor} ${model}`.trim()]);
+  }
   return { status: 'Accepted', currentTime: new Date().toISOString(), interval: 60 };
 }
 

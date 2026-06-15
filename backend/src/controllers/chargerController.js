@@ -94,6 +94,36 @@ async function activeSession(req, res) {
   res.json(rows.length ? rows[0] : null);
 }
 
+async function listUnassigned(_req, res) {
+  const { rows } = await pool.query(
+    "SELECT * FROM chargers WHERE station_id IS NULL ORDER BY created_at DESC"
+  );
+  const conns = ocpp.getConnections();
+  res.json(rows.map(c => ({ ...c, chargePointId: c.charge_point_id, online: !!conns[c.charge_point_id] })));
+}
+
+async function assignStation(req, res) {
+  try {
+    const { stationId, model, maxPowerKw, connectorType, chargerType, connectors } = req.body;
+    if (!stationId) return res.status(400).json({ error: 'stationId requerido' });
+    const { rows } = await pool.query(
+      `UPDATE chargers SET
+         station_id        = $2,
+         model             = COALESCE(NULLIF($3,''), model),
+         max_power_kw      = COALESCE($4::numeric, max_power_kw),
+         connector_type    = COALESCE(NULLIF($5,''), connector_type),
+         charger_type      = COALESCE(NULLIF($6,''), charger_type),
+         connectors        = COALESCE($7::int, connectors)
+       WHERE id=$1 RETURNING *`,
+      [req.params.id, stationId, model||'', maxPowerKw||null, connectorType||'', chargerType||'', connectors||null]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Cargador no encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 async function resetCharger(req, res) {
   try {
     await pool.query("UPDATE chargers SET status='Available' WHERE id=$1", [req.params.id]);
@@ -104,4 +134,4 @@ async function resetCharger(req, res) {
   }
 }
 
-module.exports = { list, getById, create, remoteStart, remoteStop, activeSession, resetCharger };
+module.exports = { list, getById, create, remoteStart, remoteStop, activeSession, resetCharger, listUnassigned, assignStation };

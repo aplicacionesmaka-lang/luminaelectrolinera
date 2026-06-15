@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Lumina",
+    "name": "Lumina EV",
     "slug": "lumina-ev",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,14 +13,27 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.maka.lumina"
+      "bundleIdentifier": "com.maka.lumina",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a2218"
       },
-      "package": "com.maka.lumina"
+      "package": "com.maka.lumina",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ad890c1a-8728-4423-a368-bd720fb11f95"
+      }
     },
     "plugins": [
       [
@@ -29,6 +42,7 @@
           "locationAlwaysAndWhenInUsePermission": "Lumina necesita tu ubicación para mostrarte las electrolineras más cercanas."
         }
       ]
-    ]
+    ],
+    "owner": "aplicacionesmaka"
   }
 }

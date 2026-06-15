@@ -24,6 +24,8 @@ const cop = n => `$${Math.round(n || 0).toLocaleString('es-CO')}`;
 const emptyStation = { name: '', city: '', address: '', lat: '', lng: '', description: '' };
 const emptyCharger = { stationId: '', chargePointId: '', model: '' };
 
+const emptyAssign = { stationId: '', model: '', maxPowerKw: '', connectorType: 'CCS2', chargerType: 'DC', connectors: 1 };
+
 export default function StationsPage() {
   const [data,     setData]     = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -34,9 +36,12 @@ export default function StationsPage() {
   const [savingCh, setSavingCh] = useState(false);
   const [stError,  setStError]  = useState('');
   const [chError,  setChError]  = useState('');
-  const [prices,   setPrices]   = useState({}); // stationId → precio editado
+  const [prices,   setPrices]   = useState({});
   const [savingPrice, setSavingPrice] = useState(null);
   const [resetting,   setResetting]   = useState(null);
+  const [unassigned,  setUnassigned]  = useState([]);
+  const [assignForms, setAssignForms] = useState({}); // chargerId → form state
+  const [assigning,   setAssigning]   = useState(null);
 
   const load = () => {
     api.get('/stations').then(d => {
@@ -45,6 +50,16 @@ export default function StationsPage() {
       d.forEach(s => { p[s.id] = s.price_per_kwh ?? 1800; });
       setPrices(p);
     }).finally(() => setLoading(false));
+    api.get('/chargers/unassigned').then(list => {
+      setUnassigned(list);
+      const forms = {};
+      list.forEach(c => { forms[c.id] = { ...emptyAssign }; });
+      setAssignForms(f => {
+        const merged = { ...forms };
+        Object.keys(f).forEach(k => { if (forms[k]) merged[k] = f[k]; });
+        return merged;
+      });
+    }).catch(() => {});
   };
   useEffect(() => { load(); const t = setInterval(load, 10000); return () => clearInterval(t); }, []);
 
@@ -80,6 +95,25 @@ export default function StationsPage() {
     finally { setSavingPrice(null); }
   }
 
+  async function handleAssign(chargerId) {
+    const form = assignForms[chargerId];
+    if (!form?.stationId) return alert('Selecciona una estación');
+    setAssigning(chargerId);
+    try {
+      const eq = EQUIPMENT_CATALOG.find(e => e.model === form.model);
+      await api.patch(`/chargers/${chargerId}/assign`, {
+        stationId:     form.stationId,
+        model:         eq?.model || form.model,
+        maxPowerKw:    eq?.powerKw || parseFloat(form.maxPowerKw) || undefined,
+        connectorType: eq?.connectorType || form.connectorType,
+        chargerType:   eq?.type || form.chargerType,
+        connectors:    eq?.connectors || parseInt(form.connectors) || 1,
+      });
+      load();
+    } catch (err) { alert(err.error || 'Error al asignar'); }
+    finally { setAssigning(null); }
+  }
+
   async function handleReset(chargerId) {
     if (!window.confirm(`¿Reiniciar el cargador ${chargerId}?`)) return;
     setResetting(chargerId);
@@ -104,6 +138,65 @@ export default function StationsPage() {
           ))}
         </div>
       </div>
+
+      {/* Nuevos equipos detectados */}
+      {unassigned.length > 0 && tab === 'list' && (
+        <div style={{ background: '#fffbeb', border: '2px solid #f59e0b', borderRadius: 18, padding: 24, marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <span style={{ fontSize: 22 }}>⚡</span>
+            <div>
+              <div style={{ color: '#92400e', fontWeight: 800, fontSize: 16 }}>Nuevos equipos detectados ({unassigned.length})</div>
+              <div style={{ color: '#b45309', fontSize: 12 }}>Estos cargadores se conectaron por OCPP y aún no tienen estación asignada</div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gap: 14 }}>
+            {unassigned.map(c => {
+              const form = assignForms[c.id] || emptyAssign;
+              const setField = (k, v) => setAssignForms(f => ({ ...f, [c.id]: { ...f[c.id], [k]: v } }));
+              const eq = EQUIPMENT_CATALOG.find(e => e.model === form.model);
+              return (
+                <div key={c.id} style={{ background: '#fff', borderRadius: 14, padding: 18, border: '1.5px solid #fde68a' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: 5, background: c.online ? '#16a34a' : '#d97706' }} />
+                    <span style={{ fontWeight: 800, color: '#0f172a', fontSize: 15 }}>{c.charge_point_id}</span>
+                    <span style={{ background: c.online ? '#f0fdf4' : '#fef3c7', color: c.online ? '#16a34a' : '#b45309', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
+                      {c.online ? '● OCPP conectado' : '○ Sin conexión ahora'}
+                    </span>
+                    <span style={{ color: '#94a3b8', fontSize: 12 }}>{c.model}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
+                    <div>
+                      <label style={lbl}>Estación *</label>
+                      <select value={form.stationId} onChange={e => setField('stationId', e.target.value)} style={{ ...sel, width: '100%' }}>
+                        <option value="">Selecciona estación</option>
+                        {data.map(s => <option key={s.id} value={s.id}>{s.name} — {s.city}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={lbl}>Modelo de equipo</label>
+                      <select value={form.model} onChange={e => setField('model', e.target.value)} style={{ ...sel, width: '100%' }}>
+                        <option value="">Selecciona modelo</option>
+                        {EQUIPMENT_CATALOG.map(e => <option key={e.model} value={e.model}>{e.label}</option>)}
+                      </select>
+                    </div>
+                    {eq ? (
+                      <div style={{ background: '#f0fdf4', borderRadius: 10, padding: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ color: '#16a34a', fontWeight: 700, fontSize: 13 }}>{eq.powerKw} kW · {eq.type}</div>
+                        <div style={{ color: '#64748b', fontSize: 11 }}>{eq.connectors}× {eq.connectorType}</div>
+                      </div>
+                    ) : <div />}
+                  </div>
+                  <button
+                    onClick={() => handleAssign(c.id)}
+                    disabled={assigning === c.id || !form.stationId}
+                    style={{ background: form.stationId ? '#16a34a' : '#94a3b8', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontWeight: 700, fontSize: 14, cursor: form.stationId ? 'pointer' : 'not-allowed' }}
+                  >{assigning === c.id ? 'Asignando...' : '✓ Asignar a estación'}</button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Nueva estación */}
       {tab === 'station' && (
