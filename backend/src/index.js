@@ -28,6 +28,12 @@ app.use('/api/payment-methods', require('./routes/paymentMethods'));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 
+// Dashboard web
+const path = require('path');
+const dashDist = path.join(__dirname, '../../dashboard/dist');
+app.use('/admin', require('express').static(dashDist));
+app.get('/admin/*', (_req, res) => res.sendFile(path.join(dashDist, 'index.html')));
+
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: err.message || 'Internal server error' });
