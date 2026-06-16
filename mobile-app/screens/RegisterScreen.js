@@ -27,7 +27,12 @@ export default function RegisterScreen({ navigation }) {
       await AsyncStorage.setItem('token', res.token);
       await login(form.email.trim().toLowerCase(), form.password);
     } catch (err) {
-      Alert.alert('Error al registrarse', err.error || 'No se pudo crear la cuenta');
+      const msg = err.error || err.message || 'No se pudo crear la cuenta';
+      if (msg.includes('ya registrado') || msg.includes('23505')) {
+        Alert.alert('Correo ya registrado', 'Ya existe una cuenta con ese correo. Toca "Inicia sesión" para entrar.');
+      } else {
+        Alert.alert('Error al registrarse', msg + '\n\nSi el error persiste, intenta iniciar sesión — tu cuenta puede haberse creado correctamente.');
+      }
     } finally {
       setLoading(false);
     }

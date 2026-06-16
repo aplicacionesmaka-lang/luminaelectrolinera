@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://api.lumina.69.62.64.153.nip.io/api';
 
-const api = axios.create({ baseURL: BASE_URL, timeout: 15000 });
+const api = axios.create({ baseURL: BASE_URL, timeout: 30000 });
 
 api.interceptors.request.use(async config => {
   const token = await AsyncStorage.getItem('token');
