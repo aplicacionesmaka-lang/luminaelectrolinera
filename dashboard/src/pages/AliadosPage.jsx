@@ -53,7 +53,7 @@ export default function AliadosPage() {
 
   async function handleSaveStation(stId) {
     setSavingSt(stId);
-    try { await api.patch(`/aliados/stations/${stId}/financial`, stFinancial[stId]); load(); }
+    try { await api.patch(`/aliados/station/${stId}`, stFinancial[stId]); load(); }
     catch(err) { alert(err.error||'Error'); }
     finally { setSavingSt(null); }
   }
