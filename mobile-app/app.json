@@ -22,8 +22,7 @@
         "backgroundColor": "#0a2218"
       },
       "package": "com.maka.lumina",
-      "versionCode": 2,
-      "usesCleartextTraffic": true,
+      "versionCode": 3,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",

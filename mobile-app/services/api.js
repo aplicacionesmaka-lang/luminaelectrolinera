@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://api.lumina.69.62.64.153.nip.io/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.lumina.69.62.64.153.nip.io/api';
 
 const api = axios.create({ baseURL: BASE_URL, timeout: 30000 });
 
