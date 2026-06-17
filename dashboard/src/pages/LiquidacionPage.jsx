@@ -30,7 +30,7 @@ export default function LiquidacionPage() {
       if (aliadoFil) params.set('aliado_id', aliadoFil);
       const [resumen, detalle] = await Promise.all([
         api.get(`/aliados/liquidacion?${params}`),
-        api.get(`/aliados/liquidacion/detalle?${params}`),
+        api.get(`/aliados/liquidacion/detalle?${params}`).catch(() => []),
       ]);
       setData(resumen);
       setSesiones(detalle);
