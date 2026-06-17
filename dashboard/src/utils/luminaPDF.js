@@ -2,197 +2,210 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 // Paleta Lumina
-const C = {
-  green:      [22, 163, 74],    // #16a34a
-  greenLight: [240, 253, 244],
-  greenDark:  [5, 46, 22],
-  gray:       [100, 116, 139],
-  grayLight:  [248, 250, 252],
-  text:       [15, 23, 42],
-  white:      [255, 255, 255],
-  border:     [226, 232, 240],
-  yellow:     [234, 179, 8],
+const G = {
+  dark:   [5,  46, 22],
+  mid:    [22, 163, 74],
+  light:  [240, 253, 244],
+  white:  [255, 255, 255],
+  gray:   [100, 116, 139],
+  grayL:  [248, 250, 252],
+  text:   [15,  23, 42],
+  border: [226, 232, 240],
+  amber:  [180, 83, 9],
 };
 
-const cop = n => `$${Math.round(n || 0).toLocaleString('es-CO')}`;
-const fmtDate = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+const cop  = n => `$${Math.round(n || 0).toLocaleString('es-CO')}`;
+const fmtD = s => s
+  ? new Date(s + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
+  : '';
 
-// Dibuja el encabezado verde con logo ⚡ Lumina
+// Dibuja el rayo Lumina con trazos (sin emoji)
+function drawRayo(doc, cx, cy, size) {
+  // Polígono rayo: triángulo superior + triángulo inferior desplazado
+  const s = size;
+  // Puntos del rayo (coordenadas relativas a cx,cy)
+  const pts = [
+    [cx,       cy - s],          // punta arriba
+    [cx - s * 0.35, cy + s * 0.1], // esquina izq
+    [cx + s * 0.05, cy + s * 0.1], // centro
+    [cx,       cy + s],          // punta abajo
+    [cx + s * 0.35, cy - s * 0.1], // esquina der
+    [cx - s * 0.05, cy - s * 0.1], // centro
+  ];
+  doc.setFillColor(...G.mid);
+  // jsPDF no tiene polygon nativo, usamos lines
+  doc.lines(
+    pts.slice(1).map((p, i) => {
+      const prev = i === 0 ? pts[0] : pts[i];
+      return [p[0] - prev[0], p[1] - prev[1]];
+    }),
+    pts[0][0], pts[0][1], [1, 1], 'F', true
+  );
+}
+
 function drawHeader(doc, pageW) {
   // Fondo verde oscuro
-  doc.setFillColor(...C.greenDark);
-  doc.rect(0, 0, pageW, 42, 'F');
+  doc.setFillColor(...G.dark);
+  doc.rect(0, 0, pageW, 44, 'F');
 
-  // Rayo ⚡ (texto grande)
-  doc.setFontSize(26);
-  doc.setTextColor(...C.green);
-  doc.text('⚡', 14, 22);
+  // Franja verde brillante izquierda
+  doc.setFillColor(...G.mid);
+  doc.rect(0, 0, 5, 44, 'F');
+
+  // Rayo gráfico (sin emoji)
+  drawRayo(doc, 20, 22, 9);
 
   // Nombre empresa
-  doc.setFontSize(22);
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.white);
-  doc.text('LUMINA', 28, 20);
+  doc.setTextColor(...G.white);
+  doc.text('LUMINA', 34, 18);
 
-  doc.setFontSize(9);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...G.mid);
+  doc.text('ELECTROLINERAS QCUTE SAS', 34, 25);
+
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.green);
-  doc.text('ELECTROLINERAS', 28, 27);
-  doc.text('Carga eléctrica inteligente', 28, 33);
+  doc.setTextColor(134, 239, 172); // verde claro
+  doc.text('NIT: 901.993.025-0', 34, 32);
+  doc.text('contacto@lumina.com.co  |  www.luminaELECTROLINERAS.com', 34, 38);
 
-  // Línea decorativa verde
-  doc.setFillColor(...C.green);
-  doc.rect(0, 42, pageW, 2, 'F');
+  // Línea inferior verde brillante
+  doc.setFillColor(...G.mid);
+  doc.rect(0, 44, pageW, 1.5, 'F');
 }
 
-// Pie de página
-function drawFooter(doc, pageNum, totalPages, pageW, pageH) {
-  doc.setFillColor(...C.greenDark);
-  doc.rect(0, pageH - 16, pageW, 16, 'F');
-  doc.setFontSize(7.5);
+function drawFooter(doc, num, total, pageW, pageH) {
+  doc.setFillColor(...G.dark);
+  doc.rect(0, pageH - 14, pageW, 14, 'F');
+  doc.setFillColor(...G.mid);
+  doc.rect(0, pageH - 14, 5, 14, 'F');
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.green);
-  doc.text('Lumina Electrolineras SAS  ·  contacto@lumina.com.co  ·  www.lumina.com.co', 14, pageH - 6);
-  doc.setTextColor(...C.white);
-  doc.text(`Página ${pageNum} de ${totalPages}`, pageW - 14, pageH - 6, { align: 'right' });
-}
-
-// Recuadro info (etiqueta + valor)
-function infoBox(doc, x, y, w, h, label, value, labelColor, valueColor, bgColor) {
-  doc.setFillColor(...(bgColor || C.grayLight));
-  doc.roundedRect(x, y, w, h, 3, 3, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...(labelColor || C.gray));
-  doc.text(label, x + 5, y + 8);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...(valueColor || C.text));
-  doc.text(value, x + 5, y + 18);
+  doc.setTextColor(...G.mid);
+  doc.text('Lumina Electrolineras QCUTE SAS  ·  NIT 901.993.025-0  ·  contacto@lumina.com.co', 10, pageH - 5);
+  doc.setTextColor(...G.white);
+  doc.text(`Página ${num} de ${total}`, pageW - 12, pageH - 5, { align: 'right' });
 }
 
 /**
  * Genera el PDF de solicitud de factura para UN aliado.
- * @param {object} aliado   { razon_social, nit, email, contacto }
- * @param {Array}  rows     filas del reporte (una por estación)
- * @param {string} desde
- * @param {string} hasta
+ * Solo se factura la energía. La comisión se muestra informativa.
  */
 export function generarPDFAliado(aliado, rows, desde, hasta) {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const margin = 14;
-  const contentW = pageW - margin * 2;
+  const ML    = 14;
+  const cW    = pageW - ML * 2;
 
-  // ── ENCABEZADO ──────────────────────────────────────────
   drawHeader(doc, pageW);
 
-  // ── TÍTULO DEL DOCUMENTO ────────────────────────────────
-  doc.setFillColor(...C.greenLight);
-  doc.rect(margin, 50, contentW, 14, 'F');
-  doc.setFontSize(13);
+  // ── Título documento ───────────────────────────────────────────────────────
+  doc.setFillColor(...G.light);
+  doc.roundedRect(ML, 50, cW, 13, 2, 2, 'F');
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.greenDark);
-  doc.text('SOLICITUD DE FACTURACIÓN', margin + 4, 59);
+  doc.setTextColor(...G.dark);
+  doc.text('SOLICITUD DE FACTURACIÓN — SERVICIO DE ENERGÍA ELÉCTRICA', ML + 4, 58);
 
-  // Número y fecha
-  const now = new Date();
-  const docNum = `LUM-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}-${aliado.nit?.replace(/\D/g,'').slice(-4)||'0000'}`;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.gray);
-  doc.text(`Ref: ${docNum}  ·  Emitido: ${now.toLocaleDateString('es-CO')}`, pageW - margin, 59, { align: 'right' });
-
-  // ── DATOS: Para / De ────────────────────────────────────
-  let y = 72;
-
-  // "Para" (aliado factura A Lumina)
-  doc.setFillColor(...C.white);
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.4);
-  doc.roundedRect(margin, y, contentW * 0.48, 38, 3, 3, 'FD');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.green);
-  doc.text('FACTURAR A:', margin + 5, y + 7);
-  doc.setFontSize(10);
-  doc.setTextColor(...C.text);
-  doc.text('Lumina Electrolineras SAS', margin + 5, y + 15);
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.gray);
-  doc.text('NIT: 901.XXX.XXX-X', margin + 5, y + 22);
-  doc.text('contacto@lumina.com.co', margin + 5, y + 28);
-  doc.text('www.lumina.com.co', margin + 5, y + 34);
-
-  // "De" (el aliado)
-  const col2x = margin + contentW * 0.52;
-  const col2w = contentW * 0.48;
-  doc.setFillColor(240, 253, 244);
-  doc.setDrawColor(...C.green);
-  doc.roundedRect(col2x, y, col2w, 38, 3, 3, 'FD');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.green);
-  doc.text('EMITIDO POR:', col2x + 5, y + 7);
-  doc.setFontSize(10);
-  doc.setTextColor(...C.text);
-  doc.text(aliado.razon_social, col2x + 5, y + 15);
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.gray);
-  doc.text(`NIT: ${aliado.nit || '—'}`, col2x + 5, y + 22);
-  if (aliado.email)    doc.text(aliado.email,    col2x + 5, y + 28);
-  if (aliado.contacto) doc.text(aliado.contacto, col2x + 5, y + 34);
-
-  // ── PERÍODO ─────────────────────────────────────────────
-  y += 44;
-  doc.setFillColor(...C.greenDark);
-  doc.roundedRect(margin, y, contentW, 10, 2, 2, 'F');
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.white);
-  doc.text(`PERÍODO: ${fmtDate(desde)}  al  ${fmtDate(hasta)}`, margin + 4, y + 7);
-
-  // ── CAPÍTULO 1: ENERGÍA ─────────────────────────────────
-  y += 16;
-  doc.setFontSize(10.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.greenDark);
-  doc.text('CAPÍTULO 1  —  ENERGÍA SUMINISTRADA', margin, y);
-
+  // Ref y fecha
+  const now    = new Date();
+  const docNum = `LUM-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}-${(aliado.nit||'').replace(/\D/g,'').slice(-4)||'0000'}`;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.gray);
-  doc.text('Consumo de energía eléctrica registrado por los cargadores Lumina instalados en sus instalaciones.', margin, y + 5);
+  doc.setTextColor(...G.gray);
+  doc.text(`Ref: ${docNum}   Emisión: ${now.toLocaleDateString('es-CO')}`, pageW - ML, 58, { align: 'right' });
 
-  y += 10;
+  // ── Bloques Para / De ──────────────────────────────────────────────────────
+  let y = 68;
+  const bH  = 36;
+  const bW  = cW * 0.48;
 
-  const energiaRows = rows.map(r => [
-    r.station_name,
-    r.city || '—',
-    r.sesiones,
-    parseFloat(r.kwh_total).toFixed(3) + ' kWh',
-    cop(r.cost_per_kwh) + '/kWh',
-    cop(r.costo_energia),
-  ]);
+  // "Facturar a" — Lumina
+  doc.setFillColor(...G.grayL);
+  doc.setDrawColor(...G.border);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(ML, y, bW, bH, 3, 3, 'FD');
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...G.mid);
+  doc.text('FACTURAR A:', ML + 5, y + 7);
+  doc.setFontSize(9.5);
+  doc.setTextColor(...G.text);
+  doc.text('Lumina Electrolineras QCUTE SAS', ML + 5, y + 14);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...G.gray);
+  doc.text('NIT: 901.993.025-0', ML + 5, y + 20);
+  doc.text('contacto@lumina.com.co', ML + 5, y + 26);
+  doc.text('www.luminaELECTROLINERAS.com', ML + 5, y + 32);
 
-  const totalKwh    = rows.reduce((s, r) => s + (r.kwh_total || 0), 0);
-  const totalCosto  = rows.reduce((s, r) => s + (r.costo_energia || 0), 0);
+  // "Emitido por" — Aliado
+  const x2 = ML + cW * 0.52;
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(...G.mid);
+  doc.roundedRect(x2, y, bW, bH, 3, 3, 'FD');
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...G.mid);
+  doc.text('EMITIDO POR:', x2 + 5, y + 7);
+  doc.setFontSize(9.5);
+  doc.setTextColor(...G.text);
+  doc.text(aliado.razon_social, x2 + 5, y + 14);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...G.gray);
+  doc.text(`NIT: ${aliado.nit || '—'}`, x2 + 5, y + 20);
+  if (aliado.email)    doc.text(aliado.email,    x2 + 5, y + 26);
+  if (aliado.contacto) doc.text(aliado.contacto, x2 + 5, y + 32);
+
+  // ── Período ────────────────────────────────────────────────────────────────
+  y += bH + 6;
+  doc.setFillColor(...G.dark);
+  doc.roundedRect(ML, y, cW, 9, 2, 2, 'F');
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...G.white);
+  doc.text(`PERÍODO DE FACTURACIÓN:  ${fmtD(desde)}  al  ${fmtD(hasta)}`, ML + 4, y + 6.5);
+
+  // ── CAPÍTULO 1: ENERGÍA — CONCEPTO A FACTURAR ─────────────────────────────
+  y += 15;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...G.dark);
+  doc.text('CONCEPTO A FACTURAR  —  ENERGÍA ELÉCTRICA SUMINISTRADA', ML, y);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...G.gray);
+  doc.text('Consumo de energía eléctrica registrado por los cargadores Lumina instalados en sus instalaciones.', ML, y + 5);
+
+  y += 9;
+
+  const totalKwh   = rows.reduce((s, r) => s + (r.kwh_total     || 0), 0);
+  const totalCosto = rows.reduce((s, r) => s + (r.costo_energia || 0), 0);
 
   autoTable(doc, {
     startY: y,
-    head: [['Estación', 'Ciudad', 'Sesiones', 'kWh consumidos', 'Tarifa pactada', 'Valor energía']],
-    body: energiaRows,
-    foot: [['', '', '', parseFloat(totalKwh.toFixed(3)) + ' kWh', 'SUBTOTAL', cop(totalCosto)]],
-    margin: { left: margin, right: margin },
-    styles: { fontSize: 9, cellPadding: 4, textColor: C.text },
-    headStyles: { fillColor: C.greenDark, textColor: C.white, fontStyle: 'bold', fontSize: 8.5 },
-    footStyles: { fillColor: C.green, textColor: C.white, fontStyle: 'bold', fontSize: 9 },
+    head: [['Punto de carga / Estación', 'Ciudad', 'Sesiones', 'kWh consumidos', 'Tarifa pactada (COP/kWh)', 'Valor a facturar (COP)']],
+    body: rows.map(r => [
+      r.station_name,
+      r.city || '—',
+      r.sesiones,
+      parseFloat(r.kwh_total).toFixed(3) + ' kWh',
+      cop(r.cost_per_kwh),
+      cop(r.costo_energia),
+    ]),
+    foot: [['', '', '', parseFloat(totalKwh.toFixed(3)) + ' kWh', 'TOTAL A FACTURAR (COP)', cop(totalCosto)]],
+    margin: { left: ML, right: ML },
+    styles: { fontSize: 8.5, cellPadding: 3.5, textColor: G.text },
+    headStyles: { fillColor: G.dark, textColor: G.white, fontStyle: 'bold', fontSize: 8 },
+    footStyles: { fillColor: G.mid,  textColor: G.white, fontStyle: 'bold', fontSize: 9 },
     alternateRowStyles: { fillColor: [248, 253, 250] },
     columnStyles: {
-      0: { cellWidth: 50 },
+      0: { cellWidth: 52 },
       2: { halign: 'center' },
       3: { halign: 'right' },
       4: { halign: 'right' },
@@ -202,38 +215,59 @@ export function generarPDFAliado(aliado, rows, desde, hasta) {
 
   y = doc.lastAutoTable.finalY + 6;
 
-  // ── CAPÍTULO 2: COMISIÓN ─────────────────────────────────
-  doc.setFontSize(10.5);
+  // ── TOTAL A FACTURAR (caja principal) ─────────────────────────────────────
+  if (y + 22 > pageH - 30) { doc.addPage(); drawHeader(doc, pageW); y = 52; }
+
+  doc.setFillColor(...G.dark);
+  doc.roundedRect(ML, y, cW, 20, 4, 4, 'F');
+  doc.setFillColor(...G.mid);
+  doc.roundedRect(ML, y, cW * 0.55, 20, 4, 4, 'F');  // franja izquierda decorativa
+  doc.setFillColor(...G.dark);
+  doc.roundedRect(ML + cW * 0.52, y, cW * 0.48, 20, 4, 4, 'F');
+
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.greenDark);
-  doc.text('CAPÍTULO 2  —  COMISIÓN POR VENTAS', margin, y);
+  doc.setTextColor(...G.white);
+  doc.text('TOTAL A FACTURAR', ML + 6, y + 13);
 
+  doc.setFontSize(16);
+  doc.setTextColor(134, 239, 172);
+  doc.text(cop(totalCosto), pageW - ML - 5, y + 14, { align: 'right' });
+
+  y += 26;
+
+  // ── CAPÍTULO 2: COMISIÓN (SOLO INFORMATIVO) ───────────────────────────────
+  if (y + 10 > pageH - 40) { doc.addPage(); drawHeader(doc, pageW); y = 52; }
+
+  // Encabezado sección informativa
+  doc.setFillColor(254, 252, 232); // amarillo muy suave
+  doc.setDrawColor(234, 179, 8);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(ML, y, cW, 9, 2, 2, 'FD');
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.gray);
-  doc.text('Comisión sobre las ventas de carga eléctrica realizadas en sus instalaciones, según porcentaje negociado.', margin, y + 5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(120, 80, 0);
+  doc.text('INFORMACIÓN ADICIONAL  —  COMISIÓN POR VENTAS  (solo referencial, no forma parte de la factura)', ML + 4, y + 6.5);
 
-  y += 10;
-
-  const comisionRows = rows.map(r => [
-    r.station_name,
-    r.city || '—',
-    `${r.commission_pct}%`,
-    cop(r.comision),
-  ]);
+  y += 14;
 
   const totalComision = rows.reduce((s, r) => s + (r.comision || 0), 0);
 
   autoTable(doc, {
     startY: y,
-    head: [['Estación', 'Ciudad', '% Comisión pactada', 'Valor comisión']],
-    body: comisionRows,
-    foot: [['', '', 'SUBTOTAL COMISIÓN', cop(totalComision)]],
-    margin: { left: margin, right: margin },
-    styles: { fontSize: 9, cellPadding: 4, textColor: C.text },
-    headStyles: { fillColor: [5, 80, 40], textColor: C.white, fontStyle: 'bold', fontSize: 8.5 },
-    footStyles: { fillColor: C.green, textColor: C.white, fontStyle: 'bold', fontSize: 9 },
-    alternateRowStyles: { fillColor: [248, 253, 250] },
+    head: [['Punto de carga / Estación', 'Ciudad', '% Comisión pactada', 'Valor referencial (COP)']],
+    body: rows.map(r => [
+      r.station_name,
+      r.city || '—',
+      `${r.commission_pct}%`,
+      cop(r.comision),
+    ]),
+    foot: [['', '', 'TOTAL COMISIÓN (referencial)', cop(totalComision)]],
+    margin: { left: ML, right: ML },
+    styles: { fontSize: 8.5, cellPadding: 3.5, textColor: G.text },
+    headStyles: { fillColor: [120, 80, 0], textColor: G.white, fontStyle: 'bold', fontSize: 8 },
+    footStyles: { fillColor: [180, 120, 0], textColor: G.white, fontStyle: 'bold', fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [255, 253, 244] },
     columnStyles: {
       2: { halign: 'center' },
       3: { halign: 'right', fontStyle: 'bold' },
@@ -242,58 +276,28 @@ export function generarPDFAliado(aliado, rows, desde, hasta) {
 
   y = doc.lastAutoTable.finalY + 10;
 
-  // ── TOTAL GENERAL ────────────────────────────────────────
-  const totalGeneral = totalCosto + totalComision;
+  // ── Nota legal ─────────────────────────────────────────────────────────────
+  if (y + 18 > pageH - 25) { doc.addPage(); drawHeader(doc, pageW); y = 52; }
 
-  // Comprueba si cabe en la página, si no, nueva página
-  if (y + 50 > pageH - 30) {
-    doc.addPage();
-    drawHeader(doc, pageW);
-    y = 52;
-  }
-
-  // Fondo total
-  doc.setFillColor(...C.greenDark);
-  doc.roundedRect(margin, y, contentW, 28, 4, 4, 'F');
-
-  // Desglose mini
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.green);
-  doc.text(`Capítulo 1 — Energía:   ${cop(totalCosto)}`, margin + 8, y + 9);
-  doc.text(`Capítulo 2 — Comisión:  ${cop(totalComision)}`, margin + 8, y + 17);
-
-  // Línea separadora
-  doc.setDrawColor(...C.green);
-  doc.setLineWidth(0.3);
-  doc.line(margin + 8, y + 19, pageW - margin - 8, y + 19);
-
-  // Monto total grande
-  doc.setFontSize(15);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.white);
-  doc.text('TOTAL A FACTURAR:', margin + 8, y + 27);
-  doc.setFontSize(17);
-  doc.setTextColor(...C.green);
-  doc.text(cop(totalGeneral), pageW - margin - 5, y + 27, { align: 'right' });
-
-  y += 36;
-
-  // Nota legal
+  doc.setFillColor(...G.grayL);
+  doc.roundedRect(ML, y, cW, 16, 2, 2, 'F');
   doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(...C.gray);
-  const nota = 'Favor emitir la factura electrónica a nombre de Lumina Electrolineras SAS con los conceptos y montos indicados en los capítulos anteriores. El pago se realizará dentro de los 15 días hábiles siguientes a la recepción de la factura.';
-  const lines = doc.splitTextToSize(nota, contentW);
-  doc.text(lines, margin, y);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...G.dark);
+  doc.text('Instrucciones de pago:', ML + 5, y + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...G.gray);
+  const nota = 'Favor emitir la factura electrónica a nombre de Lumina Electrolineras QCUTE SAS, NIT 901.993.025-0, por el concepto de energía eléctrica suministrada indicado arriba. El pago se realizará dentro de los 15 días hábiles siguientes a la recepción de la factura.';
+  const lines = doc.splitTextToSize(nota, cW - 10);
+  doc.text(lines, ML + 5, y + 12);
 
-  // ── FOOTER en cada página ───────────────────────────────
-  const totalPages = doc.getNumberOfPages();
-  for (let p = 1; p <= totalPages; p++) {
+  // ── Pies en todas las páginas ──────────────────────────────────────────────
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p++) {
     doc.setPage(p);
-    drawFooter(doc, p, totalPages, pageW, pageH);
+    drawFooter(doc, p, total, pageW, pageH);
   }
 
-  const fname = `Lumina_Facturacion_${aliado.razon_social.replace(/\s+/g, '_').slice(0, 20)}_${desde}_${hasta}.pdf`;
-  doc.save(fname);
+  const safe  = aliado.razon_social.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20);
+  doc.save(`Lumina_Factura_${safe}_${desde}_${hasta}.pdf`);
 }
