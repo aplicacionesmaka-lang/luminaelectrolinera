@@ -25,6 +25,7 @@ app.use('/api/sessions', require('./routes/sessions'));
 app.use('/api/payments',     require('./routes/payments'));
 app.use('/api/reservations',     require('./routes/reservations'));
 app.use('/api/payment-methods', require('./routes/paymentMethods'));
+app.use('/api/aliados',         require('./routes/aliados'));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 

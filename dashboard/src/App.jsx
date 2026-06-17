@@ -1,12 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import LoginPage    from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import StationsPage from './pages/StationsPage';
-import SessionsPage  from './pages/SessionsPage';
-import ClientesPage  from './pages/ClientesPage';
-import Layout       from './components/Layout';
+import LoginPage       from './pages/LoginPage';
+import DashboardPage   from './pages/DashboardPage';
+import StationsPage    from './pages/StationsPage';
+import SessionsPage    from './pages/SessionsPage';
+import ClientesPage    from './pages/ClientesPage';
+import AliadosPage     from './pages/AliadosPage';
+import LiquidacionPage from './pages/LiquidacionPage';
+import Layout          from './components/Layout';
 
 function Guard({ children }) {
   const { user, loading } = useAuth();
@@ -24,7 +26,9 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="stations" element={<StationsPage />} />
             <Route path="sessions" element={<SessionsPage />} />
-            <Route path="clientes" element={<ClientesPage />} />
+            <Route path="clientes"    element={<ClientesPage />} />
+            <Route path="aliados"     element={<AliadosPage />} />
+            <Route path="liquidacion" element={<LiquidacionPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

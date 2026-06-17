@@ -5,6 +5,10 @@ const { Pool } = require('pg');
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+const SERVER   = 'api.lumina.69.62.64.153.nip.io';
+const ADMIN    = `https://${SERVER}/admin`;
+const APP_LINK = 'https://expo.dev/artifacts/eas/V0Zcg54y5-vmWeCV4MJjlkET_zZ1_9iL2IQaJ04LeGA.apk';
+
 async function run() {
   const { rows } = await pool.query(
     `SELECT charge_point_id, model, max_power_kw, ocpp_password
@@ -16,11 +20,10 @@ async function run() {
 
   const wb = XLSX.utils.book_new();
 
-  // ─── Sheet 1: OCPP Configuration ─────────────────────────────────────────
+  // ─── Sheet 1: OCPP Configuration ──────────────────────────────────────────
   const configRows = [[
     '#', 'ChargePoint ID', 'Password', 'Model', 'Power',
-    'Central System URL (with credentials)',
-    'Protocol', 'Status',
+    'Central System URL (with credentials)', 'Protocol', 'Status',
   ]];
 
   rows.forEach((r, i) => {
@@ -32,7 +35,7 @@ async function run() {
       pwd,
       r.model || 'HT-EA-022-C-D',
       `${r.max_power_kw || 22} kW AC`,
-      `ws://${cpId}:${pwd}@api.lumina.69.62.64.153.nip.io/ocpp/${cpId}`,
+      `wss://${cpId}:${pwd}@${SERVER}/ocpp/${cpId}`,
       'OCPP 1.6J',
       'Pre-configured – Awaiting installation',
     ]);
@@ -40,81 +43,76 @@ async function run() {
 
   const ws1 = XLSX.utils.aoa_to_sheet(configRows);
   ws1['!cols'] = [
-    { wch: 4 },   // #
-    { wch: 14 },  // ChargePoint ID
-    { wch: 18 },  // Password
-    { wch: 18 },  // Model
-    { wch: 10 },  // Power
-    { wch: 80 },  // URL
-    { wch: 12 },  // Protocol
-    { wch: 36 },  // Status
+    { wch: 4 }, { wch: 14 }, { wch: 18 }, { wch: 18 },
+    { wch: 10 }, { wch: 82 }, { wch: 12 }, { wch: 36 },
   ];
   XLSX.utils.book_append_sheet(wb, ws1, 'OCPP Configuration');
 
-  // ─── Sheet 2: Setup Instructions ─────────────────────────────────────────
+  // ─── Sheet 2: Setup Instructions ──────────────────────────────────────────
+  const exampleCp  = rows[0]?.charge_point_id || 'LUM22KW01';
+  const examplePwd = rows[0]?.ocpp_password   || 'XXXX';
+
   const instructions = [
     ['LUMINA ELECTROLINERAS — OCPP SETUP INSTRUCTIONS'],
     [''],
     ['OVERVIEW'],
     ['Each charging unit must be configured to connect to the Lumina Central System'],
-    ['using the OCPP 1.6J protocol over a secure WebSocket connection with Basic Authentication.'],
+    ['using OCPP 1.6J over a secure encrypted WebSocket (WSS) with Basic Authentication.'],
     [''],
     ['CONNECTION PARAMETERS'],
-    ['Parameter', 'Value'],
-    ['Protocol', 'OCPP 1.6J (WebSocket)'],
-    ['Connection type', 'ws:// with Basic Authentication'],
-    ['Port', '80'],
+    ['Parameter',          'Value'],
+    ['Protocol',           'OCPP 1.6J (WebSocket Secure)'],
+    ['Connection type',    'wss:// (TLS encrypted WebSocket)'],
+    ['Port',               '443'],
     ['Heartbeat interval', '60 seconds'],
-    ['Authentication', 'HTTP Basic Auth (Username = ChargePoint ID, Password = assigned per unit)'],
+    ['Authentication',     'HTTP Basic Auth — Username = ChargePoint ID, Password = see column C'],
     [''],
     ['URL FORMAT'],
-    ['  ws://{ChargePointID}:{Password}@api.lumina.69.62.64.153.nip.io/ocpp/{ChargePointID}'],
+    ['  wss://{ChargePointID}:{Password}@' + SERVER + '/ocpp/{ChargePointID}'],
     [''],
-    ['  Example for unit LUM22KW01:'],
-    ['  ws://LUM22KW01:CBAD97A0A15AD341@api.lumina.69.62.64.153.nip.io/ocpp/LUM22KW01'],
+    [`  Example for unit ${exampleCp}:`],
+    [`  wss://${exampleCp}:${examplePwd}@${SERVER}/ocpp/${exampleCp}`],
     [''],
     ['HOW TO CONFIGURE EACH UNIT'],
     [''],
-    ['Step 1 — Identify the unit number'],
-    ['   Find the unit number in the "OCPP Configuration" sheet.'],
-    ['   Each unit has a unique ChargePoint ID and Password assigned.'],
+    ['Step 1 — Identify the unit'],
+    ['   Each charger has a unique ChargePoint ID and Password in the "OCPP Configuration" sheet.'],
     [''],
-    ['Step 2 — Access the charger configuration interface'],
-    ['   Connect to the charger via its local web interface or'],
-    ['   the Hengtong manufacturer configuration tool.'],
+    ['Step 2 — Access the charger configuration'],
+    ['   Connect via the local web interface or the Hengtong configuration tool.'],
     [''],
     ['Step 3 — Set the Central System URL'],
-    ['   Navigate to: OCPP Settings → Central System URL (or Backend URL)'],
-    ['   Enter the full URL from column F of the configuration sheet.'],
-    ['   The URL already includes the credentials embedded:'],
-    ['   ws://{ChargePointID}:{Password}@api.lumina.69.62.64.153.nip.io/ocpp/{ChargePointID}'],
+    ['   Go to: OCPP Settings → Central System URL (or Backend URL)'],
+    ['   Enter the full URL from column F for this specific unit:'],
+    ['   wss://{ChargePointID}:{Password}@' + SERVER + '/ocpp/{ChargePointID}'],
     [''],
-    ['   NOTE: Some charger interfaces have separate fields for:'],
-    ['     - Server address:  api.lumina.69.62.64.153.nip.io'],
-    ['     - Path:            /ocpp/{ChargePointID}'],
-    ['     - Username:        {ChargePoint ID}  (same as the ID)'],
-    ['     - Password:        {Password from column C}'],
+    ['   If the charger has SEPARATE fields for server / username / password:'],
+    ['     Server address:  ' + SERVER],
+    ['     Path:            /ocpp/{ChargePointID}'],
+    ['     Username:        {ChargePoint ID}   (column B)'],
+    ['     Password:        {Password}          (column C)'],
     [''],
-    ['Step 4 — Set the ChargePoint Identity / Station ID'],
-    ['   Enter the ChargePoint ID (column B) in the "ChargePoint Identity" field.'],
-    ['   Example: LUM22KW01'],
+    ['Step 4 — Set ChargePoint Identity'],
+    ['   Enter the ChargePoint ID (column B) in the "ChargePoint Identity" or "Station ID" field.'],
     [''],
-    ['Step 5 — Set the OCPP protocol version'],
-    ['   Select: OCPP 1.6J  or  OCPP 1.6 JSON (WebSocket)'],
-    ['   Do NOT select OCPP 1.5 SOAP or OCPP 2.0.'],
+    ['Step 5 — OCPP Protocol version'],
+    ['   Select: OCPP 1.6J  or  OCPP 1.6 JSON'],
+    ['   Do NOT use OCPP 1.5 SOAP or OCPP 2.0.'],
     [''],
-    ['Step 6 — Set the Heartbeat interval'],
-    ['   Set the heartbeat interval to 60 seconds.'],
+    ['Step 6 — Heartbeat interval'],
+    ['   Set to 60 seconds.'],
     [''],
     ['Step 7 — Save and reboot'],
-    ['   Save the configuration and restart the unit.'],
-    ['   The charger will send a BootNotification to the Central System.'],
-    ['   A successful connection will be confirmed by the Lumina admin panel.'],
+    ['   The charger will connect and send a BootNotification.'],
+    ['   Status will change to "Available" when successfully registered.'],
     [''],
     ['VERIFICATION'],
-    ['   After connection, the Lumina admin panel shows the unit as'],
-    ['   "OCPP Connected" with a green indicator.'],
-    ['   Admin panel: http://api.lumina.69.62.64.153.nip.io/admin'],
+    ['   The Lumina admin panel shows each unit as "● OCPP Connected" (green).'],
+    ['   Admin panel: ' + ADMIN],
+    [''],
+    ['USER MOBILE APP'],
+    ['   Android APK (v1.0 — production): ' + APP_LINK],
+    ['   Download, install and register to test the full charging flow.'],
     [''],
     ['SECURITY NOTICE'],
     ['   Each unit has a unique password. Do not share passwords between units.'],
@@ -126,7 +124,7 @@ async function run() {
   ];
 
   const ws2 = XLSX.utils.aoa_to_sheet(instructions);
-  ws2['!cols'] = [{ wch: 78 }, { wch: 78 }];
+  ws2['!cols'] = [{ wch: 78 }, { wch: 82 }];
   XLSX.utils.book_append_sheet(wb, ws2, 'Setup Instructions');
 
   // ─── Save ─────────────────────────────────────────────────────────────────

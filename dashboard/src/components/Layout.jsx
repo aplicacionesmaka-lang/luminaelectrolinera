@@ -28,7 +28,9 @@ export default function Layout() {
           <NavLink to="/"         style={navStyle} end>📊 Dashboard</NavLink>
           <NavLink to="/stations" style={navStyle}>🗺 Estaciones</NavLink>
           <NavLink to="/sessions" style={navStyle}>🕐 Sesiones</NavLink>
-          <NavLink to="/clientes" style={navStyle}>👥 Clientes</NavLink>
+          <NavLink to="/clientes"    style={navStyle}>👥 Clientes</NavLink>
+          <NavLink to="/aliados"     style={navStyle}>🤝 Aliados</NavLink>
+          <NavLink to="/liquidacion" style={navStyle}>📋 Liquidación</NavLink>
         </nav>
         <div style={{ marginTop: 'auto', padding: '0 22px 8px', color: '#4ade80', fontSize: 11 }}>
           {user?.email}
