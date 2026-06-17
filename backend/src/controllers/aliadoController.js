@@ -66,9 +66,9 @@ async function liquidacion(req, res) {
       al.nit,
       al.email                                 AS aliado_email,
       al.contacto                              AS aliado_contacto,
-      COALESCE(SUM(s.kwh_used), 0)::numeric    AS kwh_total,
-      COUNT(s.id)::int                         AS sesiones,
-      COALESCE(SUM(s.cost), 0)::numeric        AS venta_bruta
+      COALESCE(SUM(s.kwh_used), 0)::numeric                          AS kwh_total,
+      COUNT(s.id)::int                                               AS sesiones,
+      COALESCE(SUM(s.kwh_used) * st.price_per_kwh, 0)::numeric      AS venta_bruta
     FROM stations st
     LEFT JOIN aliados al ON al.id = st.aliado_id
     LEFT JOIN sessions s ON s.station_id = st.id

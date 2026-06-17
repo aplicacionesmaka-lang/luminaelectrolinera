@@ -90,28 +90,51 @@ export default function LiquidacionPage() {
     ws['!cols'] = [36,18,28,16,10,16,16,20,12,16,22,16].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws, 'Liquidación');
 
-    // Hoja por aliado (solicitud de factura)
+    // Hoja por aliado — solo lo que el aliado necesita ver
     entries.forEach(al => {
       if (al.razon_social === 'Sin aliado asignado') return;
-      const sub = al.rows.reduce((a,r)=>({ kwh:a.kwh+r.kwh_total, costo:a.costo+r.costo_energia, com:a.com+r.comision, total:a.total+r.total_aliado }),{kwh:0,costo:0,com:0,total:0});
+      const sub = al.rows.reduce((a,r)=>({
+        kwh:   a.kwh   + (r.kwh_total     || 0),
+        costo: a.costo + (r.costo_energia || 0),
+        com:   a.com   + (r.comision      || 0),
+        total: a.total + (r.total_aliado  || 0),
+      }), {kwh:0,costo:0,com:0,total:0});
+
       const sheet = [
-        ['SOLICITUD DE FACTURACIÓN'],
-        [`Aliado: ${al.razon_social}`],
-        [`NIT: ${al.nit}`],
-        [`Período: ${fmtD(desde)} al ${fmtD(hasta)}`],
+        ['SOLICITUD DE FACTURACIÓN — LUMINA ELECTROLINERAS'],
         [],
-        ['Concepto', 'Detalle', 'Valor (COP)'],
+        ['Para:',    'Lumina Electrolineras SAS'],
+        ['De:',      al.razon_social],
+        ['NIT:',     al.nit],
+        ['Período:', `${fmtD(desde)} al ${fmtD(hasta)}`],
+        ['Fecha:',   new Date().toLocaleDateString('es-CO')],
+        [],
+        ['Concepto', 'kWh', 'Tarifa (COP/kWh)', 'Valor (COP)'],
       ];
+
       al.rows.forEach(r => {
-        sheet.push([`Energía suministrada — ${r.station_name}`, `${parseFloat(r.kwh_total.toFixed(3))} kWh × ${cop(r.cost_per_kwh)}/kWh`, Math.round(r.costo_energia)]);
-        sheet.push([`Comisión por ventas — ${r.station_name}`, `${r.commission_pct}% sobre ${cop(r.venta_bruta)}`, Math.round(r.comision)]);
+        const kwh = parseFloat(r.kwh_total || 0);
+        sheet.push([
+          `Energía suministrada — ${r.station_name}`,
+          parseFloat(kwh.toFixed(3)),
+          Math.round(r.cost_per_kwh),
+          Math.round(r.costo_energia),
+        ]);
+        sheet.push([
+          `Comisión ${r.commission_pct}% — ${r.station_name}`,
+          '',
+          '',
+          Math.round(r.comision),
+        ]);
       });
+
       sheet.push([]);
-      sheet.push(['TOTAL A FACTURAR', '', Math.round(sub.total)]);
+      sheet.push(['', '', 'TOTAL A FACTURAR (COP)', Math.round(sub.total)]);
       sheet.push([]);
-      sheet.push(['Facturar a:', 'Lumina Electrolineras SAS', '']);
+      sheet.push(['Nota:', 'Favor facturar a nombre de Lumina Electrolineras SAS con los conceptos indicados.']);
+
       const wsal = XLSX.utils.aoa_to_sheet(sheet);
-      wsal['!cols'] = [{wch:40},{wch:38},{wch:18}];
+      wsal['!cols'] = [{wch:44},{wch:12},{wch:20},{wch:18}];
       const sheetName = al.razon_social.slice(0,28).replace(/[:\\/?*[\]]/g,'');
       XLSX.utils.book_append_sheet(wb, wsal, sheetName);
     });
