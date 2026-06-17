@@ -2,27 +2,28 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import { T } from '../theme';
 import * as XLSX from 'xlsx';
+import { generarPDFAliado } from '../utils/luminaPDF';
 
-const cop  = n => `$${Math.round(n||0).toLocaleString('es-CO')}`;
-const fmtD = s => s ? new Date(s+'T00:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) : '';
+const cop  = n => `$${Math.round(n || 0).toLocaleString('es-CO')}`;
+const fmtD = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
 function firstDay() {
-  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
 }
 function lastDay() {
-  const d = new Date(); return new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().slice(0,10);
+  const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10);
 }
 
 export default function LiquidacionPage() {
-  const [desde,       setDesde]       = useState(firstDay());
-  const [hasta,       setHasta]       = useState(lastDay());
-  const [aliadoFil,   setAliadoFil]   = useState('');
-  const [aliados,     setAliados]     = useState([]);
-  const [data,        setData]        = useState([]);
-  const [loading,     setLoading]     = useState(false);
-  const [generated,   setGenerated]   = useState(false);
+  const [desde,     setDesde]     = useState(firstDay());
+  const [hasta,     setHasta]     = useState(lastDay());
+  const [aliadoFil, setAliadoFil] = useState('');
+  const [aliados,   setAliados]   = useState([]);
+  const [data,      setData]      = useState([]);
+  const [loading,   setLoading]   = useState(false);
+  const [generated, setGenerated] = useState(false);
 
-  useEffect(() => { api.get('/aliados').then(setAliados).catch(()=>{}); }, []);
+  useEffect(() => { api.get('/aliados').then(setAliados).catch(() => {}); }, []);
 
   async function generate() {
     setLoading(true);
@@ -31,11 +32,11 @@ export default function LiquidacionPage() {
       if (aliadoFil) params.set('aliado_id', aliadoFil);
       const res = await api.get(`/aliados/liquidacion?${params}`);
       setData(res); setGenerated(true);
-    } catch(e) { alert(e.error||'Error'); }
+    } catch (e) { alert(e.error || 'Error al generar reporte'); }
     finally { setLoading(false); }
   }
 
-  // Totales
+  // Totales generales
   const totals = data.reduce((acc, r) => ({
     kwh:      acc.kwh      + (r.kwh_total     || 0),
     venta:    acc.venta    + (r.venta_bruta   || 0),
@@ -43,134 +44,179 @@ export default function LiquidacionPage() {
     comision: acc.comision + (r.comision      || 0),
     total:    acc.total    + (r.total_aliado  || 0),
     neto:     acc.neto     + (r.neto_lumina   || 0),
-  }), { kwh:0, venta:0, costo:0, comision:0, total:0, neto:0 });
+  }), { kwh: 0, venta: 0, costo: 0, comision: 0, total: 0, neto: 0 });
 
   // Agrupar por aliado
   const byAliado = {};
   data.forEach(r => {
     const key = r.aliado_id || '__sin__';
-    if (!byAliado[key]) byAliado[key] = { razon_social: r.razon_social || 'Sin aliado asignado', nit: r.nit || '—', email: r.aliado_email, rows: [] };
+    if (!byAliado[key]) byAliado[key] = {
+      id: r.aliado_id,
+      razon_social: r.razon_social || 'Sin aliado asignado',
+      nit: r.nit || '—',
+      email: r.aliado_email,
+      contacto: r.aliado_contacto,
+      rows: [],
+    };
     byAliado[key].rows.push(r);
   });
 
-  function exportExcel(aliadoId) {
-    const entries = aliadoId ? [byAliado[aliadoId]] : Object.values(byAliado);
+  // ── PDF PROFESIONAL ──────────────────────────────────────────────────────────
+  function exportPDF(aliadoKey) {
+    const entries = aliadoKey ? [byAliado[aliadoKey]] : Object.values(byAliado).filter(a => a.id);
+    entries.forEach(al => generarPDFAliado(al, al.rows, desde, hasta));
+  }
+
+  // ── EXCEL DETALLADO ──────────────────────────────────────────────────────────
+  function exportExcel(aliadoKey) {
+    const entries = aliadoKey ? [byAliado[aliadoKey]] : Object.values(byAliado);
     const wb = XLSX.utils.book_new();
 
-    // Hoja resumen
+    // ── Hoja 1: Resumen ejecutivo ─────────────────────────────────────────────
     const sumRows = [
       ['LUMINA ELECTROLINERAS — LIQUIDACIÓN MENSUAL'],
       [`Período: ${fmtD(desde)}  al  ${fmtD(hasta)}`],
       [`Generado: ${new Date().toLocaleString('es-CO')}`],
       [],
-      ['Aliado / Razón Social', 'NIT', 'Estación', 'Ciudad', 'Sesiones', 'kWh consumidos',
-       'Venta bruta', `Costo energía ($/kWh)`, `Comisión %`, 'Comisión ($)', 'Total a pagar aliado', 'Neto Lumina'],
+      ['Aliado / Razón Social', 'NIT', 'Estación', 'Ciudad', 'Sesiones',
+       'kWh consumidos', 'Venta bruta (COP)', 'Costo energía (COP)',
+       'Comisión %', 'Comisión (COP)', 'Total aliado (COP)', 'Neto Lumina (COP)'],
     ];
+
     entries.forEach(al => {
       al.rows.forEach(r => {
         sumRows.push([
-          al.razon_social, al.nit, r.station_name, r.city||'', r.sesiones,
+          al.razon_social, al.nit, r.station_name, r.city || '',
+          r.sesiones,
           parseFloat(r.kwh_total.toFixed(3)),
           Math.round(r.venta_bruta),
-          `${cop(r.cost_per_kwh)}/kWh`,
+          Math.round(r.costo_energia),
           `${r.commission_pct}%`,
           Math.round(r.comision),
           Math.round(r.total_aliado),
           Math.round(r.neto_lumina),
         ]);
       });
-      // Subtotal por aliado
-      const sub = al.rows.reduce((a,r)=>({ kwh:a.kwh+r.kwh_total, venta:a.venta+r.venta_bruta, com:a.com+r.comision, total:a.total+r.total_aliado, neto:a.neto+r.neto_lumina }),{kwh:0,venta:0,com:0,total:0,neto:0});
-      sumRows.push(['SUBTOTAL '+al.razon_social,'','','','', parseFloat(sub.kwh.toFixed(3)), Math.round(sub.venta),'','',Math.round(sub.com),Math.round(sub.total),Math.round(sub.neto)]);
+      const sub = al.rows.reduce((a, r) => ({
+        kwh:   a.kwh   + r.kwh_total,
+        venta: a.venta + r.venta_bruta,
+        cos:   a.cos   + r.costo_energia,
+        com:   a.com   + r.comision,
+        tot:   a.tot   + r.total_aliado,
+        net:   a.net   + r.neto_lumina,
+      }), { kwh: 0, venta: 0, cos: 0, com: 0, tot: 0, net: 0 });
+      sumRows.push([
+        `SUBTOTAL — ${al.razon_social}`, '', '', '', '',
+        parseFloat(sub.kwh.toFixed(3)), Math.round(sub.venta), Math.round(sub.cos),
+        '', Math.round(sub.com), Math.round(sub.tot), Math.round(sub.net),
+      ]);
       sumRows.push([]);
     });
-    sumRows.push(['TOTAL GENERAL','','','','', parseFloat(totals.kwh.toFixed(3)), Math.round(totals.venta),'','',Math.round(totals.comision),Math.round(totals.total),Math.round(totals.neto)]);
+
+    sumRows.push([
+      'TOTAL GENERAL', '', '', '', '',
+      parseFloat(totals.kwh.toFixed(3)), Math.round(totals.venta), Math.round(totals.costo),
+      '', Math.round(totals.comision), Math.round(totals.total), Math.round(totals.neto),
+    ]);
 
     const ws = XLSX.utils.aoa_to_sheet(sumRows);
-    ws['!cols'] = [36,18,28,16,10,16,16,20,12,16,22,16].map(w=>({wch:w}));
-    XLSX.utils.book_append_sheet(wb, ws, 'Liquidación');
+    ws['!cols'] = [36, 18, 28, 14, 9, 16, 18, 18, 10, 16, 18, 18].map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Liquidación');
 
-    // Hoja por aliado — solo lo que el aliado necesita ver
+    // ── Hoja 2+: Detalle de sesiones por aliado ───────────────────────────────
     entries.forEach(al => {
       if (al.razon_social === 'Sin aliado asignado') return;
-      const sub = al.rows.reduce((a,r)=>({
-        kwh:   a.kwh   + (r.kwh_total     || 0),
-        costo: a.costo + (r.costo_energia || 0),
-        com:   a.com   + (r.comision      || 0),
-        total: a.total + (r.total_aliado  || 0),
-      }), {kwh:0,costo:0,com:0,total:0});
 
-      const sheet = [
-        ['SOLICITUD DE FACTURACIÓN — LUMINA ELECTROLINERAS'],
+      // Necesitamos las sesiones — las tenemos en data (cada row es por estación)
+      // Expandimos con los datos disponibles por estación
+      const detRows = [
+        [`DETALLE DE TRANSACCIONES — ${al.razon_social}`],
+        [`NIT: ${al.nit}  |  Período: ${fmtD(desde)} al ${fmtD(hasta)}`],
         [],
-        ['Para:',    'Lumina Electrolineras SAS'],
-        ['De:',      al.razon_social],
-        ['NIT:',     al.nit],
-        ['Período:', `${fmtD(desde)} al ${fmtD(hasta)}`],
-        ['Fecha:',   new Date().toLocaleDateString('es-CO')],
-        [],
-        ['Concepto', 'kWh', 'Tarifa (COP/kWh)', 'Valor (COP)'],
+        ['Estación', 'Ciudad', 'Total sesiones', 'kWh consumidos',
+         'Tarifa energía (COP/kWh)', 'Valor energía (COP)',
+         'Comisión %', 'Venta bruta (COP)', 'Valor comisión (COP)',
+         'Total a pagar (COP)', 'Neto Lumina (COP)'],
       ];
 
       al.rows.forEach(r => {
-        const kwh = parseFloat(r.kwh_total || 0);
-        sheet.push([
-          `Energía suministrada — ${r.station_name}`,
-          parseFloat(kwh.toFixed(3)),
+        detRows.push([
+          r.station_name, r.city || '—',
+          r.sesiones,
+          parseFloat(r.kwh_total.toFixed(3)),
           Math.round(r.cost_per_kwh),
           Math.round(r.costo_energia),
-        ]);
-        sheet.push([
-          `Comisión ${r.commission_pct}% — ${r.station_name}`,
-          '',
-          '',
+          `${r.commission_pct}%`,
+          Math.round(r.venta_bruta),
           Math.round(r.comision),
+          Math.round(r.total_aliado),
+          Math.round(r.neto_lumina),
         ]);
       });
 
-      sheet.push([]);
-      sheet.push(['', '', 'TOTAL A FACTURAR (COP)', Math.round(sub.total)]);
-      sheet.push([]);
-      sheet.push(['Nota:', 'Favor facturar a nombre de Lumina Electrolineras SAS con los conceptos indicados.']);
+      const sub = al.rows.reduce((a, r) => ({
+        kwh:   a.kwh   + r.kwh_total,
+        cos:   a.cos   + r.costo_energia,
+        venta: a.venta + r.venta_bruta,
+        com:   a.com   + r.comision,
+        tot:   a.tot   + r.total_aliado,
+        net:   a.net   + r.neto_lumina,
+      }), { kwh: 0, cos: 0, venta: 0, com: 0, tot: 0, net: 0 });
 
-      const wsal = XLSX.utils.aoa_to_sheet(sheet);
-      wsal['!cols'] = [{wch:44},{wch:12},{wch:20},{wch:18}];
-      const sheetName = al.razon_social.slice(0,28).replace(/[:\\/?*[\]]/g,'');
-      XLSX.utils.book_append_sheet(wb, wsal, sheetName);
+      detRows.push([]);
+      detRows.push([
+        'TOTALES', '',
+        al.rows.reduce((s, r) => s + r.sesiones, 0),
+        parseFloat(sub.kwh.toFixed(3)), '',
+        Math.round(sub.cos), '',
+        Math.round(sub.venta),
+        Math.round(sub.com),
+        Math.round(sub.tot),
+        Math.round(sub.net),
+      ]);
+
+      const wsDet = XLSX.utils.aoa_to_sheet(detRows);
+      wsDet['!cols'] = [36, 14, 12, 16, 20, 20, 10, 18, 20, 18, 18].map(w => ({ wch: w }));
+      const sheetName = al.razon_social.slice(0, 28).replace(/[:\\/?*[\]]/g, '');
+      XLSX.utils.book_append_sheet(wb, wsDet, sheetName);
     });
 
-    const fname = `Lumina_Liquidacion_${desde}_${hasta}${aliadoId ? '_'+entries[0]?.razon_social?.slice(0,15) : ''}.xlsx`;
+    const fname = `Lumina_Detalle_${desde}_${hasta}${aliadoKey ? '_' + entries[0]?.razon_social?.slice(0, 15) : ''}.xlsx`;
     XLSX.writeFile(wb, fname);
   }
 
   return (
     <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24 }}>
-        <div>
-          <h1 style={{ color:T.text, fontSize:26, fontWeight:800, margin:0 }}>Liquidación Mensual</h1>
-          <div style={{ color:T.textMuted, fontSize:13, marginTop:2 }}>Genera reportes de consumo y solicitudes de facturación para aliados</div>
+      {/* ── Título ── */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ color: T.text, fontSize: 26, fontWeight: 800, margin: 0 }}>Liquidación Mensual</h1>
+        <div style={{ color: T.textMuted, fontSize: 13, marginTop: 2 }}>
+          Genera solicitudes de factura PDF con branding Lumina · Exporta reportes Excel con detalle completo
         </div>
       </div>
 
-      {/* Filtros */}
-      <div style={{ background:'#fff', borderRadius:16, padding:24, boxShadow:'0 2px 12px rgba(0,0,0,0.06)', marginBottom:24 }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 2fr auto', gap:16, alignItems:'end' }}>
+      {/* ── Filtros ── */}
+      <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 16, alignItems: 'end' }}>
           <div>
             <label style={lbl}>Desde</label>
-            <input type="date" value={desde} onChange={e=>setDesde(e.target.value)} style={{...inp,width:'100%'}} />
+            <input type="date" value={desde} onChange={e => setDesde(e.target.value)} style={{ ...inp, width: '100%' }} />
           </div>
           <div>
             <label style={lbl}>Hasta</label>
-            <input type="date" value={hasta} onChange={e=>setHasta(e.target.value)} style={{...inp,width:'100%'}} />
+            <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} style={{ ...inp, width: '100%' }} />
           </div>
           <div>
-            <label style={lbl}>Aliado (opcional — todos si no se selecciona)</label>
-            <select value={aliadoFil} onChange={e=>setAliadoFil(e.target.value)} style={{...sel,width:'100%'}}>
+            <label style={lbl}>Aliado (todos si no se selecciona)</label>
+            <select value={aliadoFil} onChange={e => setAliadoFil(e.target.value)} style={{ ...sel, width: '100%' }}>
               <option value="">Todos los aliados</option>
-              {aliados.map(a=><option key={a.id} value={a.id}>{a.razon_social} — NIT {a.nit}</option>)}
+              {aliados.map(a => <option key={a.id} value={a.id}>{a.razon_social} — NIT {a.nit}</option>)}
             </select>
           </div>
-          <button onClick={generate} disabled={loading} style={{ background:T.primary, color:'#fff', border:'none', borderRadius:12, padding:'12px 28px', fontWeight:700, fontSize:15, cursor:'pointer', whiteSpace:'nowrap' }}>
+          <button onClick={generate} disabled={loading} style={{
+            background: T.primary, color: '#fff', border: 'none', borderRadius: 12,
+            padding: '12px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>
             {loading ? '⏳ Calculando...' : '📊 Generar reporte'}
           </button>
         </div>
@@ -178,81 +224,112 @@ export default function LiquidacionPage() {
 
       {generated && data.length > 0 && (
         <>
-          {/* Resumen de totales */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:24 }}>
+          {/* ── Tarjetas resumen ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
             {[
-              { label:'kWh totales consumidos', value:`${totals.kwh.toFixed(2)} kWh`, color:'#2563eb', bg:'#eff6ff' },
-              { label:'Venta bruta usuarios',   value:cop(totals.venta),              color:T.primary,  bg:'#f0fdf4' },
-              { label:'Total a pagar aliados',  value:cop(totals.total),              color:'#b45309',  bg:'#fffbeb' },
-              { label:'Neto Lumina',            value:cop(totals.neto),               color:'#16a34a',  bg:'#f0fdf4' },
-            ].map(c=>(
-              <div key={c.label} style={{ background:c.bg, borderRadius:14, padding:'18px 20px', border:`1.5px solid ${c.color}22` }}>
-                <div style={{ color:c.color, fontWeight:800, fontSize:22 }}>{c.value}</div>
-                <div style={{ color:'#64748b', fontSize:12, marginTop:4 }}>{c.label}</div>
+              { label: 'kWh totales',          value: `${totals.kwh.toFixed(2)} kWh`, color: '#2563eb', bg: '#eff6ff' },
+              { label: 'Venta bruta usuarios', value: cop(totals.venta),              color: T.primary,  bg: '#f0fdf4' },
+              { label: 'Total pagar aliados',  value: cop(totals.total),              color: '#b45309',  bg: '#fffbeb' },
+              { label: 'Neto Lumina',          value: cop(totals.neto),               color: '#16a34a',  bg: '#f0fdf4' },
+            ].map(c => (
+              <div key={c.label} style={{ background: c.bg, borderRadius: 14, padding: '18px 20px', border: `1.5px solid ${c.color}22` }}>
+                <div style={{ color: c.color, fontWeight: 800, fontSize: 22 }}>{c.value}</div>
+                <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>{c.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Botones exportar */}
-          <div style={{ display:'flex', gap:10, marginBottom:20, flexWrap:'wrap' }}>
-            <button onClick={()=>exportExcel('')} style={{ background:'#16a34a', color:'#fff', border:'none', borderRadius:10, padding:'10px 22px', fontWeight:700, fontSize:14, cursor:'pointer' }}>
-              📥 Exportar Excel — Todos los aliados
-            </button>
-            {Object.entries(byAliado).filter(([k])=>k!=='__sin__').map(([id, al])=>(
-              <button key={id} onClick={()=>exportExcel(id)} style={{ background:'#fff', color:T.text, border:`1.5px solid ${T.borderCard}`, borderRadius:10, padding:'10px 18px', fontWeight:600, fontSize:13, cursor:'pointer' }}>
-                📄 {al.razon_social}
-              </button>
-            ))}
-          </div>
+          {/* ── Acciones de exportación ── */}
+          <div style={{ background: '#fff', borderRadius: 16, padding: 22, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 24 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 14 }}>Exportar documentos</div>
 
-          {/* Tabla por aliado */}
-          {Object.values(byAliado).map((al,i) => (
-            <div key={i} style={{ background:'#fff', borderRadius:16, padding:24, boxShadow:'0 2px 12px rgba(0,0,0,0.06)', marginBottom:20 }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
-                <div>
-                  <div style={{ fontWeight:800, fontSize:17, color:T.text }}>{al.razon_social}</div>
-                  <div style={{ color:T.textMuted, fontSize:13 }}>NIT: {al.nit} {al.email ? `· ${al.email}` : ''}</div>
-                </div>
-                <div style={{ background:'#f0fdf4', borderRadius:10, padding:'8px 16px', textAlign:'right' }}>
-                  <div style={{ color:'#16a34a', fontWeight:800, fontSize:18 }}>{cop(al.rows.reduce((s,r)=>s+r.total_aliado,0))}</div>
-                  <div style={{ color:T.textMuted, fontSize:11 }}>Total a facturar</div>
-                </div>
+            {/* PDF profesional */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color: T.textMuted, fontWeight: 600, marginBottom: 8 }}>
+                📄 PDF PROFESIONAL — Solicitud de factura con branding Lumina (Cap. 1: Energía · Cap. 2: Comisión · Total)
               </div>
-              <div style={{ overflowX:'auto' }}>
-                <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
-                  <thead>
-                    <tr style={{ background:'#f8fafc' }}>
-                      {['Estación','Ciudad','Sesiones','kWh','Venta bruta','Costo/kWh','Costo energía','Comisión %','Comisión $','Total aliado','Neto Lumina'].map(h=>(
-                        <th key={h} style={{ padding:'10px 14px', color:T.textMuted, fontWeight:600, textAlign:'right', fontSize:11, whiteSpace:'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {al.rows.map(r=>(
-                      <tr key={r.station_id} style={{ borderTop:`1px solid ${T.borderCard}` }}>
-                        <td style={{ padding:'11px 14px', color:T.text, fontWeight:700, textAlign:'left', whiteSpace:'nowrap' }}>{r.station_name}</td>
-                        <td style={{ padding:'11px 14px', color:T.textMuted, textAlign:'right' }}>{r.city||'—'}</td>
-                        <td style={{ padding:'11px 14px', color:T.text, fontWeight:600, textAlign:'right' }}>{r.sesiones}</td>
-                        <td style={{ padding:'11px 14px', color:'#2563eb', fontWeight:700, textAlign:'right' }}>{parseFloat(r.kwh_total).toFixed(2)}</td>
-                        <td style={{ padding:'11px 14px', color:T.textMuted, textAlign:'right' }}>{cop(r.venta_bruta)}</td>
-                        <td style={{ padding:'11px 14px', color:T.textMuted, textAlign:'right' }}>{cop(r.cost_per_kwh)}</td>
-                        <td style={{ padding:'11px 14px', color:'#b45309', fontWeight:600, textAlign:'right' }}>{cop(r.costo_energia)}</td>
-                        <td style={{ padding:'11px 14px', color:T.textMuted, textAlign:'right' }}>{r.commission_pct}%</td>
-                        <td style={{ padding:'11px 14px', color:'#b45309', textAlign:'right' }}>{cop(r.comision)}</td>
-                        <td style={{ padding:'11px 14px', color:'#dc2626', fontWeight:800, textAlign:'right' }}>{cop(r.total_aliado)}</td>
-                        <td style={{ padding:'11px 14px', color:'#16a34a', fontWeight:800, textAlign:'right' }}>{cop(r.neto_lumina)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button onClick={() => exportPDF('')} style={btnPDF}>
+                  ⚡ PDF — Todos los aliados
+                </button>
+                {Object.entries(byAliado).filter(([k]) => k !== '__sin__').map(([id, al]) => (
+                  <button key={id} onClick={() => exportPDF(id)} style={btnPDFSec}>
+                    📄 PDF — {al.razon_social.slice(0, 22)}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
+
+            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+              <div style={{ fontSize: 12, color: T.textMuted, fontWeight: 600, marginBottom: 8 }}>
+                📊 EXCEL DETALLADO — Reporte plano con todas las transacciones, sesiones y métricas internas
+              </div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button onClick={() => exportExcel('')} style={btnXLS}>
+                  📥 Excel — Todos los aliados
+                </button>
+                {Object.entries(byAliado).filter(([k]) => k !== '__sin__').map(([id, al]) => (
+                  <button key={id} onClick={() => exportExcel(id)} style={btnXLSSec}>
+                    📊 Excel — {al.razon_social.slice(0, 22)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Tabla por aliado ── */}
+          {Object.values(byAliado).map((al, i) => {
+            const subTot = al.rows.reduce((s, r) => s + (r.total_aliado || 0), 0);
+            const subKwh = al.rows.reduce((s, r) => s + (r.kwh_total || 0), 0);
+            return (
+              <div key={i} style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 17, color: T.text }}>{al.razon_social}</div>
+                    <div style={{ color: T.textMuted, fontSize: 13 }}>NIT: {al.nit} {al.email ? `· ${al.email}` : ''}</div>
+                    <div style={{ color: '#2563eb', fontSize: 13, marginTop: 2 }}>{subKwh.toFixed(2)} kWh totales</div>
+                  </div>
+                  <div style={{ background: '#f0fdf4', borderRadius: 12, padding: '12px 20px', textAlign: 'right' }}>
+                    <div style={{ color: '#16a34a', fontWeight: 800, fontSize: 20 }}>{cop(subTot)}</div>
+                    <div style={{ color: T.textMuted, fontSize: 11, marginTop: 2 }}>Total a facturar</div>
+                  </div>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: '#f8fafc' }}>
+                        {['Estación', 'Ciudad', 'Sesiones', 'kWh', 'Venta bruta', 'Energía (COP)', 'Comisión %', 'Comisión (COP)', 'Total aliado', 'Neto Lumina'].map(h => (
+                          <th key={h} style={{ padding: '10px 12px', color: T.textMuted, fontWeight: 600, textAlign: 'right', fontSize: 11, whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {al.rows.map(r => (
+                        <tr key={r.station_id} style={{ borderTop: `1px solid ${T.borderCard}` }}>
+                          <td style={{ padding: '10px 12px', color: T.text, fontWeight: 700, textAlign: 'left', whiteSpace: 'nowrap' }}>{r.station_name}</td>
+                          <td style={{ padding: '10px 12px', color: T.textMuted, textAlign: 'right' }}>{r.city || '—'}</td>
+                          <td style={{ padding: '10px 12px', color: T.text, textAlign: 'right' }}>{r.sesiones}</td>
+                          <td style={{ padding: '10px 12px', color: '#2563eb', fontWeight: 700, textAlign: 'right' }}>{parseFloat(r.kwh_total).toFixed(2)}</td>
+                          <td style={{ padding: '10px 12px', color: T.textMuted, textAlign: 'right' }}>{cop(r.venta_bruta)}</td>
+                          <td style={{ padding: '10px 12px', color: '#b45309', fontWeight: 600, textAlign: 'right' }}>{cop(r.costo_energia)}</td>
+                          <td style={{ padding: '10px 12px', color: T.textMuted, textAlign: 'right' }}>{r.commission_pct}%</td>
+                          <td style={{ padding: '10px 12px', color: '#b45309', textAlign: 'right' }}>{cop(r.comision)}</td>
+                          <td style={{ padding: '10px 12px', color: '#dc2626', fontWeight: 800, textAlign: 'right' }}>{cop(r.total_aliado)}</td>
+                          <td style={{ padding: '10px 12px', color: '#16a34a', fontWeight: 800, textAlign: 'right' }}>{cop(r.neto_lumina)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
         </>
       )}
 
       {generated && !data.length && (
-        <div style={{ color:T.textMuted, textAlign:'center', padding:60 }}>
+        <div style={{ color: T.textMuted, textAlign: 'center', padding: 60 }}>
           No hay sesiones completadas en el período seleccionado.
         </div>
       )}
@@ -260,6 +337,11 @@ export default function LiquidacionPage() {
   );
 }
 
-const inp = { background:'#f8fafc', color:'#0f172a', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'11px 14px', fontSize:14, outline:'none' };
-const sel = { background:'#f8fafc', color:'#0f172a', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'11px 14px', fontSize:14, outline:'none', cursor:'pointer' };
-const lbl = { color:'#64748b', fontSize:12, display:'block', marginBottom:5, fontWeight:600 };
+// Estilos
+const inp    = { background: '#f8fafc', color: '#0f172a', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '11px 14px', fontSize: 14, outline: 'none' };
+const sel    = { background: '#f8fafc', color: '#0f172a', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '11px 14px', fontSize: 14, outline: 'none', cursor: 'pointer' };
+const lbl    = { color: '#64748b', fontSize: 12, display: 'block', marginBottom: 5, fontWeight: 600 };
+const btnPDF    = { background: '#052e16', color: '#4ade80', border: 'none', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+const btnPDFSec = { background: '#fff', color: '#052e16', border: '1.5px solid #16a34a', borderRadius: 10, padding: '10px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer' };
+const btnXLS    = { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+const btnXLSSec = { background: '#fff', color: '#15803d', border: '1.5px solid #86efac', borderRadius: 10, padding: '10px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer' };
