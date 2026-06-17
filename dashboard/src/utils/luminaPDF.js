@@ -20,11 +20,20 @@ const fmtDT = s => s
   ? new Date(s).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   : '—';
 
-function drawRayo(doc, cx, cy, s) {
-  // Rayo geométrico con dos triángulos
+function drawRayo(doc, x, y, w, h) {
+  // Polígono rayo con doc.lines() (compatible jsPDF 4.x)
+  // 6 puntos formando el clásico rayo ⚡
+  const pts = [
+    [x + w * 0.58, y],             // punta superior
+    [x,            y + h * 0.46],  // esquina izq media
+    [x + w * 0.40, y + h * 0.46],  // centro izq media
+    [x + w * 0.42, y + h],         // punta inferior
+    [x + w,        y + h * 0.54],  // esquina der media
+    [x + w * 0.60, y + h * 0.54],  // centro der media
+  ];
+  const rels = pts.slice(1).map((p, i) => [p[0] - pts[i][0], p[1] - pts[i][1]]);
   doc.setFillColor(...G.mid);
-  doc.triangle(cx, cy - s, cx - s * 0.4, cy + s * 0.15, cx + s * 0.1, cy + s * 0.15, 'F');
-  doc.triangle(cx - s * 0.1, cy - s * 0.15, cx + s * 0.4, cy - s * 0.15, cx, cy + s, 'F');
+  doc.lines(rels, pts[0][0], pts[0][1], [1, 1], 'F', true);
 }
 
 function drawHeader(doc, pageW) {
@@ -33,17 +42,8 @@ function drawHeader(doc, pageW) {
   doc.setFillColor(...G.mid);
   doc.rect(0, 0, 5, 44, 'F');
 
-  // Rayo: rombo con diagonal
-  doc.setFillColor(134, 239, 172);
-  doc.rect(16, 8, 7, 12, 'F');   // rectángulo superior
-  doc.setFillColor(...G.mid);
-  doc.rect(13, 20, 10, 14, 'F'); // rectángulo inferior más ancho
-  // Cubrimos esquinas para simular rayo
-  doc.setFillColor(...G.dark);
-  doc.triangle(16, 8, 13, 20, 16, 20, 'F');   // corte izq arriba
-  doc.triangle(23, 8, 23, 20, 26, 20, 'F');   // corte der arriba
-  doc.triangle(13, 34, 13, 20, 16, 34, 'F');  // corte izq abajo
-  doc.triangle(23, 20, 23, 34, 26, 20, 'F');  // triángulo punta der abajo
+  // Rayo usando polígono vectorial
+  drawRayo(doc, 12, 7, 14, 30);
 
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
