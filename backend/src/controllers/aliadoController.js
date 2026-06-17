@@ -47,6 +47,43 @@ async function updateStationFinancial(req, res) {
   res.json(rows[0]);
 }
 
+// Detalle de sesiones para un aliado en un período
+async function liquidacionDetalle(req, res) {
+  const { desde, hasta, aliado_id } = req.query;
+  const from = desde || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0,10);
+  const to   = hasta || new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).toISOString().slice(0,10);
+
+  const { rows } = await pool.query(`
+    SELECT
+      s.id,
+      s.charge_point_id,
+      c.model                                  AS charger_model,
+      st.name                                  AS station_name,
+      st.city,
+      st.cost_per_kwh,
+      al.razon_social,
+      al.nit,
+      u.name                                   AS user_name,
+      u.email                                  AS user_email,
+      s.started_at,
+      s.ended_at,
+      ROUND(EXTRACT(EPOCH FROM (s.ended_at - s.started_at))/60)::int AS duracion_min,
+      COALESCE(s.kwh_used, 0)::numeric         AS kwh_used,
+      COALESCE(s.kwh_used * st.cost_per_kwh, 0)::numeric AS valor_energia
+    FROM sessions s
+    LEFT JOIN chargers  c  ON c.charge_point_id = s.charge_point_id
+    LEFT JOIN stations  st ON st.id = s.station_id
+    LEFT JOIN aliados   al ON al.id = st.aliado_id
+    LEFT JOIN users     u  ON u.id  = s.user_id
+    WHERE s.status = 'Completed'
+      AND s.started_at::date BETWEEN $1 AND $2
+      AND ($3::uuid IS NULL OR al.id = $3::uuid)
+    ORDER BY st.name, s.charge_point_id, s.started_at
+  `, [from, to, aliado_id || null]);
+
+  res.json(rows);
+}
+
 // Reporte de liquidación mensual
 async function liquidacion(req, res) {
   const { desde, hasta, aliado_id } = req.query;
@@ -104,4 +141,4 @@ async function liquidacion(req, res) {
   res.json(result);
 }
 
-module.exports = { list, create, update, remove, updateStationFinancial, liquidacion };
+module.exports = { list, create, update, remove, updateStationFinancial, liquidacion, liquidacionDetalle };

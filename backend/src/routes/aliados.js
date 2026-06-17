@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { list, create, update, remove, updateStationFinancial, liquidacion } = require('../controllers/aliadoController');
+const { list, create, update, remove, updateStationFinancial, liquidacion, liquidacionDetalle } = require('../controllers/aliadoController');
 const { authMiddleware, requireRole } = require('../utils/auth');
 
 // rutas fijas primero (antes de /:id)
-router.get('/liquidacion',                     authMiddleware, requireRole('admin'), liquidacion);
+router.get('/liquidacion',         authMiddleware, requireRole('admin'), liquidacion);
+router.get('/liquidacion/detalle', authMiddleware, requireRole('admin'), liquidacionDetalle);
 router.patch('/station/:stationId',            authMiddleware, requireRole('admin'), updateStationFinancial);
 
 router.get('/',    authMiddleware, requireRole('admin'), list);
